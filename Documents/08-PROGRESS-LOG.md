@@ -4,6 +4,43 @@
 
 ---
 
+## 2026-08-16 — Dealer Product Creation Fix & Sales Feature
+
+**Status:** Fixed dealer product creation bug. Added dealer sales page with per-product, per-customer sales data.
+
+**What was implemented:**
+- Fixed critical URL mismatch: Backend `DealerController` route changed from `api/dealer` to `api/dealers` to match frontend API calls
+- Added `GET /dealers/sales` endpoint — returns per-product sales grouped by customer with quantities, revenue, and order dates
+- Added `GET /dealers/products/{id}` endpoint — single product detail with ownership check
+- Created `DealerSalesResponse` DTO (`DealerSalesItem`, `DealerSalesCustomer`)
+- Implemented `GetDealerSalesAsync` in `OrderService` with batch-loading for products, customers, and orders
+- Created dealer sales page (`/dealer/sales`) with:
+  - Summary cards (total revenue, total orders, items sold)
+  - Expandable product rows showing per-customer purchase details
+  - Product images, quantities, revenue breakdown
+- Updated dealer sidebar navigation with "Sales" link
+- Updated dealer dashboard with sales summary stats and quick action links
+- Updated frontend API client with `dealerApi.getSales()`
+- Added `DealerSalesCustomer`, `DealerSalesItem`, `DealerSalesResponse` TypeScript types
+
+**Files modified:**
+- `backend/src/ECommerce.API/Controllers/DealerController.cs` — Route fix + sales + product detail endpoints
+- `backend/src/ECommerce.Application/Interfaces/IOrderService.cs` — Added `GetDealerSalesAsync`
+- `backend/src/ECommerce.Application/Services/OrderService.cs` — Implemented sales query
+- `backend/src/ECommerce.Application/DTOs/Order/DealerSalesResponse.cs` — NEW
+- `frontend/services/api.ts` — Added `getSales()` method
+- `frontend/types/index.ts` — Added sales types
+- `frontend/components/layout/Sidebar.tsx` — Added Sales nav link
+- `frontend/app/dealer/dashboard/page.tsx` — Added sales stats + quick actions
+- `frontend/app/dealer/sales/page.tsx` — NEW sales page
+
+**What was tested:**
+- Backend builds with 0 errors
+- Frontend builds with 0 errors
+- Dealer route URLs now match between frontend and backend
+
+---
+
 ## 2026-08-16 — Password Change Feature & Cart Bug Fix
 
 **Status:** Password change added to Account page. Cart add-to-cart bug fixed.

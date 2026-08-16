@@ -174,3 +174,29 @@ export interface UpdateProfileRequest {
   newPassword?: string;
   currentPassword?: string;
 }
+
+export interface DealerSalesCustomer {
+  customerId: string;
+  customerName: string;
+  customerEmail: string;
+  quantity: number;
+  subtotal: number;
+  orderDate: string;
+}
+
+export interface DealerSalesItem {
+  productId: string;
+  productName: string;
+  productImageUrl?: string;
+  unitPrice: number;
+  totalQuantitySold: number;
+  totalRevenue: number;
+  customers: DealerSalesCustomer[];
+}
+
+export interface DealerSalesResponse {
+  items: DealerSalesItem[];
+  totalOrders: number;
+  totalProductsSold: number;
+  totalRevenue: number;
+}

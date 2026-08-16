@@ -126,6 +126,81 @@ public class OrderService : IOrderService
         return await MapOrdersAsync(orders);
     }
 
+    public async Task<DealerSalesResponse> GetDealerSalesAsync(Guid dealerId)
+    {
+        var dealerOrderItems = await _unitOfWork.OrderItems.GetQueryable()
+            .Where(i => i.DealerId == dealerId)
+            .ToListAsync();
+
+        if (!dealerOrderItems.Any())
+        {
+            return new DealerSalesResponse();
+        }
+
+        var orderIds = dealerOrderItems.Select(i => i.OrderId).Distinct().ToList();
+        var productIds = dealerOrderItems.Select(i => i.ProductId).Distinct().ToList();
+        var customerIds = (await _unitOfWork.Orders.GetQueryable()
+            .Where(o => orderIds.Contains(o.Id))
+            .Select(o => o.CustomerId)
+            .Distinct().ToListAsync());
+
+        var products = (await _unitOfWork.Products.FindAsync(p => productIds.Contains(p.Id)))
+            .ToDictionary(p => p.Id);
+        var customers = (await _unitOfWork.Customers.FindAsync(c => customerIds.Contains(c.Id)))
+            .ToDictionary(c => c.Id);
+        var orders = (await _unitOfWork.Orders.FindAsync(o => orderIds.Contains(o.Id)))
+            .ToDictionary(o => o.Id);
+
+        var salesByProduct = dealerOrderItems
+            .GroupBy(i => i.ProductId)
+            .Select(g =>
+            {
+                products.TryGetValue(g.Key, out var product);
+                var customerGroups = g.GroupBy(i => i.OrderId);
+                var customerList = new List<DealerSalesCustomer>();
+
+                foreach (var cg in customerGroups)
+                {
+                    var orderItem = cg.First();
+                    orders.TryGetValue(orderItem.OrderId, out var order);
+                    if (order != null)
+                    {
+                        customers.TryGetValue(order.CustomerId, out var customer);
+                        customerList.Add(new DealerSalesCustomer
+                        {
+                            CustomerId = order.CustomerId,
+                            CustomerName = customer?.FullName ?? "Unknown",
+                            CustomerEmail = customer?.Email ?? "",
+                            Quantity = cg.Sum(i => i.Quantity),
+                            Subtotal = cg.Sum(i => i.Subtotal),
+                            OrderDate = order.CreatedAt
+                        });
+                    }
+                }
+
+                return new DealerSalesItem
+                {
+                    ProductId = g.Key,
+                    ProductName = product?.Name ?? "Unknown Product",
+                    ProductImageUrl = product?.Images.FirstOrDefault()?.ImageUrl,
+                    UnitPrice = product?.Price ?? 0,
+                    TotalQuantitySold = g.Sum(i => i.Quantity),
+                    TotalRevenue = g.Sum(i => i.Subtotal),
+                    Customers = customerList.OrderByDescending(c => c.OrderDate).ToList()
+                };
+            })
+            .OrderByDescending(s => s.TotalRevenue)
+            .ToList();
+
+        return new DealerSalesResponse
+        {
+            Items = salesByProduct,
+            TotalOrders = orderIds.Count,
+            TotalProductsSold = salesByProduct.Sum(s => s.TotalQuantitySold),
+            TotalRevenue = salesByProduct.Sum(s => s.TotalRevenue)
+        };
+    }
+
     public async Task<OrderResponse> UpdateStatusAsync(Guid orderId, string status)
     {
         var order = await LoadOrderWithIncludes(orderId)

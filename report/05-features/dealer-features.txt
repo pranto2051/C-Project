@@ -15,9 +15,13 @@ Features:
   - Total Products
   - Approved Products
   - Pending Products
+  - Rejected Products
+- Sales summary (when available)
+  - Total Revenue
   - Total Orders
+  - Items Sold
 - Recent products list
-- Quick action buttons (Add Product, View Orders)
+- Quick action buttons (Add Product, View Sales, View Orders)
 
 ===============================================================================
 PROFILE MANAGEMENT
@@ -118,6 +122,35 @@ Note: Dealers cannot modify order status (admin or system only)
 
 API Endpoint:
 - GET /api/dealer/orders
+
+===============================================================================
+SALES
+===============================================================================
+
+Route: /dealer/sales
+
+Features:
+1. Sales Summary
+   - Total Revenue
+   - Total Orders
+   - Items Sold
+
+2. Sales by Product
+   - Product name, image, unit price
+   - Total quantity sold
+   - Total revenue per product
+   - Expandable customer breakdown
+
+3. Customer Details (per product)
+   - Customer name and email
+   - Quantity purchased
+   - Subtotal spent
+   - Order date
+
+Note: Sales data is derived from order_items table where DealerId matches.
+
+API Endpoint:
+- GET /api/dealers/sales
 
 ===============================================================================
 DEALER APPROVAL WORKFLOW

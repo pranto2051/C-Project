@@ -253,3 +253,56 @@ Key Points:
 - String conversion for enum (stored as VARCHAR)
 - Foreign key relationships
 - Composite index for common queries
+
+===============================================================================
+7. SALES SERVICE — OrderService.cs (GetDealerSalesAsync)
+===============================================================================
+
+File: backend/src/ECommerce.Application/Services/OrderService.cs
+
+public async Task<DealerSalesResponse> GetDealerSalesAsync(Guid dealerId)
+{
+    var dealerOrderItems = await _unitOfWork.OrderItems.GetQueryable()
+        .Where(i => i.DealerId == dealerId)
+        .ToListAsync();
+
+    if (!dealerOrderItems.Any())
+        return new DealerSalesResponse();
+
+    var orderIds = dealerOrderItems.Select(i => i.OrderId).Distinct().ToList();
+    var productIds = dealerOrderItems.Select(i => i.ProductId).Distinct().ToList();
+    var customerIds = (await _unitOfWork.Orders.GetQueryable()
+        .Where(o => orderIds.Contains(o.Id))
+        .Select(o => o.CustomerId)
+        .Distinct().ToListAsync());
+
+    // Batch-load related entities to avoid N+1
+    var products = (await _unitOfWork.Products.FindAsync(p => productIds.Contains(p.Id)))
+        .ToDictionary(p => p.Id);
+    var customers = (await _unitOfWork.Customers.FindAsync(c => customerIds.Contains(c.Id)))
+        .ToDictionary(c => c.Id);
+    var orders = (await _unitOfWork.Orders.FindAsync(o => orderIds.Contains(o.Id)))
+        .ToDictionary(o => o.Id);
+
+    // Group by product, then by customer within each product
+    var salesByProduct = dealerOrderItems
+        .GroupBy(i => i.ProductId)
+        .Select(g => { /* map to DealerSalesItem */ })
+        .OrderByDescending(s => s.TotalRevenue)
+        .ToList();
+
+    return new DealerSalesResponse
+    {
+        Items = salesByProduct,
+        TotalOrders = orderIds.Count,
+        TotalProductsSold = salesByProduct.Sum(s => s.TotalQuantitySold),
+        TotalRevenue = salesByProduct.Sum(s => s.TotalRevenue)
+    };
+}
+
+Key Points:
+- Batch-loading pattern (avoids N+1 queries)
+- Groups order items by product, then by customer
+- Returns per-product sales with customer breakdown
+- Sorted by total revenue (highest first)
+- Uses ToDictionary for O(1) lookups

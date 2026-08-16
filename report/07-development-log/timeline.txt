@@ -75,11 +75,13 @@ Phase 8: Dealer Features
 - Implemented dealer profile management
 - Implemented dealer product CRUD
 - Implemented dealer orders view
+- Implemented dealer sales view (per-product, per-customer)
 - Created dealer dashboard UI
 - Created dealer products page
 - Created dealer new product page
 - Created dealer edit product page
 - Created dealer orders page
+- Created dealer sales page
 
 Phase 9: Customer Features
 - Updated CartService with Include for items
@@ -112,6 +114,8 @@ Phase 11: Bug Fixes & Polish
 - Fixed OrderStatus HasConversion (string storage)
 - Increased Supabase timeouts
 - Verified all API endpoints
+- Fixed dealer URL mismatch (api/dealer → api/dealers)
+- Added dealer sales endpoint and page
 
 Phase 12: Documentation
 - Created 10 documentation files in Documents/
@@ -138,6 +142,7 @@ COMPLETED FEATURES
 | Dealer Dashboard          | Done   | Aug 16     |
 | Dealer Product CRUD       | Done   | Aug 16     |
 | Dealer Orders             | Done   | Aug 16     |
+| Dealer Sales              | Done   | Aug 16     |
 | Customer Browsing         | Done   | Aug 16     |
 | Shopping Cart             | Done   | Aug 16     |
 | Checkout & Orders         | Done   | Aug 16     |
@@ -178,3 +183,7 @@ TECHNICAL CHALLENGES SOLVED
 7. Supabase Connection
    - Problem: Cloud database with SSL and connection limits
    - Solution: Configured pooling=false, increased timeouts
+
+8. Dealer URL Mismatch
+   - Problem: Frontend used /dealers (plural) but backend used /dealer (singular)
+   - Solution: Changed backend route to api/dealers to match frontend

@@ -84,6 +84,7 @@ export const dealerApi = {
   deleteProduct: (id: string) => api.delete(`/dealers/products/${id}`),
   getOrders: (params?: { page?: number; pageSize?: number }) =>
     api.get('/dealers/orders', { params }),
+  getSales: () => api.get('/dealers/sales'),
 };
 
 export const publicApi = {

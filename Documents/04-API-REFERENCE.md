@@ -122,6 +122,9 @@ Get dealer's own products.
 
 **Query params:** `status` (Pending/Approved/Rejected/Unpublished), `page`, `pageSize`
 
+### GET /dealers/products/{id}
+Get a single product by ID. **Requires ownership** (dealer can only view their own products).
+
 ### POST /dealers/products
 Create a new product. Product starts as `Pending`.
 
@@ -148,6 +151,38 @@ Delete own product. **Requires ownership.**
 
 ### GET /dealers/orders
 Get orders containing dealer's products.
+
+### GET /dealers/sales
+Get sales data for the dealer — which products were sold, to which customers, quantities, and revenue.
+
+**Response 200:**
+```json
+{
+  "items": [
+    {
+      "productId": "uuid",
+      "productName": "Wireless Headphones",
+      "productImageUrl": "https://...",
+      "unitPrice": 99.99,
+      "totalQuantitySold": 12,
+      "totalRevenue": 1199.88,
+      "customers": [
+        {
+          "customerId": "uuid",
+          "customerName": "John Doe",
+          "customerEmail": "john@test.com",
+          "quantity": 2,
+          "subtotal": 199.98,
+          "orderDate": "2024-01-15T10:30:00Z"
+        }
+      ]
+    }
+  ],
+  "totalOrders": 8,
+  "totalProductsSold": 25,
+  "totalRevenue": 2450.00
+}
+```
 
 ---
 

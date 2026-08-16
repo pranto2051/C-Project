@@ -8,5 +8,6 @@ public interface IOrderService
     Task<OrderResponse?> GetByIdAsync(Guid orderId);
     Task<List<OrderResponse>> GetCustomerOrdersAsync(Guid customerId);
     Task<List<OrderResponse>> GetDealerOrdersAsync(Guid dealerId);
+    Task<DealerSalesResponse> GetDealerSalesAsync(Guid dealerId);
     Task<OrderResponse> UpdateStatusAsync(Guid orderId, string status);
 }

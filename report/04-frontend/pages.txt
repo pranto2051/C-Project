@@ -199,9 +199,9 @@ Route: /dealer/dashboard
 File: frontend/app/dealer/dashboard/page.tsx
 Description: Dealer dashboard
 Features:
-- Stats (products, orders)
+- Stats (products, revenue, orders, items sold)
 - Recent products
-- Quick actions
+- Quick actions (Add Product, View Sales, View Orders)
 
 Route: /dealer/products
 File: frontend/app/dealer/products/page.tsx
@@ -227,6 +227,15 @@ Features:
 - Update button
 - Cancel button
 
+Route: /dealer/sales
+File: frontend/app/dealer/sales/page.tsx
+Description: Dealer sales data
+Features:
+- Summary cards (total revenue, orders, items sold)
+- Sales by product with expandable customer breakdown
+- Product images, quantities, revenue
+- Per-customer purchase details (name, email, quantity, subtotal, date)
+
 Route: /dealer/orders
 File: frontend/app/dealer/orders/page.tsx
 Description: Dealer orders
@@ -243,5 +252,5 @@ PAGE COUNT SUMMARY
 | Public      | 8     |
 | Auth        | 2     |
 | Admin       | 7     |
-| Dealer      | 5     |
-| **Total**   | **22**|
+| Dealer      | 6     |
+| **Total**   | **23**|

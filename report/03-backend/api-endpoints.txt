@@ -126,38 +126,47 @@ POST /api/admin/clear-demo-data
 DEALER ENDPOINTS (Dealer role required)
 ===============================================================================
 
-GET /api/dealer/profile
+GET /api/dealers/profile
 - Description: Get dealer profile
 - Response: DealerProfileResponse
 
-PUT /api/dealer/profile
+PUT /api/dealers/profile
 - Description: Update dealer profile
 - Request: { shopName, shopDescription, shopCategory, address, logoUrl }
 
-GET /api/dealer/products
+GET /api/dealers/products
 - Description: Get dealer's products
 - Query: status, page, pageSize
 - Response: { items, total, page, pageSize }
 
-POST /api/dealer/products
+GET /api/dealers/products/{id}
+- Description: Get single product by ID (ownership check required)
+- Response: ProductResponse
+
+POST /api/dealers/products
 - Description: Create product (starts as Pending)
 - Request: { name, description, price, stockQuantity, categoryId, sku, images }
 - Response: Created product
 
-PUT /api/dealer/products/{id}
+PUT /api/dealers/products/{id}
 - Description: Update own product
 - Request: Same as POST
 - Ownership check required
 
-DELETE /api/dealer/products/{id}
+DELETE /api/dealers/products/{id}
 - Description: Delete own product
 - Ownership check required
 - Response: 204 No Content
 
-GET /api/dealer/orders
+GET /api/dealers/orders
 - Description: Get orders containing dealer's products
 - Query: page, pageSize
 - Response: { items, total, page, pageSize }
+
+GET /api/dealers/sales
+- Description: Get sales data — which products sold, to which customers, quantities, revenue
+- Response: DealerSalesResponse { items[], totalOrders, totalProductsSold, totalRevenue }
+- Each item contains: productId, productName, unitPrice, totalQuantitySold, totalRevenue, customers[]
 
 ===============================================================================
 PUBLIC ENDPOINTS (No auth required)
@@ -220,7 +229,7 @@ ENDPOINT SUMMARY
 |-------------|-------|---------------|
 | Auth        | 5     | Partial       |
 | Admin       | 15    | Admin role    |
-| Dealer      | 7     | Dealer role   |
+| Dealer      | 9     | Dealer role   |
 | Public      | 3     | None          |
 | Customer    | 7     | Customer role |
-| **Total**   | **37**|               |
+| **Total**   | **39**|               |

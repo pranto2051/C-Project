@@ -8,7 +8,7 @@ using ECommerce.Application.DTOs.Order;
 namespace ECommerce.API.Controllers;
 
 [ApiController]
-[Route("api/dealer")]
+[Route("api/dealers")]
 [Authorize(Roles = "Dealer")]
 public class DealerController : ControllerBase
 {
@@ -85,5 +85,23 @@ public class DealerController : ControllerBase
         var userId = GetUserId();
         var orders = await _orderService.GetDealerOrdersAsync(userId);
         return Ok(new { items = orders, total = orders.Count, page, pageSize });
+    }
+
+    [HttpGet("products/{id}")]
+    public async Task<IActionResult> GetProduct(Guid id)
+    {
+        var userId = GetUserId();
+        var product = await _productService.GetByIdAsync(id);
+        if (product == null) return NotFound();
+        if (product.DealerId != userId) return Forbid();
+        return Ok(product);
+    }
+
+    [HttpGet("sales")]
+    public async Task<IActionResult> GetSales()
+    {
+        var userId = GetUserId();
+        var sales = await _orderService.GetDealerSalesAsync(userId);
+        return Ok(sales);
     }
 }

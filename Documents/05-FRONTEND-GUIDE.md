@@ -34,10 +34,11 @@ Next.js 14+ App Router with TypeScript, Tailwind CSS, and React Context for stat
 ### Dealer Pages (require Dealer role)
 | Route | Page | Description |
 |-------|------|-------------|
-| `/dealer/dashboard` | Dashboard | Stats, recent products |
+| `/dealer/dashboard` | Dashboard | Stats (products, revenue, orders, items sold), recent products, quick actions |
 | `/dealer/products` | Products | Product list with status filter |
 | `/dealer/products/new` | New Product | Create product form |
 | `/dealer/products/[id]/edit` | Edit Product | Edit product form |
+| `/dealer/sales` | Sales | Sales by product — which products sold, to whom, quantities, revenue |
 | `/dealer/orders` | Orders | Orders containing dealer's products |
 
 ### Admin Pages (require Admin role)
@@ -122,6 +123,9 @@ const dealers = await adminApi.getDealers({ search, category });
 
 // Dealer: create product
 await dealerApi.createProduct(productData);
+
+// Dealer: get sales data
+const sales = await dealerApi.getSales();
 
 // Customer: add to cart (two arguments: productId, quantity)
 await customerApi.addToCart(productId, 1);
