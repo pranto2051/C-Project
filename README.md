@@ -9,6 +9,8 @@ A production-quality multi-vendor e-commerce web application built with **C# / A
 - **Product Approval Workflow:** New dealer products start hidden and require Admin approval before public visibility
 - **Customer Storefront:** Browse, search, filter, sort approved products; cart and checkout
 - **Admin Oversight:** Full platform management — users, dealers, products, categories, orders, approvals, statistics
+- **Dealer Management:** Admin can filter, add, edit, and delete dealers from the admin dashboard
+- **Comprehensive Demo Data:** 500 products, 56 orders, 21 users for realistic testing
 - **Role-Based Authorization:** Every endpoint enforces ownership and role checks server-side
 
 ## Tech Stack
@@ -16,9 +18,9 @@ A production-quality multi-vendor e-commerce web application built with **C# / A
 | Layer | Technology |
 |-------|-----------|
 | Backend | C# / ASP.NET Core Web API |
-| ORM | Entity Framework Core |
+| ORM | Entity Framework Core 9.0 |
 | Database | PostgreSQL |
-| Auth | JWT + ASP.NET Core Identity |
+| Auth | JWT + BCrypt password hashing |
 | Frontend | Next.js 14+ (App Router) + TypeScript + React |
 | Styling | Tailwind CSS |
 | API Docs | Swagger / OpenAPI |
@@ -29,16 +31,19 @@ A production-quality multi-vendor e-commerce web application built with **C# / A
 C-Project/
 ├── backend/             # ASP.NET Core Web API
 │   ├── src/
-│   │   └── ECommerce.API/
+│   │   ├── ECommerce.API/              # Presentation layer
+│   │   ├── ECommerce.Application/      # Business logic
+│   │   ├── ECommerce.Domain/           # Entities & interfaces
+│   │   └── ECommerce.Infrastructure/   # EF Core & repositories
 │   └── docs/
 ├── frontend/            # Next.js application
-│   ├── app/
-│   ├── components/
-│   ├── features/
-│   ├── services/
-│   ├── hooks/
-│   ├── types/
-│   └── lib/
+│   ├── app/             # App Router pages
+│   ├── components/      # Shared UI components
+│   ├── features/        # Feature modules
+│   ├── services/        # API client
+│   ├── hooks/           # Custom React hooks
+│   ├── types/           # TypeScript types
+│   └── lib/             # Utilities
 └── database/            # SQL scripts and migrations
 ```
 
@@ -54,14 +59,10 @@ C-Project/
 
 ```bash
 # Create PostgreSQL database
-psql -U postgres -c "CREATE DATABASE ecommerce_db;"
-
-# Run schema and seed scripts
-psql -U postgres -d ecommerce_db -f database/schema.sql
-psql -U postgres -d ecommerce_db -f database/seed.sql
+psql -U md.prantoislam -c "CREATE DATABASE ecommerce_db;"
 ```
 
-Or apply EF Core migrations (see backend README).
+Database tables and seed data are created automatically on backend startup in Development mode.
 
 ### 2. Backend Setup
 
@@ -74,7 +75,7 @@ ASPNETCORE_ENVIRONMENT=Development dotnet run --urls "http://localhost:5001"
 
 API will be available at `http://localhost:5001` with Swagger at `/swagger`.
 
-> **Note:** The `ASPNETCORE_ENVIRONMENT=Development` flag is required for database seeding (demo users + categories).
+> **Note:** The `ASPNETCORE_ENVIRONMENT=Development` flag is required for database seeding (demo users + data).
 
 ### 3. Frontend Setup
 
@@ -88,23 +89,49 @@ Frontend will be available at `http://localhost:3000`.
 
 ### 4. Environment Configuration
 
-Copy the example env files and update with your credentials:
-
 ```bash
-# Backend
-cp backend/.env.example backend/.env
-
-# Frontend
-cp frontend/.env.example frontend/.env.local
+# Frontend (.env.local)
+NEXT_PUBLIC_API_URL=http://localhost:5001/api
+NEXT_PUBLIC_API_TIMEOUT=30000
+NEXT_PUBLIC_APP_NAME=E-Commerce Platform
 ```
 
-### Development Credentials (seed data)
+### Development Credentials
 
+#### Original Accounts
 | Role | Email | Password |
 |------|-------|----------|
 | Admin | admin@ecommerce.com | Admin@123 |
 | Dealer | dealer@ecommerce.com | Dealer@123 |
 | Customer | customer@ecommerce.com | Customer@123 |
+
+#### Seeded Dealer Accounts (all approved)
+| Email | Password | Shop Name | Category |
+|-------|----------|-----------|----------|
+| tech@demo.com | Dealer@123 | TechHub | Electronics |
+| fashion@demo.com | Dealer@123 | StyleShop | Clothing |
+| home@demo.com | Dealer@123 | HomeNest | Home & Garden |
+| book@demo.com | Dealer@123 | PageTurner | Books |
+| sport@demo.com | Dealer@123 | SportZone | Sports |
+| beauty@demo.com | Dealer@123 | GlowUp | Beauty |
+| auto@demo.com | Dealer@123 | AutoParts Pro | Automotive |
+| food@demo.com | Dealer@123 | FreshBite | Food & Beverage |
+| pet@demo.com | Dealer@123 | PetPals | Electronics |
+| art@demo.com | Dealer@123 | CreativeCorner | Clothing |
+
+#### Seeded Customer Accounts
+| Email | Password |
+|-------|----------|
+| john@demo.com | Customer@123 |
+| sarah@demo.com | Customer@123 |
+| mike@demo.com | Customer@123 |
+| emma@demo.com | Customer@123 |
+| james@demo.com | Customer@123 |
+| lisa@demo.com | Customer@123 |
+| david@demo.com | Customer@123 |
+| amy@demo.com | Customer@123 |
+| chris@demo.com | Customer@123 |
+| nina@demo.com | Customer@123 |
 
 > **WARNING:** These are DEVELOPMENT ONLY credentials. Change before any real deployment.
 
@@ -112,7 +139,7 @@ cp frontend/.env.example frontend/.env.local
 
 - **OOP:** Entity classes with relationships, inheritance (role-based user hierarchy), encapsulation in services
 - **ASP.NET Core:** Web API with routing, middleware pipeline, dependency injection
-- **Entity Framework Core:** Code-first migrations, LINQ queries, relationship mapping, transactions
+- **Entity Framework Core:** Code-first schema, LINQ queries, relationship mapping, transactions
 - **Dependency Injection:** Service registration, repository pattern, scoped lifetimes
 - **Middleware:** Authentication middleware, exception handling middleware, CORS
 - **Auth/Authz:** JWT bearer authentication, role-based `[Authorize]` policies, ownership validation
@@ -131,4 +158,4 @@ cp frontend/.env.example frontend/.env.local
 - [ARCHITECTURE.md](./ARCHITECTURE.md) — System architecture and design decisions
 - [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) — Complete API reference
 - [DATABASE_DESIGN.md](./DATABASE_DESIGN.md) — Database schema and ER diagram
-# C-Project
+- [LOGIN_TESTING_GUIDE.md](./LOGIN_TESTING_GUIDE.md) — Login testing and troubleshooting

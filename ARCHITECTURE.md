@@ -15,12 +15,34 @@ ECommerce.sln
 │   │   ├── Program.cs
 │   │   ├── appsettings.json
 │   │   ├── appsettings.Development.json
+│   │   ├── Middleware/
+│   │   │   └── ExceptionHandlingMiddleware.cs
 │   │   └── Controllers/
+│   │       ├── AuthController.cs
+│   │       ├── AdminController.cs
+│   │       ├── DealerController.cs
+│   │       ├── ProductsController.cs
+│   │       ├── CartController.cs
+│   │       └── OrdersController.cs
 │   │
 │   ├── ECommerce.Application/      # Application Layer
 │   │   ├── Services/
+│   │   │   ├── AuthService.cs
+│   │   │   ├── AdminService.cs
+│   │   │   ├── DealerService.cs
+│   │   │   ├── ProductService.cs
+│   │   │   ├── CartService.cs
+│   │   │   ├── OrderService.cs
+│   │   │   └── CategoryService.cs
 │   │   ├── DTOs/
+│   │   │   ├── Auth/
+│   │   │   ├── Dealer/
+│   │   │   ├── Product/
+│   │   │   ├── Cart/
+│   │   │   ├── Order/
+│   │   │   └── Admin/
 │   │   ├── Interfaces/
+│   │   ├── Validators/
 │   │   └── Mappings/
 │   │
 │   ├── ECommerce.Domain/           # Domain Layer
@@ -31,10 +53,13 @@ ECommerce.sln
 │   └── ECommerce.Infrastructure/   # Infrastructure Layer
 │       ├── Data/
 │       │   ├── AppDbContext.cs
+│       │   ├── DatabaseSeeder.cs
 │       │   └── Configurations/
 │       ├── Repositories/
 │       ├── Migrations/
 │       └── Services/
+│           ├── PasswordHasher.cs
+│           └── JwtTokenGenerator.cs
 │
 └── tests/
     ├── ECommerce.UnitTests/
@@ -68,6 +93,7 @@ Infrastructure references Domain but not vice versa. Application references Doma
 4. **DTOs:** Separate request/response models from domain entities. Prevents over-posting and serialization issues.
 5. **FluentValidation:** Used alongside Data Annotations for complex validation rules.
 6. **Global Exception Handling:** Custom middleware catches all exceptions and returns consistent error responses.
+7. **Comprehensive Seeding:** DatabaseSeeder creates 21 users, 500 products, 56 orders, and 8 categories for realistic demo testing.
 
 ## Frontend Architecture
 
@@ -76,51 +102,49 @@ Infrastructure references Domain but not vice versa. Application references Doma
 ```
 frontend/
 ├── app/
-│   ├── (auth)/
+│   ├── auth/
 │   │   ├── login/page.tsx
 │   │   └── register/page.tsx
-│   ├── (customer)/
-│   │   ├── products/page.tsx
-│   │   ├── products/[id]/page.tsx
-│   │   ├── cart/page.tsx
-│   │   ├── checkout/page.tsx
-│   │   ├── orders/page.tsx
-│   │   └── account/page.tsx
-│   ├── (dealer)/
+│   ├── admin/
+│   │   ├── dashboard/page.tsx
+│   │   ├── dealers/page.tsx       # Admin dealer CRUD with filters
+│   │   ├── products/pending/page.tsx
+│   │   ├── categories/page.tsx
+│   │   ├── users/page.tsx
+│   │   └── stats/page.tsx
+│   ├── dealer/
 │   │   ├── dashboard/page.tsx
 │   │   ├── products/page.tsx
 │   │   ├── products/new/page.tsx
 │   │   ├── products/[id]/edit/page.tsx
 │   │   └── orders/page.tsx
-│   ├── (admin)/
-│   │   ├── dashboard/page.tsx
-│   │   ├── products/pending/page.tsx
-│   │   ├── categories/page.tsx
-│   │   ├── users/page.tsx
-│   │   └── stats/page.tsx
+│   ├── products/
+│   │   ├── page.tsx
+│   │   └── [id]/page.tsx
+│   ├── cart/page.tsx
+│   ├── checkout/page.tsx
+│   ├── orders/page.tsx
+│   ├── orders/[id]/page.tsx
+│   ├── account/page.tsx
 │   ├── layout.tsx
-│   ├── page.tsx
-│   └── providers.tsx
+│   └── page.tsx
 ├── components/
-│   ├── ui/           # Shared UI kit: Button, Input, Card, Badge, Modal, Table, Toast
-│   ├── layout/       # Navbar, Footer, Sidebar
+│   ├── ui/           # Shared UI kit: Button, Input, Card, Badge, Modal, Table, Toast, Select, Pagination, ConfirmDialog, EmptyState
+│   ├── layout/       # Navbar, Footer, Sidebar, DashboardLayout
 │   └── forms/        # Reusable form components
 ├── features/
-│   ├── auth/         # Auth feature module
+│   ├── auth/         # Auth feature module (AuthProvider, ProtectedRoute, useAuth)
 │   ├── products/     # Products feature module
 │   ├── cart/         # Cart feature module
 │   ├── orders/       # Orders feature module
 │   └── admin/        # Admin feature modules
 ├── services/
-│   └── api.ts        # API client (fetch wrappers)
-├── hooks/
-│   ├── useAuth.ts
-│   ├── useCart.ts
-│   └── useProducts.ts
+│   └── api.ts        # API client (axios with interceptors, auth headers)
+├── hooks/            # Custom React hooks
 ├── types/
 │   └── index.ts      # TypeScript interfaces
 ├── lib/
-│   └── utils.ts      # Helper functions
+│   └── utils.ts      # Helper functions (cn, formatPrice)
 └── public/
 ```
 
@@ -132,6 +156,7 @@ frontend/
 4. **Shared UI Kit:** Consistent design system built once in `components/ui/`.
 5. **API Client:** Centralized in `services/api.ts` with typed methods for each endpoint.
 6. **No state management library:** React Context + hooks sufficient for this project size.
+7. **Admin Dealers Page:** Dedicated `/admin/dealers` route with category/name filtering, add/edit modal, and delete confirmation.
 
 ## Security Architecture
 
@@ -139,7 +164,7 @@ frontend/
 |---------|---------------|
 | Authentication | JWT Bearer tokens (15-min access, 7-day refresh) |
 | Authorization | `[Authorize(Roles = "...")]` + ownership checks from JWT claims |
-| Password Storage | ASP.NET Core Identity with BCrypt hashing |
+| Password Storage | BCrypt.Net-Next (cost factor 11) |
 | Input Validation | Data Annotations + FluentValidation |
 | CORS | Locked to frontend origin only |
 | Secrets | Environment variables, `appsettings.Development.json` gitignored |
@@ -153,6 +178,18 @@ frontend/
 - **Foreign keys** with proper cascade rules
 - **Indexes** on frequently queried columns (ApprovalStatus, CategoryId, DealerId)
 - **Transactions** for order creation + stock decrement
+- **Comprehensive seeding** via `DatabaseSeeder.cs` in Development mode
+
+### Seed Data Summary
+
+| Entity | Count |
+|--------|-------|
+| Users | 21 (1 admin, 10 dealers, 10 customers) |
+| Dealer Profiles | 10 |
+| Customer Profiles | 10 |
+| Categories | 8 |
+| Products | 500 (50 per dealer) |
+| Orders | 56 |
 
 See `DATABASE_DESIGN.md` for the full schema.
 

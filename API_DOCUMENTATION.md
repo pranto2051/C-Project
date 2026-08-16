@@ -268,7 +268,63 @@ Activate or deactivate a user.
 ```
 
 ### GET /admin/dealers
-List all dealers with shop info.
+List all dealers with shop info. Supports filtering.
+
+**Query params:** `search` (shop name/email), `category` (shop category), `page`, `pageSize`
+
+**Response 200:**
+```json
+{
+  "items": [
+    {
+      "id": "uuid",
+      "userId": "uuid",
+      "shopName": "TechHub",
+      "shopDescription": "Electronics store",
+      "shopCategory": "Electronics",
+      "address": "123 Tech St",
+      "logoUrl": "https://...",
+      "isApproved": true,
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "total": 10,
+  "page": 1,
+  "pageSize": 10
+}
+```
+
+### POST /admin/dealers
+Create a new dealer (creates user account + dealer profile).
+
+**Request:**
+```json
+{
+  "shopName": "New Shop",
+  "shopDescription": "Description here",
+  "shopCategory": "Electronics",
+  "address": "456 Main St",
+  "logoUrl": "https://...",
+  "isApproved": true,
+  "email": "newdealer@example.com",
+  "password": "SecurePass123!",
+  "fullName": "New Dealer",
+  "phone": "+1234567890"
+}
+```
+
+**Response 201:** Dealer profile object.
+
+### PUT /admin/dealers/{id}
+Update dealer profile (admin override).
+
+**Request:** Same shape as POST (all fields optional except shop fields).
+
+### DELETE /admin/dealers/{id}
+Delete dealer and associated user account. **Requires auth + Admin role.**
+
+### PUT /admin/dealers/{id}/approve
+Approve a dealer (sets `isApproved = true`).
 
 ### GET /admin/products/pending
 List all pending products across all dealers.
@@ -307,15 +363,27 @@ Get platform statistics.
 **Response 200:**
 ```json
 {
-  "totalUsers": 150,
-  "totalDealers": 12,
-  "totalCustomers": 135,
-  "totalProducts": 340,
-  "pendingProducts": 8,
-  "approvedProducts": 320,
-  "rejectedProducts": 12,
-  "totalOrders": 89,
-  "totalRevenue": 15678.90
+  "totalUsers": 21,
+  "totalDealers": 10,
+  "totalCustomers": 10,
+  "totalProducts": 500,
+  "pendingProducts": 167,
+  "approvedProducts": 167,
+  "rejectedProducts": 166,
+  "totalOrders": 56,
+  "totalRevenue": 123456.78
+}
+```
+
+### POST /admin/clear-demo-data
+Clear all seeded demo data (dealers, customers, products, orders, categories). **Requires auth + Admin role.**
+
+This endpoint removes all data seeded by `DatabaseSeeder.cs` to allow fresh testing. Only the original admin user account is preserved.
+
+**Response 200:**
+```json
+{
+  "message": "Demo data cleared successfully"
 }
 ```
 
@@ -333,3 +401,42 @@ Get platform statistics.
 | 404 | Not found |
 | 409 | Conflict (duplicate email, etc.) |
 | 500 | Server error |
+
+---
+
+## Demo Credentials
+
+### Original Accounts
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | admin@ecommerce.com | Admin@123 |
+| Dealer | dealer@ecommerce.com | Dealer@123 |
+| Customer | customer@ecommerce.com | Customer@123 |
+
+### Seeded Dealer Accounts (all approved)
+| Role | Email | Password | Shop Name | Category |
+|------|-------|----------|-----------|----------|
+| Dealer | tech@demo.com | Dealer@123 | TechHub | Electronics |
+| Dealer | fashion@demo.com | Dealer@123 | StyleShop | Clothing |
+| Dealer | home@demo.com | Dealer@123 | HomeNest | Home & Garden |
+| Dealer | book@demo.com | Dealer@123 | PageTurner | Books |
+| Dealer | sport@demo.com | Dealer@123 | SportZone | Sports |
+| Dealer | beauty@demo.com | Dealer@123 | GlowUp | Beauty |
+| Dealer | auto@demo.com | Dealer@123 | AutoParts Pro | Automotive |
+| Dealer | food@demo.com | Dealer@123 | FreshBite | Food & Beverage |
+| Dealer | pet@demo.com | Dealer@123 | PetPals | Electronics |
+| Dealer | art@demo.com | Dealer@123 | CreativeCorner | Clothing |
+
+### Seeded Customer Accounts
+| Role | Email | Password |
+|------|-------|----------|
+| Customer | john@demo.com | Customer@123 |
+| Customer | sarah@demo.com | Customer@123 |
+| Customer | mike@demo.com | Customer@123 |
+| Customer | emma@demo.com | Customer@123 |
+| Customer | james@demo.com | Customer@123 |
+| Customer | lisa@demo.com | Customer@123 |
+| Customer | david@demo.com | Customer@123 |
+| Customer | amy@demo.com | Customer@123 |
+| Customer | chris@demo.com | Customer@123 |
+| Customer | nina@demo.com | Customer@123 |

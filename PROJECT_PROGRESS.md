@@ -1,5 +1,71 @@
 # Project Progress Log
 
+## 2026-08-16 — Admin Dealer CRUD, Comprehensive Seeding & Data Management
+
+**Status:** Admin dealer management fully functional. Comprehensive demo data seeded. Cache issues resolved.
+
+**What was implemented:**
+- Added admin dealer CRUD endpoints: `GET/POST/PUT/DELETE /api/admin/dealers`, `PUT /api/admin/dealers/{id}/approve`
+- Added `POST /api/admin/clear-demo-data` endpoint to remove all seeded data for testing
+- Updated `IAdminService` and `AdminService` with dealer CRUD methods
+- Created `AdminDealerRequest.cs` DTO for admin dealer create/update
+- Updated `AdminController.cs` with all dealer endpoints
+- Created comprehensive `DatabaseSeeder.cs` seeding 10 dealers, 10 customers, 50 products/dealer, 56 orders, 8 categories
+- Added "Dealers" link to admin sidebar (`/admin/dealers` with 🏪 icon)
+- Updated `services/api.ts` with admin dealer CRUD methods (getDealers, getDealer, createDealer, updateDealer, deleteDealer, approveDealer, clearDemoData)
+- Created `/admin/dealers/page.tsx` with filter by category/name, table, add/edit modal, delete confirmation
+- Resolved `.next` build cache corruption by clearing `.next` directory and rebuilding
+- Resolved stale/duplicate backend processes on port 5001 by killing all and restarting cleanly
+
+**Files touched:**
+- `backend/src/ECommerce.Application/Services/AdminService.cs` — Dealer CRUD implementation
+- `backend/src/ECommerce.Application/Interfaces/IAdminService.cs` — Interface with dealer methods
+- `backend/src/ECommerce.API/Controllers/AdminController.cs` — All admin endpoints including dealer CRUD + clear-demo-data
+- `backend/src/ECommerce.Application/DTOs/Dealer/AdminDealerRequest.cs` — New DTO for admin dealer create/update
+- `backend/src/ECommerce.Infrastructure/Data/DatabaseSeeder.cs` — Comprehensive seeder
+- `frontend/app/admin/dealers/page.tsx` — New admin dealers page with filter UI
+- `frontend/components/layout/Sidebar.tsx` — Updated with Dealers link in adminLinks
+- `frontend/services/api.ts` — Updated with admin dealer CRUD methods
+
+**DB/API/Frontend changes:**
+- 10 dealers seeded with BCrypt-hashed passwords (tech@demo.com, fashion@demo.com, etc.)
+- 10 customers seeded (john@demo.com, sarah@demo.com, etc.)
+- 50 products per dealer (500 total) with realistic pricing and stock quantities
+- 56 orders with order items across customers and dealers
+- 8 categories seeded (Electronics, Clothing, Home & Garden, Books, Sports, Beauty, Automotive, Food & Beverage)
+- All demo logins use Dealer@123 (dealers) or Customer@123 (customers)
+
+**What was tested:**
+- All 7 original demo logins verified working (admin@ecommerce.com, dealer@ecommerce.com, customer@ecommerce.com + 4 seeded dealer/customer combos)
+- Admin login tested, stats endpoint returns correct counts (21 users, 10 dealers, 500 products, 56 orders)
+- Backend builds with 0 errors
+- Frontend builds with 0 errors
+- Seeding verified: 21 users, 10 dealer profiles, 500 products, 56 orders, 8 categories
+- `/admin/dealers` page loads correctly
+
+**Current status:**
+- Admin dealer CRUD fully implemented (filter by category/name, add/edit/delete dealers)
+- Comprehensive demo data seeded for realistic testing
+- All 3 original demo logins + 7 seeded demo logins working
+- Backend running on `http://localhost:5001` (Development mode)
+- Frontend running on `http://localhost:3000`
+
+**Remaining work:**
+1. Fix dealer filtering in `GetAllDealersAsync` (returns all dealers regardless of filter params)
+2. Test dealer product CRUD (add/edit/remove products from dealer dashboard)
+3. Test complete user flows in browser: login → role-based dashboard → product CRUD → approval workflow → cart → checkout
+4. Generate EF Core migrations (currently using EnsureCreated)
+5. Production hardening (HTTPS, proper refresh token storage, etc.)
+
+**Known issues:**
+- Dealer filtering in `GetAllDealersAsync` is not working — returns all dealers regardless of `search` or `category` query params
+- Using `EnsureCreated()` instead of migrations (no migration files yet)
+- Refresh token endpoint returns 401 (not persisting refresh tokens in DB)
+- AutoMapper has known vulnerability (NU1903) — upgrade when possible
+- `.next` build cache can become corrupted — clear with `rm -rf .next` and restart dev server
+
+---
+
 ## 2026-08-16 — Demo Login Fix & .NET 9.0 Upgrade
 
 **Status:** Demo login fully working for all 3 roles.

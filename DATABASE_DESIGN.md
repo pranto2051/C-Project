@@ -184,4 +184,26 @@ None at this stage. This schema matches Section 4 of the master prompt exactly.
 - Schema is managed via EF Core code-first approach (`EnsureCreated()`)
 - Table names use lowercase (e.g., `users`, `products`, `orders`) per EF Core configuration
 - Fluent API configurations in `ECommerce.Infrastructure/Data/Configurations/`
-- Database seeded on startup in Development mode with 3 demo users and 5 categories
+- Database seeded on startup in Development mode with comprehensive demo data
+
+## Seed Data
+
+The `DatabaseSeeder.cs` populates the database with realistic demo data:
+
+### Users (21 total)
+- **1 Admin:** admin@ecommerce.com / Admin@123
+- **10 Dealers:** tech@demo.com, fashion@demo.com, home@demo.com, book@demo.com, sport@demo.com, beauty@demo.com, auto@demo.com, food@demo.com, pet@demo.com, art@demo.com (all Dealer@123)
+- **10 Customers:** john@demo.com, sarah@demo.com, mike@demo.com, emma@demo.com, james@demo.com, lisa@demo.com, david@demo.com, amy@demo.com, chris@demo.com, nina@demo.com (all Customer@123)
+
+### Categories (8)
+Electronics, Clothing, Home & Garden, Books, Sports, Beauty, Automotive, Food & Beverage
+
+### Products (500)
+- 50 products per dealer
+- Mix of Pending/Approved/Rejected statuses
+- Realistic pricing ($5.99–$499.99) and stock quantities (1–100)
+
+### Orders (56)
+- Various customers ordering from different dealers
+- Multiple order items per order
+- Mix of order statuses (Pending, Confirmed, Shipped, Delivered)
