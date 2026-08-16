@@ -20,8 +20,8 @@ public class OrderService : IOrderService
 
     public async Task<OrderResponse> CreateAsync(Guid customerId, OrderRequest request)
     {
-        var customerProfile = await _unitOfWork.CustomerProfiles.GetByIdAsync(customerId)
-            ?? throw new KeyNotFoundException("Customer profile not found.");
+        var customer = await _unitOfWork.Customers.GetByIdAsync(customerId)
+            ?? throw new KeyNotFoundException("Customer not found.");
 
         var cart = _unitOfWork.Carts.GetQueryable().FirstOrDefault(c => c.CustomerId == customerId)
             ?? throw new InvalidOperationException("Cart is empty.");
@@ -43,7 +43,7 @@ public class OrderService : IOrderService
             if (product.StockQuantity < cartItem.Quantity)
                 throw new InvalidOperationException($"Insufficient stock for '{product.Name}'. Available: {product.StockQuantity}");
 
-            var dealer = await _unitOfWork.DealerProfiles.GetByIdAsync(product.DealerId)
+            var dealer = await _unitOfWork.Dealers.GetByIdAsync(product.DealerId)
                 ?? throw new KeyNotFoundException("Dealer not found.");
 
             var subtotal = cartItem.Quantity * product.Price;
@@ -68,7 +68,7 @@ public class OrderService : IOrderService
         var order = new Order
         {
             Id = Guid.NewGuid(),
-            CustomerId = customerProfile.Id,
+            CustomerId = customer.Id,
             Status = OrderStatus.Pending,
             TotalAmount = total,
             ShippingAddress = request.ShippingAddress,
@@ -86,14 +86,14 @@ public class OrderService : IOrderService
         await ClearCartAsync(customerId);
         await _unitOfWork.SaveChangesAsync();
 
-        return MapToResponse(order, customerProfile);
+        return MapToResponse(order, customer);
     }
 
     public async Task<OrderResponse?> GetByIdAsync(Guid orderId)
     {
         var order = await _unitOfWork.Orders.GetByIdAsync(orderId);
         if (order == null) return null;
-        var customer = await _unitOfWork.CustomerProfiles.GetByIdAsync(order.CustomerId);
+        var customer = await _unitOfWork.Customers.GetByIdAsync(order.CustomerId);
         return MapToResponse(order, customer!);
     }
 
@@ -107,7 +107,7 @@ public class OrderService : IOrderService
         var result = new List<OrderResponse>();
         foreach (var order in orders)
         {
-            var customer = await _unitOfWork.CustomerProfiles.GetByIdAsync(order.CustomerId);
+            var customer = await _unitOfWork.Customers.GetByIdAsync(order.CustomerId);
             result.Add(MapToResponse(order, customer!));
         }
         return result;
@@ -123,7 +123,7 @@ public class OrderService : IOrderService
         var result = new List<OrderResponse>();
         foreach (var order in orders)
         {
-            var customer = await _unitOfWork.CustomerProfiles.GetByIdAsync(order.CustomerId);
+            var customer = await _unitOfWork.Customers.GetByIdAsync(order.CustomerId);
             result.Add(MapToResponse(order, customer!));
         }
         return result;
@@ -155,7 +155,7 @@ public class OrderService : IOrderService
         await _unitOfWork.Orders.UpdateAsync(order);
         await _unitOfWork.SaveChangesAsync();
 
-        var customer = await _unitOfWork.CustomerProfiles.GetByIdAsync(order.CustomerId);
+        var customer = await _unitOfWork.Customers.GetByIdAsync(order.CustomerId);
         return MapToResponse(order, customer!);
     }
 
@@ -169,13 +169,13 @@ public class OrderService : IOrderService
         }
     }
 
-    private OrderResponse MapToResponse(Order order, CustomerProfile customer)
+    private OrderResponse MapToResponse(Order order, Customer customer)
     {
         return new OrderResponse
         {
             Id = order.Id,
             CustomerId = order.CustomerId,
-            CustomerName = customer.User.FullName,
+            CustomerName = customer.FullName,
             Status = order.Status.ToString(),
             TotalAmount = order.TotalAmount,
             ShippingAddress = order.ShippingAddress,

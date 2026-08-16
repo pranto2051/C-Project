@@ -3,6 +3,6 @@ using ECommerce.Domain.Entities;
 
 public interface IJwtTokenGenerator
 {
-    string GenerateAccessToken(User user);
+    string GenerateAccessToken(Guid id, string email, string fullName, string role);
     string GenerateRefreshToken();
 }

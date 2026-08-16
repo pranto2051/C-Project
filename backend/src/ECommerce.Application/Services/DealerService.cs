@@ -1,8 +1,5 @@
-using AutoMapper;
 using ECommerce.Application.DTOs.Dealer;
 using ECommerce.Application.Interfaces;
-using ECommerce.Domain.Entities;
-using ECommerce.Domain.Enums;
 using ECommerce.Domain.Interfaces;
 
 namespace ECommerce.Application.Services;
@@ -10,79 +7,63 @@ namespace ECommerce.Application.Services;
 public class DealerService : IDealerService
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IMapper _mapper;
 
-    public DealerService(IUnitOfWork unitOfWork, IMapper mapper)
+    public DealerService(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
-        _mapper = mapper;
     }
 
     public async Task<DealerProfileResponse> GetProfileAsync(Guid userId)
     {
-        var user = await _unitOfWork.Users.GetByIdAsync(userId)
-            ?? throw new KeyNotFoundException("User not found.");
+        var dealer = await _unitOfWork.Dealers.GetByIdAsync(userId)
+            ?? throw new KeyNotFoundException("Dealer not found.");
 
-        if (user.Role != UserRole.Dealer)
-            throw new InvalidOperationException("User is not a dealer.");
-
-        var profileList = await _unitOfWork.DealerProfiles.FindAsync(d => d.UserId == userId);
-        var profile = user.DealerProfile ?? profileList.FirstOrDefault();
-        if (profile == null)
-            throw new KeyNotFoundException("Dealer profile not found.");
-
-        return _mapper.Map<DealerProfileResponse>(profile);
-    }
-
-    public async Task<DealerProfileResponse> CreateProfileAsync(Guid userId, DealerProfileRequest request)
-    {
-        var user = await _unitOfWork.Users.GetByIdAsync(userId)
-            ?? throw new KeyNotFoundException("User not found.");
-
-        if (user.Role != UserRole.Dealer)
-            throw new InvalidOperationException("User is not a dealer.");
-
-        var existing = await _unitOfWork.DealerProfiles.FindAsync(d => d.UserId == userId);
-        if (existing.Any())
-            throw new InvalidOperationException("Dealer profile already exists.");
-
-        var profile = new DealerProfile
+        return new DealerProfileResponse
         {
-            Id = Guid.NewGuid(),
-            UserId = userId,
-            ShopName = request.ShopName ?? string.Empty,
-            ShopDescription = request.ShopDescription,
-            ShopCategory = request.ShopCategory ?? string.Empty,
-            Address = request.Address ?? string.Empty,
-            LogoUrl = request.LogoUrl,
-            IsApproved = false,
-            CreatedAt = DateTime.UtcNow
+            Id = dealer.Id,
+            ShopName = dealer.ShopName,
+            ShopDescription = dealer.ShopDescription,
+            ShopCategory = dealer.ShopCategory,
+            Address = dealer.Address,
+            LogoUrl = dealer.LogoUrl,
+            IsApproved = dealer.IsApproved,
+            CreatedAt = dealer.CreatedAt,
+            UserFullName = dealer.FullName,
+            UserEmail = dealer.Email,
+            UserPhone = dealer.Phone,
+            UserIsActive = dealer.IsActive
         };
-
-        await _unitOfWork.DealerProfiles.AddAsync(profile);
-        await _unitOfWork.SaveChangesAsync();
-
-        return _mapper.Map<DealerProfileResponse>(profile);
     }
 
     public async Task<DealerProfileResponse> UpdateProfileAsync(Guid userId, DealerProfileRequest request)
     {
-        var user = await _unitOfWork.Users.GetByIdAsync(userId)
-            ?? throw new KeyNotFoundException("User not found.");
+        var dealer = await _unitOfWork.Dealers.GetByIdAsync(userId)
+            ?? throw new KeyNotFoundException("Dealer not found.");
 
-        var profile = await _unitOfWork.DealerProfiles.FindAsync(d => d.UserId == userId);
-        var existing = profile.FirstOrDefault() ?? throw new KeyNotFoundException("Dealer profile not found.");
+        dealer.ShopName = request.ShopName ?? dealer.ShopName;
+        dealer.ShopDescription = request.ShopDescription ?? dealer.ShopDescription;
+        dealer.ShopCategory = request.ShopCategory ?? dealer.ShopCategory;
+        dealer.Address = request.Address ?? dealer.Address;
+        dealer.LogoUrl = request.LogoUrl ?? dealer.LogoUrl;
+        dealer.UpdatedAt = DateTime.UtcNow;
 
-        existing.ShopName = request.ShopName ?? existing.ShopName;
-        existing.ShopDescription = request.ShopDescription ?? existing.ShopDescription;
-        existing.ShopCategory = request.ShopCategory ?? existing.ShopCategory;
-        existing.Address = request.Address ?? existing.Address;
-        existing.LogoUrl = request.LogoUrl ?? existing.LogoUrl;
-        existing.UpdatedAt = DateTime.UtcNow;
-
-        await _unitOfWork.DealerProfiles.UpdateAsync(existing);
+        await _unitOfWork.Dealers.UpdateAsync(dealer);
         await _unitOfWork.SaveChangesAsync();
 
-        return _mapper.Map<DealerProfileResponse>(existing);
+        return new DealerProfileResponse
+        {
+            Id = dealer.Id,
+            ShopName = dealer.ShopName,
+            ShopDescription = dealer.ShopDescription,
+            ShopCategory = dealer.ShopCategory,
+            Address = dealer.Address,
+            LogoUrl = dealer.LogoUrl,
+            IsApproved = dealer.IsApproved,
+            CreatedAt = dealer.CreatedAt,
+            UserFullName = dealer.FullName,
+            UserEmail = dealer.Email,
+            UserPhone = dealer.Phone,
+            UserIsActive = dealer.IsActive
+        };
     }
 }

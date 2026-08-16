@@ -1,5 +1,6 @@
-namespace ECommerce.Domain.Entities;
 using System.ComponentModel.DataAnnotations;
+
+namespace ECommerce.Domain.Entities;
 
 public class OrderItem : BaseEntity
 {
@@ -13,7 +14,7 @@ public class OrderItem : BaseEntity
 
     [Required]
     public Guid DealerId { get; set; }
-    public DealerProfile Dealer { get; set; } = null!;
+    public Dealer Dealer { get; set; } = null!;
 
     public int Quantity { get; set; }
 

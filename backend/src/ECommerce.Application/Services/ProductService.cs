@@ -21,7 +21,7 @@ public class ProductService : IProductService
 
     public async Task<ProductResponse> CreateAsync(Guid dealerId, ProductRequest request)
     {
-        var dealer = await _unitOfWork.DealerProfiles.GetByIdAsync(dealerId)
+        var dealer = await _unitOfWork.Dealers.GetByIdAsync(dealerId)
             ?? throw new KeyNotFoundException("Dealer profile not found.");
 
         var category = await _unitOfWork.Categories.GetByIdAsync(request.CategoryId)
@@ -68,7 +68,7 @@ public class ProductService : IProductService
     {
         var product = await _unitOfWork.Products.GetByIdAsync(id);
         if (product == null) return null;
-        var dealer = await _unitOfWork.DealerProfiles.GetByIdAsync(product.DealerId);
+        var dealer = await _unitOfWork.Dealers.GetByIdAsync(product.DealerId);
         var category = await _unitOfWork.Categories.GetByIdAsync(product.CategoryId);
         return MapToResponse(product, dealer!, category!);
     }
@@ -77,7 +77,7 @@ public class ProductService : IProductService
     {
         var product = await _unitOfWork.Products.GetByIdAsync(id);
         if (product == null || product.ApprovalStatus != ApprovalStatus.Approved) return null;
-        var dealer = await _unitOfWork.DealerProfiles.GetByIdAsync(product.DealerId);
+        var dealer = await _unitOfWork.Dealers.GetByIdAsync(product.DealerId);
         var category = await _unitOfWork.Categories.GetByIdAsync(product.CategoryId);
         return MapToResponse(product, dealer!, category!);
     }
@@ -112,12 +112,12 @@ public class ProductService : IProductService
         var dealerIds = items.Select(p => p.DealerId).Distinct().ToList();
         var categoryIds = items.Select(p => p.CategoryId).Distinct().ToList();
         
-        var dealers = new Dictionary<Guid, DealerProfile>();
+        var dealers = new Dictionary<Guid, Dealer>();
         var categories = new Dictionary<Guid, Category>();
         
         foreach (var did in dealerIds)
         {
-            var d = await _unitOfWork.DealerProfiles.GetByIdAsync(did);
+            var d = await _unitOfWork.Dealers.GetByIdAsync(did);
             if (d != null) dealers[did] = d;
         }
         foreach (var cid in categoryIds)
@@ -135,7 +135,7 @@ public class ProductService : IProductService
 
     public async Task<(List<ProductResponse> Items, int Total)> GetDealerProductsAsync(Guid dealerId, string? status, int page, int pageSize)
     {
-        var dealer = await _unitOfWork.DealerProfiles.GetByIdAsync(dealerId)
+        var dealer = await _unitOfWork.Dealers.GetByIdAsync(dealerId)
             ?? throw new KeyNotFoundException("Dealer profile not found.");
 
         var query = _unitOfWork.Products.GetQueryable().Where(p => p.DealerId == dealer.Id);
@@ -169,7 +169,7 @@ public class ProductService : IProductService
         var result = new List<ProductResponse>();
         foreach (var p in items)
         {
-            var dealer = await _unitOfWork.DealerProfiles.GetByIdAsync(p.DealerId);
+            var dealer = await _unitOfWork.Dealers.GetByIdAsync(p.DealerId);
             var category = await _unitOfWork.Categories.GetByIdAsync(p.CategoryId);
             result.Add(MapToResponse(p, dealer!, category!));
         }
@@ -216,7 +216,7 @@ public class ProductService : IProductService
         await _unitOfWork.Products.UpdateAsync(product);
         await _unitOfWork.SaveChangesAsync();
 
-        var dealer = await _unitOfWork.DealerProfiles.GetByIdAsync(product.DealerId);
+        var dealer = await _unitOfWork.Dealers.GetByIdAsync(product.DealerId);
         return MapToResponse(product, dealer!, category);
     }
 
@@ -244,7 +244,7 @@ public class ProductService : IProductService
         await _unitOfWork.Products.UpdateAsync(product);
         await _unitOfWork.SaveChangesAsync();
 
-        var dealer = await _unitOfWork.DealerProfiles.GetByIdAsync(product.DealerId);
+        var dealer = await _unitOfWork.Dealers.GetByIdAsync(product.DealerId);
         var category = await _unitOfWork.Categories.GetByIdAsync(product.CategoryId);
         return MapToResponse(product, dealer!, category!);
     }
@@ -261,7 +261,7 @@ public class ProductService : IProductService
         await _unitOfWork.Products.UpdateAsync(product);
         await _unitOfWork.SaveChangesAsync();
 
-        var dealer = await _unitOfWork.DealerProfiles.GetByIdAsync(product.DealerId);
+        var dealer = await _unitOfWork.Dealers.GetByIdAsync(product.DealerId);
         var category = await _unitOfWork.Categories.GetByIdAsync(product.CategoryId);
         return MapToResponse(product, dealer!, category!);
     }
@@ -277,12 +277,12 @@ public class ProductService : IProductService
         await _unitOfWork.Products.UpdateAsync(product);
         await _unitOfWork.SaveChangesAsync();
 
-        var dealer = await _unitOfWork.DealerProfiles.GetByIdAsync(product.DealerId);
+        var dealer = await _unitOfWork.Dealers.GetByIdAsync(product.DealerId);
         var category = await _unitOfWork.Categories.GetByIdAsync(product.CategoryId);
         return MapToResponse(product, dealer!, category!);
     }
 
-    private ProductResponse MapToResponse(Product p, DealerProfile dealer, Category category)
+    private ProductResponse MapToResponse(Product p, Dealer dealer, Category category)
     {
         return new ProductResponse
         {

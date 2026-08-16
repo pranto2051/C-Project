@@ -11,9 +11,9 @@ public class UnitOfWork : IUnitOfWork
     public UnitOfWork(AppDbContext context)
     {
         _context = context;
-        Users = new Repository<User>(_context);
-        DealerProfiles = new Repository<DealerProfile>(_context);
-        CustomerProfiles = new Repository<CustomerProfile>(_context);
+        Admins = new Repository<Admin>(_context);
+        Customers = new Repository<Customer>(_context);
+        Dealers = new Repository<Dealer>(_context);
         Categories = new Repository<Category>(_context);
         Products = new Repository<Product>(_context);
         ProductImages = new Repository<ProductImage>(_context);
@@ -23,9 +23,9 @@ public class UnitOfWork : IUnitOfWork
         OrderItems = new Repository<OrderItem>(_context);
     }
 
-    public IRepository<User> Users { get; }
-    public IRepository<DealerProfile> DealerProfiles { get; }
-    public IRepository<CustomerProfile> CustomerProfiles { get; }
+    public IRepository<Admin> Admins { get; }
+    public IRepository<Customer> Customers { get; }
+    public IRepository<Dealer> Dealers { get; }
     public IRepository<Category> Categories { get; }
     public IRepository<Product> Products { get; }
     public IRepository<ProductImage> ProductImages { get; }

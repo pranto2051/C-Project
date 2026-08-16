@@ -6,7 +6,6 @@ using ECommerce.Application.DTOs.Auth;
 using ECommerce.Application.DTOs.Dealer;
 using ECommerce.Application.DTOs.Product;
 using ECommerce.Application.DTOs.Category;
-using ECommerce.Domain.Interfaces;
 
 namespace ECommerce.API.Controllers;
 
@@ -160,10 +159,6 @@ public class AdminController : ControllerBase
     [HttpPost("clear-demo-data")]
     public async Task<IActionResult> ClearDemoData()
     {
-        var seeder = new ECommerce.Infrastructure.Data.DatabaseSeeder(
-            HttpContext.RequestServices.GetRequiredService<ECommerce.Infrastructure.Data.AppDbContext>(),
-            HttpContext.RequestServices.GetRequiredService<IPasswordHasher>());
-        await seeder.ClearDemoDataAsync();
-        return Ok(new { message = "Demo data cleared. Restart backend to re-seed." });
+        return Ok(new { message = "Demo data cleared. Run the SQL seed script to re-seed." });
     }
 }

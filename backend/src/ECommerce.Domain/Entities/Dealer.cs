@@ -2,8 +2,19 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ECommerce.Domain.Entities;
 
-public class DealerProfile : BaseEntity
+public class Dealer : BaseEntity
 {
+    [MaxLength(256)]
+    public string Email { get; set; } = string.Empty;
+
+    public string PasswordHash { get; set; } = string.Empty;
+
+    [MaxLength(256)]
+    public string FullName { get; set; } = string.Empty;
+
+    [MaxLength(32)]
+    public string? Phone { get; set; }
+
     [MaxLength(256)]
     public string ShopName { get; set; } = string.Empty;
 
@@ -18,8 +29,7 @@ public class DealerProfile : BaseEntity
 
     public bool IsApproved { get; set; } = false;
 
-    public Guid UserId { get; set; }
-    public User User { get; set; } = null!;
+    public bool IsActive { get; set; } = true;
 
     public ICollection<Product> Products { get; set; } = new List<Product>();
     public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();

@@ -25,44 +25,95 @@ public class AdminService : IAdminService
 
     public async Task<List<UserDto>> GetAllUsersAsync(string? role, bool? isActive, string? search, int page, int pageSize)
     {
-        var query = _unitOfWork.Users.GetQueryable();
+        var results = new List<UserDto>();
 
-        if (!string.IsNullOrWhiteSpace(role) && Enum.TryParse<UserRole>(role, true, out var userRole))
-            query = query.Where(u => u.Role == userRole);
+        // Get customers
+        if (string.IsNullOrWhiteSpace(role) || role.Equals("Customer", StringComparison.OrdinalIgnoreCase))
+        {
+            var query = _unitOfWork.Customers.GetQueryable();
+            if (isActive.HasValue) query = query.Where(c => c.IsActive == isActive.Value);
+            if (!string.IsNullOrWhiteSpace(search))
+                query = query.Where(c => c.Email.Contains(search) || c.FullName.Contains(search));
+            var customers = await query.OrderBy(c => c.FullName).Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+            results.AddRange(customers.Select(c => new UserDto
+            {
+                Id = c.Id.ToString(),
+                Email = c.Email,
+                FullName = c.FullName,
+                Phone = c.Phone,
+                Role = "Customer",
+                IsActive = c.IsActive,
+                CreatedAt = c.CreatedAt
+            }));
+        }
 
-        if (isActive.HasValue)
-            query = query.Where(u => u.IsActive == isActive.Value);
+        // Get admins
+        if (string.IsNullOrWhiteSpace(role) || role.Equals("Admin", StringComparison.OrdinalIgnoreCase))
+        {
+            var query = _unitOfWork.Admins.GetQueryable();
+            if (isActive.HasValue) query = query.Where(a => a.IsActive == isActive.Value);
+            if (!string.IsNullOrWhiteSpace(search))
+                query = query.Where(a => a.Email.Contains(search) || a.FullName.Contains(search));
+            var admins = await query.OrderBy(a => a.FullName).Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+            results.AddRange(admins.Select(a => new UserDto
+            {
+                Id = a.Id.ToString(),
+                Email = a.Email,
+                FullName = a.FullName,
+                Phone = a.Phone,
+                Role = "Admin",
+                IsActive = a.IsActive,
+                CreatedAt = a.CreatedAt
+            }));
+        }
 
-        if (!string.IsNullOrWhiteSpace(search))
-            query = query.Where(u => u.Email.Contains(search!) || u.FullName.Contains(search!));
-
-        query = query.OrderBy(u => u.FullName);
-
-        var users = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
-        return users.Select(_mapper.Map<UserDto>).ToList();
+        return results.OrderBy(r => r.FullName).ToList();
     }
 
     public async Task<UserDto> UpdateUserStatusAsync(Guid userId, UserStatusUpdate request)
     {
-        var user = await _unitOfWork.Users.GetByIdAsync(userId)
-            ?? throw new KeyNotFoundException("User not found.");
+        // Try admins
+        var admin = await _unitOfWork.Admins.GetByIdAsync(userId);
+        if (admin != null)
+        {
+            admin.IsActive = request.IsActive;
+            admin.UpdatedAt = DateTime.UtcNow;
+            await _unitOfWork.Admins.UpdateAsync(admin);
+            await _unitOfWork.SaveChangesAsync();
+            return new UserDto { Id = admin.Id.ToString(), Email = admin.Email, FullName = admin.FullName, Phone = admin.Phone, Role = "Admin", IsActive = admin.IsActive, CreatedAt = admin.CreatedAt };
+        }
 
-        user.IsActive = request.IsActive;
-        user.UpdatedAt = DateTime.UtcNow;
-        await _unitOfWork.Users.UpdateAsync(user);
-        await _unitOfWork.SaveChangesAsync();
+        // Try customers
+        var customer = await _unitOfWork.Customers.GetByIdAsync(userId);
+        if (customer != null)
+        {
+            customer.IsActive = request.IsActive;
+            customer.UpdatedAt = DateTime.UtcNow;
+            await _unitOfWork.Customers.UpdateAsync(customer);
+            await _unitOfWork.SaveChangesAsync();
+            return new UserDto { Id = customer.Id.ToString(), Email = customer.Email, FullName = customer.FullName, Phone = customer.Phone, Role = "Customer", IsActive = customer.IsActive, CreatedAt = customer.CreatedAt };
+        }
 
-        return _mapper.Map<UserDto>(user);
+        // Try dealers
+        var dealer = await _unitOfWork.Dealers.GetByIdAsync(userId);
+        if (dealer != null)
+        {
+            dealer.IsActive = request.IsActive;
+            dealer.UpdatedAt = DateTime.UtcNow;
+            await _unitOfWork.Dealers.UpdateAsync(dealer);
+            await _unitOfWork.SaveChangesAsync();
+            return new UserDto { Id = dealer.Id.ToString(), Email = dealer.Email, FullName = dealer.FullName, Phone = dealer.Phone, Role = "Dealer", IsActive = dealer.IsActive, CreatedAt = dealer.CreatedAt };
+        }
+
+        throw new KeyNotFoundException("User not found.");
     }
 
     public async Task<List<DealerProfileResponse>> GetAllDealersAsync(string? search, string? category, int page, int pageSize)
     {
-        var query = _unitOfWork.DealerProfiles.GetQueryable()
-            .Include(d => d.User)
-            .AsQueryable();
+        var query = _unitOfWork.Dealers.GetQueryable().AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(search))
-            query = query.Where(d => d.ShopName.Contains(search) || (d.User != null && d.User.FullName.Contains(search)));
+            query = query.Where(d => d.ShopName.Contains(search) || d.FullName.Contains(search));
 
         if (!string.IsNullOrWhiteSpace(category))
             query = query.Where(d => d.ShopCategory == category);
@@ -70,36 +121,54 @@ public class AdminService : IAdminService
         query = query.OrderBy(d => d.ShopName);
 
         var dealers = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
-        return dealers.Select(_mapper.Map<DealerProfileResponse>).ToList();
+        return dealers.Select(d => new DealerProfileResponse
+        {
+            Id = d.Id,
+            ShopName = d.ShopName,
+            ShopDescription = d.ShopDescription,
+            ShopCategory = d.ShopCategory,
+            Address = d.Address,
+            LogoUrl = d.LogoUrl,
+            IsApproved = d.IsApproved,
+            CreatedAt = d.CreatedAt,
+            UserFullName = d.FullName,
+            UserEmail = d.Email,
+            UserPhone = d.Phone,
+            UserIsActive = d.IsActive
+        }).ToList();
     }
 
     public async Task<DealerProfileResponse?> GetDealerByIdAsync(Guid dealerId)
     {
-        var dealer = await _unitOfWork.DealerProfiles.GetByIdAsync(dealerId);
-        return dealer == null ? null : _mapper.Map<DealerProfileResponse>(dealer);
+        var d = await _unitOfWork.Dealers.GetByIdAsync(dealerId);
+        if (d == null) return null;
+        return new DealerProfileResponse
+        {
+            Id = d.Id,
+            ShopName = d.ShopName,
+            ShopDescription = d.ShopDescription,
+            ShopCategory = d.ShopCategory,
+            Address = d.Address,
+            LogoUrl = d.LogoUrl,
+            IsApproved = d.IsApproved,
+            CreatedAt = d.CreatedAt,
+            UserFullName = d.FullName,
+            UserEmail = d.Email,
+            UserPhone = d.Phone,
+            UserIsActive = d.IsActive
+        };
     }
 
     public async Task<DealerProfileResponse> CreateDealerAsync(AdminDealerRequest request)
     {
-        // Create user account
-        var user = new User
+        var dealer = new Dealer
         {
             Id = Guid.NewGuid(),
             Email = request.Email,
             FullName = request.FullName,
             Phone = request.Phone,
-            Role = UserRole.Dealer,
             IsActive = true,
-            PasswordHash = _passwordHasher.Hash(request.Password)
-        };
-        await _unitOfWork.Users.AddAsync(user);
-        await _unitOfWork.SaveChangesAsync();
-
-        // Create dealer profile
-        var dealer = new DealerProfile
-        {
-            Id = Guid.NewGuid(),
-            UserId = user.Id,
+            PasswordHash = _passwordHasher.Hash(request.Password),
             ShopName = request.ShopName,
             ShopDescription = request.ShopDescription,
             ShopCategory = request.ShopCategory,
@@ -107,15 +176,29 @@ public class AdminService : IAdminService
             LogoUrl = request.LogoUrl,
             IsApproved = request.IsApproved
         };
-        await _unitOfWork.DealerProfiles.AddAsync(dealer);
+        await _unitOfWork.Dealers.AddAsync(dealer);
         await _unitOfWork.SaveChangesAsync();
 
-        return _mapper.Map<DealerProfileResponse>(dealer);
+        return new DealerProfileResponse
+        {
+            Id = dealer.Id,
+            ShopName = dealer.ShopName,
+            ShopDescription = dealer.ShopDescription,
+            ShopCategory = dealer.ShopCategory,
+            Address = dealer.Address,
+            LogoUrl = dealer.LogoUrl,
+            IsApproved = dealer.IsApproved,
+            CreatedAt = dealer.CreatedAt,
+            UserFullName = dealer.FullName,
+            UserEmail = dealer.Email,
+            UserPhone = dealer.Phone,
+            UserIsActive = dealer.IsActive
+        };
     }
 
     public async Task<DealerProfileResponse?> UpdateDealerAsync(Guid dealerId, AdminDealerRequest request)
     {
-        var dealer = await _unitOfWork.DealerProfiles.GetByIdAsync(dealerId);
+        var dealer = await _unitOfWork.Dealers.GetByIdAsync(dealerId);
         if (dealer == null) return null;
 
         dealer.ShopName = request.ShopName;
@@ -126,42 +209,53 @@ public class AdminService : IAdminService
         dealer.IsApproved = request.IsApproved;
         dealer.UpdatedAt = DateTime.UtcNow;
 
-        await _unitOfWork.DealerProfiles.UpdateAsync(dealer);
+        await _unitOfWork.Dealers.UpdateAsync(dealer);
         await _unitOfWork.SaveChangesAsync();
 
-        return _mapper.Map<DealerProfileResponse>(dealer);
+        return new DealerProfileResponse
+        {
+            Id = dealer.Id,
+            ShopName = dealer.ShopName,
+            ShopDescription = dealer.ShopDescription,
+            ShopCategory = dealer.ShopCategory,
+            Address = dealer.Address,
+            LogoUrl = dealer.LogoUrl,
+            IsApproved = dealer.IsApproved,
+            CreatedAt = dealer.CreatedAt,
+            UserFullName = dealer.FullName,
+            UserEmail = dealer.Email,
+            UserPhone = dealer.Phone,
+            UserIsActive = dealer.IsActive
+        };
     }
 
     public async Task<bool> DeleteDealerAsync(Guid dealerId)
     {
-        var dealer = await _unitOfWork.DealerProfiles.GetByIdAsync(dealerId);
+        var dealer = await _unitOfWork.Dealers.GetByIdAsync(dealerId);
         if (dealer == null) return false;
 
-        // Delete user account (cascades to dealer profile)
-        var user = await _unitOfWork.Users.GetByIdAsync(dealer.UserId);
-        if (user != null)
-        {
-            await _unitOfWork.Users.DeleteAsync(user);
-            await _unitOfWork.SaveChangesAsync();
-        }
+        await _unitOfWork.Dealers.DeleteAsync(dealer);
+        await _unitOfWork.SaveChangesAsync();
         return true;
     }
 
     public async Task<bool> ApproveDealerAsync(Guid dealerId)
     {
-        var dealer = await _unitOfWork.DealerProfiles.GetByIdAsync(dealerId);
+        var dealer = await _unitOfWork.Dealers.GetByIdAsync(dealerId);
         if (dealer == null) return false;
 
         dealer.IsApproved = true;
         dealer.UpdatedAt = DateTime.UtcNow;
-        await _unitOfWork.DealerProfiles.UpdateAsync(dealer);
+        await _unitOfWork.Dealers.UpdateAsync(dealer);
         await _unitOfWork.SaveChangesAsync();
         return true;
     }
 
     public async Task<StatsResponse> GetStatsAsync()
     {
-        var users = await _unitOfWork.Users.GetQueryable().ToListAsync();
+        var admins = await _unitOfWork.Admins.CountAsync();
+        var dealers = await _unitOfWork.Dealers.CountAsync();
+        var customers = await _unitOfWork.Customers.CountAsync();
         var products = await _unitOfWork.Products.GetQueryable().ToListAsync();
         var orders = await _unitOfWork.Orders.GetQueryable().ToListAsync();
 
@@ -169,9 +263,9 @@ public class AdminService : IAdminService
 
         return new StatsResponse
         {
-            TotalUsers = users.Count,
-            TotalDealers = users.Count(u => u.Role == UserRole.Dealer),
-            TotalCustomers = users.Count(u => u.Role == UserRole.Customer),
+            TotalUsers = admins + dealers + customers,
+            TotalDealers = dealers,
+            TotalCustomers = customers,
             TotalProducts = products.Count,
             PendingProducts = products.Count(p => p.ApprovalStatus == ApprovalStatus.Pending),
             ApprovedProducts = products.Count(p => p.ApprovalStatus == ApprovalStatus.Approved),

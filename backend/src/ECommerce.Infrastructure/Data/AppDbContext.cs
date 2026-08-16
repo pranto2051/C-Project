@@ -8,9 +8,9 @@ public class AppDbContext : DbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
-    public DbSet<User> Users => Set<User>();
-    public DbSet<DealerProfile> DealerProfiles => Set<DealerProfile>();
-    public DbSet<CustomerProfile> CustomerProfiles => Set<CustomerProfile>();
+    public DbSet<Admin> Admins => Set<Admin>();
+    public DbSet<Customer> Customers => Set<Customer>();
+    public DbSet<Dealer> Dealers => Set<Dealer>();
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<Product> Products => Set<Product>();
     public DbSet<ProductImage> ProductImages => Set<ProductImage>();

@@ -1,7 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using ECommerce.Domain.Entities;
 using ECommerce.Domain.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -23,14 +22,14 @@ public class JwtTokenGenerator : IJwtTokenGenerator
         _expiryMinutes = int.Parse(configuration["JWT_ACCESS_TOKEN_EXPIRY_MINUTES"] ?? configuration["Jwt:AccessTokenExpiryMinutes"] ?? "15");
     }
 
-    public string GenerateAccessToken(User user)
+    public string GenerateAccessToken(Guid id, string email, string fullName, string role)
     {
         var claims = new[]
         {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(JwtRegisteredClaimNames.Email, user.Email),
-            new Claim(JwtRegisteredClaimNames.Name, user.FullName),
-            new Claim(ClaimTypes.Role, user.Role.ToString())
+            new Claim(ClaimTypes.NameIdentifier, id.ToString()),
+            new Claim(JwtRegisteredClaimNames.Email, email),
+            new Claim(JwtRegisteredClaimNames.Name, fullName),
+            new Claim(ClaimTypes.Role, role)
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_key));

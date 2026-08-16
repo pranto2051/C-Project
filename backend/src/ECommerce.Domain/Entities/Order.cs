@@ -7,7 +7,7 @@ public class Order : BaseEntity
 {
     [Required]
     public Guid CustomerId { get; set; }
-    public CustomerProfile Customer { get; set; } = null!;
+    public Customer Customer { get; set; } = null!;
 
     public OrderStatus Status { get; set; } = OrderStatus.Pending;
 

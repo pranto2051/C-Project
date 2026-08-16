@@ -16,7 +16,6 @@ export interface User {
 
 export interface DealerProfile {
   id: string;
-  userId: string;
   shopName: string;
   shopDescription?: string;
   shopCategory: string;
@@ -28,13 +27,6 @@ export interface DealerProfile {
   userEmail?: string;
   userPhone?: string;
   userIsActive?: boolean;
-}
-
-export interface CustomerProfile {
-  id: string;
-  userId: string;
-  shippingAddress?: string;
-  createdAt: string;
 }
 
 export interface Category {

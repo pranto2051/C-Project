@@ -3,7 +3,6 @@ namespace ECommerce.Application.DTOs.Dealer;
 public class DealerProfileResponse
 {
     public Guid Id { get; set; }
-    public Guid UserId { get; set; }
     public string ShopName { get; set; } = string.Empty;
     public string? ShopDescription { get; set; }
     public string ShopCategory { get; set; } = string.Empty;

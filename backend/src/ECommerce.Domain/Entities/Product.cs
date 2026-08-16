@@ -24,7 +24,7 @@ public class Product : BaseEntity
     public DateTime? PublishedAt { get; set; }
 
     public Guid DealerId { get; set; }
-    public DealerProfile Dealer { get; set; } = null!;
+    public Dealer Dealer { get; set; } = null!;
 
     public Guid CategoryId { get; set; }
     public Category Category { get; set; } = null!;

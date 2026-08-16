@@ -3,16 +3,16 @@ using ECommerce.Domain.Entities;
 
 public interface IUnitOfWork : IDisposable
 {
-    IRepository<User> Users { get; }
-    IRepository<Entities.DealerProfile> DealerProfiles { get; }
-    IRepository<Entities.CustomerProfile> CustomerProfiles { get; }
-    IRepository<Entities.Category> Categories { get; }
-    IRepository<Entities.Product> Products { get; }
-    IRepository<Entities.ProductImage> ProductImages { get; }
-    IRepository<Entities.Cart> Carts { get; }
-    IRepository<Entities.CartItem> CartItems { get; }
-    IRepository<Entities.Order> Orders { get; }
-    IRepository<Entities.OrderItem> OrderItems { get; }
+    IRepository<Admin> Admins { get; }
+    IRepository<Customer> Customers { get; }
+    IRepository<Dealer> Dealers { get; }
+    IRepository<Category> Categories { get; }
+    IRepository<Product> Products { get; }
+    IRepository<ProductImage> ProductImages { get; }
+    IRepository<Cart> Carts { get; }
+    IRepository<CartItem> CartItems { get; }
+    IRepository<Order> Orders { get; }
+    IRepository<OrderItem> OrderItems { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }
