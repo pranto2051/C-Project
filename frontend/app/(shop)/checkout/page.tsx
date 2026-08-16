@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/features/auth';
@@ -14,16 +14,23 @@ function CheckoutContent() {
   const { user } = useAuth();
   const [address, setAddress] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [cart, setCart] = useState<{ totalAmount: number } | null>(null);
+  const [cart, setCart] = useState<{ totalAmount: number; items: Array<{ productId: string; quantity: number; productName: string; subtotal: number }> } | null>(null);
 
   const fetchCart = async () => {
     try {
       const response = await customerApi.getCart();
+      if (!response.data.items || response.data.items.length === 0) {
+        toast.error('Your cart is empty');
+        router.push('/cart');
+        return;
+      }
       setCart(response.data);
     } catch {
       toast.error('Failed to load cart');
     }
   };
+
+  useEffect(() => { fetchCart(); }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,6 +66,17 @@ function CheckoutContent() {
         <CardBody>
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input label="Shipping Address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Enter your full shipping address" required />
+            {cart.items && cart.items.length > 0 && (
+              <div className="border-t border-neutral-200 pt-4 space-y-3">
+                <p className="text-sm font-semibold text-neutral-900">Order Items</p>
+                {cart.items.map((item) => (
+                  <div key={item.productId} className="flex justify-between text-sm">
+                    <span className="text-neutral-600">{item.productName} x{item.quantity}</span>
+                    <span className="font-medium">{formatPrice(item.subtotal)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
             <div className="border-t border-neutral-200 pt-4">
               <p className="text-sm text-neutral-600 mb-1">Order Total</p>
               <p className="text-2xl font-bold text-primary-600">{formatPrice(cart.totalAmount)}</p>

@@ -42,10 +42,10 @@ public class CartController : ControllerBase
     }
 
     [HttpPut("items/{id}")]
-    public async Task<IActionResult> UpdateItem(Guid id, [FromBody] int quantity)
+    public async Task<IActionResult> UpdateItem(Guid id, [FromBody] CartItemQuantityRequest request)
     {
         var customerId = GetCustomerId();
-        var item = await _cartService.UpdateItemAsync(customerId, id, quantity);
+        var item = await _cartService.UpdateItemAsync(customerId, id, request.Quantity);
         return Ok(item);
     }
 

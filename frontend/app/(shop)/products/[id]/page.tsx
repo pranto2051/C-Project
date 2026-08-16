@@ -52,16 +52,10 @@ export default function ProductDetailPage() {
       toast.error('Please login as a customer to add items to cart');
       return;
     }
+    if (!product) return;
     setIsAdding(true);
     try {
-      const cartRes = await customerApi.getCart();
-      const cart = cartRes.data;
-      const existingItem = cart.items?.find((item: { productId: string }) => item.productId === product?.id);
-      if (existingItem) {
-        await customerApi.updateCartItem(existingItem.id, existingItem.quantity + quantity);
-      } else {
-        await customerApi.updateCartItem(product!.id, quantity);
-      }
+      await customerApi.addToCart(product.id, quantity);
       toast.success(`Added ${quantity} item(s) to cart!`);
     } catch {
       toast.error('Failed to add to cart');

@@ -96,6 +96,7 @@ export const publicApi = {
 
 export const customerApi = {
   getCart: () => api.get('/cart'),
+  addToCart: (productId: string, quantity: number) => api.post('/cart/items', { productId, quantity }),
   updateCartItem: (id: string, quantity: number) => api.put(`/cart/items/${id}`, { quantity }),
   removeCartItem: (id: string) => api.delete(`/cart/items/${id}`),
   createOrder: (data: CreateOrderRequest) => api.post('/orders', data),

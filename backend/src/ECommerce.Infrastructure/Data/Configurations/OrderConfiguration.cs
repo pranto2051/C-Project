@@ -12,8 +12,8 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.HasKey(o => o.Id);
         builder.Property(o => o.Id).HasColumnType("uuid");
         builder.Property(o => o.CustomerId).HasColumnType("uuid").IsRequired();
-        builder.Property(o => o.Status).HasMaxLength(32).IsRequired();
-        builder.Property(o => o.TotalAmount).HasColumnType("decimal(12,2)").IsRequired();
+        builder.Property(o => o.Status).HasConversion<string>().HasMaxLength(50).IsRequired();
+        builder.Property(o => o.TotalAmount).HasColumnType("decimal(18,2)").IsRequired();
         builder.Property(o => o.ShippingAddress).IsRequired();
         builder.Property(o => o.CreatedAt).HasDefaultValueSql("now()").IsRequired();
         builder.Property(o => o.UpdatedAt).HasDefaultValueSql("now()").IsRequired();

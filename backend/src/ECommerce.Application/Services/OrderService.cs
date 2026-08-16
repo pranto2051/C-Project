@@ -1,21 +1,19 @@
-using AutoMapper;
 using ECommerce.Application.DTOs.Order;
 using ECommerce.Application.Interfaces;
 using ECommerce.Domain.Entities;
 using ECommerce.Domain.Enums;
 using ECommerce.Domain.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Application.Services;
 
 public class OrderService : IOrderService
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IMapper _mapper;
 
-    public OrderService(IUnitOfWork unitOfWork, IMapper mapper)
+    public OrderService(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
-        _mapper = mapper;
     }
 
     public async Task<OrderResponse> CreateAsync(Guid customerId, OrderRequest request)
@@ -23,7 +21,9 @@ public class OrderService : IOrderService
         var customer = await _unitOfWork.Customers.GetByIdAsync(customerId)
             ?? throw new KeyNotFoundException("Customer not found.");
 
-        var cart = _unitOfWork.Carts.GetQueryable().FirstOrDefault(c => c.CustomerId == customerId)
+        var cart = await _unitOfWork.Carts.GetQueryable()
+            .Include(c => c.Items)
+            .FirstOrDefaultAsync(c => c.CustomerId == customerId)
             ?? throw new InvalidOperationException("Cart is empty.");
 
         if (!cart.Items.Any())
@@ -43,9 +43,6 @@ public class OrderService : IOrderService
             if (product.StockQuantity < cartItem.Quantity)
                 throw new InvalidOperationException($"Insufficient stock for '{product.Name}'. Available: {product.StockQuantity}");
 
-            var dealer = await _unitOfWork.Dealers.GetByIdAsync(product.DealerId)
-                ?? throw new KeyNotFoundException("Dealer not found.");
-
             var subtotal = cartItem.Quantity * product.Price;
             total += subtotal;
 
@@ -54,7 +51,7 @@ public class OrderService : IOrderService
                 Id = Guid.NewGuid(),
                 OrderId = Guid.Empty,
                 ProductId = product.Id,
-                DealerId = dealer.Id,
+                DealerId = product.DealerId,
                 Quantity = cartItem.Quantity,
                 UnitPriceAtPurchase = product.Price,
                 Subtotal = subtotal
@@ -83,55 +80,55 @@ public class OrderService : IOrderService
         }
 
         await _unitOfWork.Orders.AddAsync(order);
-        await ClearCartAsync(customerId);
+
+        foreach (var item in cart.Items.ToList())
+        {
+            await _unitOfWork.CartItems.DeleteAsync(item);
+        }
+
         await _unitOfWork.SaveChangesAsync();
 
-        return MapToResponse(order, customer);
+        return await MapToResponseAsync(order);
     }
 
     public async Task<OrderResponse?> GetByIdAsync(Guid orderId)
     {
-        var order = await _unitOfWork.Orders.GetByIdAsync(orderId);
+        var order = await LoadOrderWithIncludes(orderId);
         if (order == null) return null;
-        var customer = await _unitOfWork.Customers.GetByIdAsync(order.CustomerId);
-        return MapToResponse(order, customer!);
+        return await MapToResponseAsync(order);
     }
 
     public async Task<List<OrderResponse>> GetCustomerOrdersAsync(Guid customerId)
     {
-        var orders = _unitOfWork.Orders.GetQueryable()
+        var orders = await _unitOfWork.Orders.GetQueryable()
+            .Include(o => o.Items)
             .Where(o => o.CustomerId == customerId)
             .OrderByDescending(o => o.CreatedAt)
-            .ToList();
+            .ToListAsync();
 
-        var result = new List<OrderResponse>();
-        foreach (var order in orders)
-        {
-            var customer = await _unitOfWork.Customers.GetByIdAsync(order.CustomerId);
-            result.Add(MapToResponse(order, customer!));
-        }
-        return result;
+        return await MapOrdersAsync(orders);
     }
 
     public async Task<List<OrderResponse>> GetDealerOrdersAsync(Guid dealerId)
     {
-        var orders = _unitOfWork.Orders.GetQueryable()
-            .Where(o => o.Items.Any(i => i.DealerId == dealerId))
-            .OrderByDescending(o => o.CreatedAt)
-            .ToList();
+        var orderIds = await _unitOfWork.OrderItems.GetQueryable()
+            .Where(i => i.DealerId == dealerId)
+            .Select(i => i.OrderId)
+            .Distinct()
+            .ToListAsync();
 
-        var result = new List<OrderResponse>();
-        foreach (var order in orders)
-        {
-            var customer = await _unitOfWork.Customers.GetByIdAsync(order.CustomerId);
-            result.Add(MapToResponse(order, customer!));
-        }
-        return result;
+        var orders = await _unitOfWork.Orders.GetQueryable()
+            .Include(o => o.Items)
+            .Where(o => orderIds.Contains(o.Id))
+            .OrderByDescending(o => o.CreatedAt)
+            .ToListAsync();
+
+        return await MapOrdersAsync(orders);
     }
 
     public async Task<OrderResponse> UpdateStatusAsync(Guid orderId, string status)
     {
-        var order = await _unitOfWork.Orders.GetByIdAsync(orderId)
+        var order = await LoadOrderWithIncludes(orderId)
             ?? throw new KeyNotFoundException("Order not found.");
 
         if (!Enum.TryParse<OrderStatus>(status, true, out var newStatus))
@@ -155,27 +152,86 @@ public class OrderService : IOrderService
         await _unitOfWork.Orders.UpdateAsync(order);
         await _unitOfWork.SaveChangesAsync();
 
-        var customer = await _unitOfWork.Customers.GetByIdAsync(order.CustomerId);
-        return MapToResponse(order, customer!);
+        return await MapToResponseAsync(order);
     }
 
-    private async Task ClearCartAsync(Guid customerId)
+    private async Task<Order?> LoadOrderWithIncludes(Guid orderId)
     {
-        var cart = _unitOfWork.Carts.GetQueryable().FirstOrDefault(c => c.CustomerId == customerId);
-        if (cart == null) return;
-        foreach (var item in cart.Items.ToList())
+        return await _unitOfWork.Orders.GetQueryable()
+            .Include(o => o.Items)
+            .FirstOrDefaultAsync(o => o.Id == orderId);
+    }
+
+    private async Task<List<OrderResponse>> MapOrdersAsync(List<Order> orders)
+    {
+        var productIds = orders.SelectMany(o => o.Items).Select(i => i.ProductId).Distinct().ToList();
+        var dealerIds = orders.SelectMany(o => o.Items).Select(i => i.DealerId).Distinct().ToList();
+
+        var products = (await _unitOfWork.Products.FindAsync(p => productIds.Contains(p.Id)))
+            .ToDictionary(p => p.Id);
+        var dealers = (await _unitOfWork.Dealers.FindAsync(d => dealerIds.Contains(d.Id)))
+            .ToDictionary(d => d.Id);
+        var customerIds = orders.Select(o => o.CustomerId).Distinct().ToList();
+        var customers = (await _unitOfWork.Customers.FindAsync(c => customerIds.Contains(c.Id)))
+            .ToDictionary(c => c.Id);
+
+        var result = new List<OrderResponse>();
+        foreach (var order in orders)
         {
-            await _unitOfWork.CartItems.DeleteAsync(item);
+            customers.TryGetValue(order.CustomerId, out var customer);
+            result.Add(new OrderResponse
+            {
+                Id = order.Id,
+                CustomerId = order.CustomerId,
+                CustomerName = customer?.FullName ?? "Unknown",
+                Status = order.Status.ToString(),
+                TotalAmount = order.TotalAmount,
+                ShippingAddress = order.ShippingAddress,
+                Items = order.Items.Select(i =>
+                {
+                    products.TryGetValue(i.ProductId, out var product);
+                    dealers.TryGetValue(i.DealerId, out var dealer);
+                    return new OrderItemResponse
+                    {
+                        Id = i.Id,
+                        ProductId = i.ProductId,
+                        ProductName = product?.Name ?? "Unknown Product",
+                        ProductImageUrl = product?.Images.FirstOrDefault()?.ImageUrl,
+                        DealerId = i.DealerId,
+                        DealerName = dealer?.ShopName ?? "Unknown Shop",
+                        Quantity = i.Quantity,
+                        UnitPriceAtPurchase = i.UnitPriceAtPurchase,
+                        Subtotal = i.Subtotal
+                    };
+                }).ToList(),
+                CreatedAt = order.CreatedAt,
+                UpdatedAt = order.UpdatedAt
+            });
         }
+        return result;
     }
 
-    private OrderResponse MapToResponse(Order order, Customer customer)
+    private async Task<OrderResponse> MapToResponseAsync(Order order)
     {
+        var customer = await _unitOfWork.Customers.GetByIdAsync(order.CustomerId);
+
+        await _unitOfWork.OrderItems.GetQueryable()
+            .Where(i => i.OrderId == order.Id)
+            .LoadAsync();
+
+        await _unitOfWork.Products.GetQueryable()
+            .Where(p => order.Items.Select(i => i.ProductId).Contains(p.Id))
+            .LoadAsync();
+
+        await _unitOfWork.Dealers.GetQueryable()
+            .Where(d => order.Items.Select(i => i.DealerId).Contains(d.Id))
+            .LoadAsync();
+
         return new OrderResponse
         {
             Id = order.Id,
             CustomerId = order.CustomerId,
-            CustomerName = customer.FullName,
+            CustomerName = customer?.FullName ?? "Unknown",
             Status = order.Status.ToString(),
             TotalAmount = order.TotalAmount,
             ShippingAddress = order.ShippingAddress,
@@ -183,10 +239,10 @@ public class OrderService : IOrderService
             {
                 Id = i.Id,
                 ProductId = i.ProductId,
-                ProductName = i.Product.Name,
-                ProductImageUrl = i.Product.Images.FirstOrDefault()?.ImageUrl,
+                ProductName = i.Product?.Name ?? "Unknown Product",
+                ProductImageUrl = i.Product?.Images.FirstOrDefault()?.ImageUrl,
                 DealerId = i.DealerId,
-                DealerName = i.Dealer.ShopName,
+                DealerName = i.Dealer?.ShopName ?? "Unknown Shop",
                 Quantity = i.Quantity,
                 UnitPriceAtPurchase = i.UnitPriceAtPurchase,
                 Subtotal = i.Subtotal

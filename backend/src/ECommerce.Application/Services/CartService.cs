@@ -1,21 +1,19 @@
-using AutoMapper;
 using ECommerce.Application.DTOs.Cart;
 using ECommerce.Application.Interfaces;
 using ECommerce.Domain.Entities;
 using ECommerce.Domain.Enums;
 using ECommerce.Domain.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Application.Services;
 
 public class CartService : ICartService
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IMapper _mapper;
 
-    public CartService(IUnitOfWork unitOfWork, IMapper mapper)
+    public CartService(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
-        _mapper = mapper;
     }
 
     public async Task<CartResponse> GetCartAsync(Guid customerId)
@@ -54,12 +52,15 @@ public class CartService : ICartService
                 PriceAtAdd = product.Price
             };
             await _unitOfWork.CartItems.AddAsync(item);
+            cart.Items.Add(item);
         }
 
         cart.UpdatedAt = DateTime.UtcNow;
         await _unitOfWork.SaveChangesAsync();
 
-        return MapCartItem(cart.Items.Last(i => i.ProductId == request.ProductId));
+        var addedItem = cart.Items.Last(i => i.ProductId == request.ProductId);
+        var prod = await _unitOfWork.Products.GetByIdAsync(addedItem.ProductId);
+        return MapCartItem(addedItem, prod);
     }
 
     public async Task<CartItemResponse> UpdateItemAsync(Guid customerId, Guid cartItemId, int quantity)
@@ -83,7 +84,7 @@ public class CartService : ICartService
         cart.UpdatedAt = DateTime.UtcNow;
         await _unitOfWork.SaveChangesAsync();
 
-        return MapCartItem(item);
+        return MapCartItem(item, product);
     }
 
     public async Task DeleteItemAsync(Guid customerId, Guid cartItemId)
@@ -110,8 +111,10 @@ public class CartService : ICartService
 
     private async Task<Cart> GetOrCreateCartAsync(Guid customerId)
     {
-        var carts = await _unitOfWork.Carts.GetAllAsync();
-        var cart = carts.FirstOrDefault(c => c.CustomerId == customerId);
+        var cart = await _unitOfWork.Carts.GetQueryable()
+            .Include(c => c.Items)
+            .FirstOrDefaultAsync(c => c.CustomerId == customerId);
+
         if (cart == null)
         {
             cart = new Cart
@@ -140,8 +143,8 @@ public class CartService : ICartService
             {
                 Id = item.Id,
                 ProductId = item.ProductId,
-                ProductName = product!.Name,
-                ProductImageUrl = product.Images.FirstOrDefault()?.ImageUrl,
+                ProductName = product?.Name ?? "Unknown Product",
+                ProductImageUrl = product?.Images.FirstOrDefault()?.ImageUrl,
                 Quantity = item.Quantity,
                 PriceAtAdd = item.PriceAtAdd,
                 Subtotal = subtotal
@@ -157,14 +160,14 @@ public class CartService : ICartService
         };
     }
 
-    private CartItemResponse MapCartItem(CartItem item)
+    private CartItemResponse MapCartItem(CartItem item, Product? product = null)
     {
         return new CartItemResponse
         {
             Id = item.Id,
             ProductId = item.ProductId,
-            ProductName = item.Product.Name,
-            ProductImageUrl = item.Product.Images.FirstOrDefault()?.ImageUrl,
+            ProductName = product?.Name ?? "Unknown Product",
+            ProductImageUrl = product?.Images.FirstOrDefault()?.ImageUrl,
             Quantity = item.Quantity,
             PriceAtAdd = item.PriceAtAdd,
             Subtotal = item.Quantity * item.PriceAtAdd

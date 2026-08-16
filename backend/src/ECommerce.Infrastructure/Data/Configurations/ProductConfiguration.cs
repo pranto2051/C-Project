@@ -17,7 +17,7 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.Property(p => p.Price).HasColumnType("decimal(10,2)").IsRequired();
         builder.Property(p => p.StockQuantity).IsRequired();
         builder.Property(p => p.Sku).HasMaxLength(128);
-        builder.Property(p => p.ApprovalStatus).HasConversion<string>().HasMaxLength(32).IsRequired();
+        builder.Property(p => p.ApprovalStatus).HasConversion<string>().HasMaxLength(50).IsRequired();
         builder.Property(p => p.RejectionReason);
         builder.Property(p => p.PublishedAt);
         builder.Property(p => p.DealerId).HasColumnType("uuid").IsRequired();
