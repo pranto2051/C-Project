@@ -99,25 +99,36 @@ public class ProductService : IProductService
         if (!string.IsNullOrWhiteSpace(filter.Search))
             query = query.Where(p => p.Name.Contains(filter.Search!) || (p.Description != null && p.Description.Contains(filter.Search!)));
 
-        query = filter.SortBy switch
+        var total = await query.CountAsync();
+        
+        var items = filter.SortBy switch
         {
-            "price_asc" => query.OrderBy(p => p.Price),
-            "price_desc" => query.OrderByDescending(p => p.Price),
-            "newest" => query.OrderByDescending(p => p.CreatedAt),
-            "popular" => query.OrderByDescending(p => p.CartItems.Count),
-            _ => query.OrderByDescending(p => p.CreatedAt)
+            "price_asc" => await query.OrderBy(p => p.Price).Skip((filter.Page - 1) * filter.PageSize).Take(filter.PageSize).ToListAsync(),
+            "price_desc" => await query.OrderByDescending(p => p.Price).Skip((filter.Page - 1) * filter.PageSize).Take(filter.PageSize).ToListAsync(),
+            _ => await query.OrderByDescending(p => p.CreatedAt).Skip((filter.Page - 1) * filter.PageSize).Take(filter.PageSize).ToListAsync()
         };
 
-        var total = await query.CountAsync();
-        var items = await query.Skip((filter.Page - 1) * filter.PageSize).Take(filter.PageSize).ToListAsync();
-
-        var result = new List<ProductResponse>();
-        foreach (var p in items)
+        // Batch load dealers and categories to avoid N+1
+        var dealerIds = items.Select(p => p.DealerId).Distinct().ToList();
+        var categoryIds = items.Select(p => p.CategoryId).Distinct().ToList();
+        
+        var dealers = new Dictionary<Guid, DealerProfile>();
+        var categories = new Dictionary<Guid, Category>();
+        
+        foreach (var did in dealerIds)
         {
-            var dealer = await _unitOfWork.DealerProfiles.GetByIdAsync(p.DealerId);
-            var category = await _unitOfWork.Categories.GetByIdAsync(p.CategoryId);
-            result.Add(MapToResponse(p, dealer!, category!));
+            var d = await _unitOfWork.DealerProfiles.GetByIdAsync(did);
+            if (d != null) dealers[did] = d;
         }
+        foreach (var cid in categoryIds)
+        {
+            var c = await _unitOfWork.Categories.GetByIdAsync(cid);
+            if (c != null) categories[cid] = c;
+        }
+
+        var result = items.Select(p => MapToResponse(p,
+            dealers.GetValueOrDefault(p.DealerId)!,
+            categories.GetValueOrDefault(p.CategoryId)!)).ToList();
 
         return (result, total);
     }

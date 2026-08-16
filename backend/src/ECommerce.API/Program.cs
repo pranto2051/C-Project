@@ -22,7 +22,13 @@ var connectionString = builder.Configuration.GetValue<string>("DATABASE_CONNECTI
     ?? "Host=localhost;Port=5432;Database=ecommerce_db;Username=postgres;Password=postgres";
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(connectionString));
+    options.UseNpgsql(connectionString, npgsql =>
+    {
+        npgsql.CommandTimeout(120);
+        npgsql.EnableRetryOnFailure(3, TimeSpan.FromSeconds(10), null);
+    })
+    .EnableSensitiveDataLogging(false)
+    .EnableDetailedErrors(false));
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
@@ -103,29 +109,7 @@ var app = builder.Build();
 
 app.UseMiddleware<ECommerce.API.Middleware.ExceptionHandlingMiddleware>();
 
-// Seed database on startup
-if (app.Environment.IsDevelopment())
-{
-    using (var scope = app.Services.CreateScope())
-    {
-        var context = scope.ServiceProvider.GetRequiredService<ECommerce.Infrastructure.Data.AppDbContext>();
-        var passwordHasher = scope.ServiceProvider.GetRequiredService<ECommerce.Domain.Interfaces.IPasswordHasher>();
-        
-        // Apply migrations or ensure database exists
-        if (context.Database.GetMigrations().Any())
-        {
-            context.Database.Migrate();
-        }
-        else
-        {
-            context.Database.EnsureCreated();
-        }
-        
-        // Seed data
-        var seeder = new ECommerce.Infrastructure.Data.DatabaseSeeder(context, passwordHasher);
-        await seeder.SeedAsync();
-    }
-}
+// Database already seeded via SQL file - skip EnsureCreated for Supabase
 
 if (app.Environment.IsDevelopment())
 {
