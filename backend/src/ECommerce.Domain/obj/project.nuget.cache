@@ -1,11 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "MZfv8jKqUsc=",
+  "dgSpecHash": "9xMz/G6EviA=",
   "success": true,
   "projectFilePath": "/Users/md.prantoislam/Desktop/C-Project/backend/src/ECommerce.Domain/ECommerce.Domain.csproj",
-  "expectedPackageFiles": [
-    "/Users/md.prantoislam/.nuget/packages/microsoft.netcore.app.ref/9.0.17/microsoft.netcore.app.ref.9.0.17.nupkg.sha512",
-    "/Users/md.prantoislam/.nuget/packages/microsoft.aspnetcore.app.ref/9.0.17/microsoft.aspnetcore.app.ref.9.0.17.nupkg.sha512"
-  ],
+  "expectedPackageFiles": [],
   "logs": []
 }

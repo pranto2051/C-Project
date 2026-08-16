@@ -1,13 +1,12 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { publicApi } from '@/services/api';
 import { useDebounce } from '@/hooks';
 import { Button, Input, Select, Spinner, EmptyState, Pagination } from '@/components/ui';
 import { ProductCard } from '@/features/products';
 import type { Product, Category, PaginatedResponse } from '@/types';
-import { formatPrice } from '@/lib/utils';
 
 export default function ProductsPage() {
   const router = useRouter();
@@ -17,6 +16,7 @@ export default function ProductsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
   const [currentPage, setCurrentPage] = useState(Number(searchParams.get('page')) || 1);
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('categoryId') || '');
@@ -29,7 +29,8 @@ export default function ProductsPage() {
     const fetchCategories = async () => {
       try {
         const response = await publicApi.getCategories();
-        setCategories(response.data);
+        const data = Array.isArray(response.data) ? response.data : (response.data as { items?: Category[] })?.items || [];
+        setCategories(data);
       } catch {
         // ignore
       }
@@ -55,125 +56,131 @@ export default function ProductsPage() {
         const response = await publicApi.getProducts(params);
         const data = response.data as PaginatedResponse<Product>;
         setProducts(data.items);
-        setTotalPages(Math.ceil(data.total / data.pageSize));
-      } catch (err) {
+        setTotal(data.total);
+        setTotalPages(Math.ceil(data.total / 12));
+      } catch {
         setError('Failed to load products. Please try again.');
       } finally {
         setIsLoading(false);
       }
     };
-
     fetchProducts();
   }, [debouncedSearch, selectedCategory, sortBy, currentPage, priceRange.min, priceRange.max]);
 
-  const updateSearchParams = (updates: Record<string, string | number | undefined>) => {
-    const params = new URLSearchParams(searchParams.toString());
-    Object.entries(updates).forEach(([key, value]) => {
-      if (value) params.set(key, String(value));
-      else params.delete(key);
-    });
-    router.push(`/products?${params.toString()}`);
+  const clearFilters = () => {
+    setSearchQuery('');
+    setSelectedCategory('');
+    setSortBy('newest');
+    setPriceRange({ min: '', max: '' });
+    setCurrentPage(1);
   };
+
+  const hasFilters = searchQuery || selectedCategory || priceRange.min || priceRange.max || sortBy !== 'newest';
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Page Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-neutral-900 font-heading">
+          {selectedCategory ? categories.find(c => c.id === selectedCategory)?.name || 'Products' : 'All Products'}
+        </h1>
+        <p className="text-neutral-500 mt-1">
+          {isLoading ? 'Loading...' : `${total} products found`}
+        </p>
+      </div>
+
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Sidebar Filters */}
         <aside className="w-full lg:w-64 flex-shrink-0">
-          <div className="bg-white rounded-lg border border-neutral-200 p-4 space-y-6">
+          <div className="bg-white rounded-xl border border-neutral-200 p-5 space-y-6 sticky top-24">
             <div>
-              <h3 className="font-semibold text-neutral-900 mb-3">Search</h3>
-              <Input
-                placeholder="Search products..."
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setCurrentPage(1);
-                }}
-              />
-            </div>
-            <div>
-              <h3 className="font-semibold text-neutral-900 mb-3">Category</h3>
-              <Select
-                value={selectedCategory}
-                onChange={(e) => {
-                  setSelectedCategory(e.target.value);
-                  setCurrentPage(1);
-                }}
-                options={[
-                  { value: '', label: 'All Categories' },
-                  ...categories.map((c) => ({ value: c.id, label: c.name })),
-                ]}
-              />
-            </div>
-            <div>
-              <h3 className="font-semibold text-neutral-900 mb-3">Sort By</h3>
-              <Select
-                value={sortBy}
-                onChange={(e) => {
-                  setSortBy(e.target.value);
-                  setCurrentPage(1);
-                }}
-                options={[
-                  { value: 'newest', label: 'Newest' },
-                  { value: 'price_asc', label: 'Price: Low to High' },
-                  { value: 'price_desc', label: 'Price: High to Low' },
-                ]}
-              />
-            </div>
-            <div>
-              <h3 className="font-semibold text-neutral-900 mb-3">Price Range</h3>
-              <div className="flex gap-2">
-                <Input
-                  type="number"
-                  placeholder="Min"
-                  value={priceRange.min}
-                  onChange={(e) => {
-                    setPriceRange((prev) => ({ ...prev, min: e.target.value }));
-                    setCurrentPage(1);
-                  }}
-                />
-                <Input
-                  type="number"
-                  placeholder="Max"
-                  value={priceRange.max}
-                  onChange={(e) => {
-                    setPriceRange((prev) => ({ ...prev, max: e.target.value }));
-                    setCurrentPage(1);
-                  }}
+              <h3 className="font-semibold text-neutral-900 mb-3 text-sm uppercase tracking-wider">Search</h3>
+              <div className="relative">
+                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchQuery}
+                  onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+                  className="w-full pl-10 pr-4 py-2 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
                 />
               </div>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full"
-              onClick={() => {
-                setSearchQuery('');
-                setSelectedCategory('');
-                setSortBy('newest');
-                setPriceRange({ min: '', max: '' });
-                setCurrentPage(1);
-              }}
-            >
-              Clear Filters
-            </Button>
+
+            <div>
+              <h3 className="font-semibold text-neutral-900 mb-3 text-sm uppercase tracking-wider">Category</h3>
+              <select
+                value={selectedCategory}
+                onChange={(e) => { setSelectedCategory(e.target.value); setCurrentPage(1); }}
+                className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none bg-white"
+              >
+                <option value="">All Categories</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <h3 className="font-semibold text-neutral-900 mb-3 text-sm uppercase tracking-wider">Sort By</h3>
+              <select
+                value={sortBy}
+                onChange={(e) => { setSortBy(e.target.value); setCurrentPage(1); }}
+                className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none bg-white"
+              >
+                <option value="newest">Newest</option>
+                <option value="price_asc">Price: Low to High</option>
+                <option value="price_desc">Price: High to Low</option>
+              </select>
+            </div>
+
+            <div>
+              <h3 className="font-semibold text-neutral-900 mb-3 text-sm uppercase tracking-wider">Price Range</h3>
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  placeholder="Min"
+                  value={priceRange.min}
+                  onChange={(e) => { setPriceRange(prev => ({ ...prev, min: e.target.value })); setCurrentPage(1); }}
+                  className="w-1/2 px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
+                />
+                <input
+                  type="number"
+                  placeholder="Max"
+                  value={priceRange.max}
+                  onChange={(e) => { setPriceRange(prev => ({ ...prev, max: e.target.value })); setCurrentPage(1); }}
+                  className="w-1/2 px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
+                />
+              </div>
+            </div>
+
+            {hasFilters && (
+              <button
+                onClick={clearFilters}
+                className="w-full text-center text-sm text-primary-600 hover:text-primary-700 font-medium py-2"
+              >
+                Clear all filters
+              </button>
+            )}
           </div>
         </aside>
 
         {/* Product Grid */}
         <div className="flex-1">
           {isLoading ? (
-            <div className="flex justify-center py-12">
+            <div className="flex justify-center py-16">
               <Spinner size="lg" />
             </div>
           ) : error ? (
-            <div className="text-center py-12 text-red-600">{error}</div>
+            <div className="text-center py-16 text-red-600">{error}</div>
           ) : products.length === 0 ? (
             <EmptyState
               icon="📦"
               title="No products found"
               description="Try adjusting your filters or search query."
+              action={hasFilters ? <Button variant="outline" onClick={clearFilters}>Clear Filters</Button> : undefined}
             />
           ) : (
             <>
