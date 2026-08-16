@@ -4,6 +4,16 @@
 
 A production-quality multi-vendor e-commerce web application built with **C# / ASP.NET Core** (backend) and **Next.js + TypeScript** (frontend), using **PostgreSQL** as the database.
 
+## Team Members
+
+This project is a collaborative effort by four students from the **Department of Computer Science and Engineering (CSC)** at **IUBAT**.
+
+| Name | Role / Contribution |
+|------|---------------------|
+| **@dev.pranto (Md. Pranto Islam)** | Lead Developer — UI Frontend & Core Backend Architecture |
+| **Arshi** | *[Please update with specific contribution]* |
+| **Shoriful Shakil** | *[Please update with specific contribution]* |
+| **Lithi** | *[Please update with specific contribution]* |
 ## Features
 
 - **Three Roles:** Admin, Dealer (vendor), Customer
