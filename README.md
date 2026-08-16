@@ -81,7 +81,7 @@ Use the following credentials to test the different user roles in the applicatio
 | **Email** | `admin@ecommerce.com` |
 | **Password** | `Admin@123` |
 | **Status** | ✅ Verified |
-
+![Demo Image](Demo.png)
 #### Dealer Account
 
 | Field | Details |

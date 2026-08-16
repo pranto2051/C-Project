@@ -11,6 +11,7 @@ import { LoadingProgress } from '@/components/ui/LoadingProgress';
 import type { Product, Category, PaginatedResponse } from '@/types';
 import toast from 'react-hot-toast';
 
+// Category Icons for UI Rendering (Hardcoded)
 const categoryIcons: Record<string, string> = {
   'Electronics': '💻',
   'Clothing': '👕',
@@ -22,6 +23,7 @@ const categoryIcons: Record<string, string> = {
   'Food & Beverage': '🍕',
 };
 
+// Home Page Component
 export default function Home() {
   const { user } = useAuth();
   const [categories, setCategories] = useState<Category[]>([]);
@@ -29,13 +31,14 @@ export default function Home() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Fetch Data - Categories, Featured Products, Products by Category
   useEffect(() => {
     const fetchData = async () => {
       try {
         const catRes = await publicApi.getCategories();
         const cats = Array.isArray(catRes.data) ? catRes.data : (catRes.data as { items?: Category[] })?.items || [];
         setCategories(cats);
-
+        // Featured Products - Top 8 Products (Hardcoded Limit)
         const prodRes = await publicApi.getProducts({ pageSize: 50, sortBy: 'newest' });
         const allProducts = (prodRes.data as PaginatedResponse<Product>).items || [];
         setFeaturedProducts(allProducts.slice(0, 8));
@@ -54,6 +57,7 @@ export default function Home() {
     fetchData();
   }, []);
 
+  // Handle Add to Cart
   const handleAddToCart = async (productId: string) => {
     if (!user || user.role !== 'Customer') {
       toast.error('Please login as a customer to add items to cart');
