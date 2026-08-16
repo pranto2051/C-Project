@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "pXIx8veKTKw=",
+  "dgSpecHash": "XXLrpnVV2Tc=",
   "success": true,
   "projectFilePath": "/Users/md.prantoislam/Desktop/C-Project/backend/src/ECommerce.API/ECommerce.API.csproj",
   "expectedPackageFiles": [
@@ -63,10 +63,7 @@
     "/Users/md.prantoislam/.nuget/packages/system.reflection.metadata/7.0.0/system.reflection.metadata.7.0.0.nupkg.sha512",
     "/Users/md.prantoislam/.nuget/packages/system.runtime.compilerservices.unsafe/6.0.0/system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512",
     "/Users/md.prantoislam/.nuget/packages/system.text.json/9.0.0/system.text.json.9.0.0.nupkg.sha512",
-    "/Users/md.prantoislam/.nuget/packages/system.threading.channels/7.0.0/system.threading.channels.7.0.0.nupkg.sha512",
-    "/Users/md.prantoislam/.nuget/packages/microsoft.netcore.app.ref/9.0.17/microsoft.netcore.app.ref.9.0.17.nupkg.sha512",
-    "/Users/md.prantoislam/.nuget/packages/microsoft.aspnetcore.app.ref/9.0.17/microsoft.aspnetcore.app.ref.9.0.17.nupkg.sha512",
-    "/Users/md.prantoislam/.nuget/packages/microsoft.netcore.app.host.osx-arm64/9.0.17/microsoft.netcore.app.host.osx-arm64.9.0.17.nupkg.sha512"
+    "/Users/md.prantoislam/.nuget/packages/system.threading.channels/7.0.0/system.threading.channels.7.0.0.nupkg.sha512"
   ],
   "logs": []
 }
