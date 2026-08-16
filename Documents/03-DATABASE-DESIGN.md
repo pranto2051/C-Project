@@ -4,21 +4,19 @@
 
 ```mermaid
 erDiagram
-    User ||--o| DealerProfile : "has"
-    User ||--o| CustomerProfile : "has"
-    User ||--o| Order : "places"
-    
-    DealerProfile ||--o{ Product : "sells"
+    Admin ||--o{ Admin : "manages"
+    Dealer ||--o{ Product : "sells"
     Category ||--o{ Product : "contains"
     Product ||--o{ ProductImage : "has"
     
-    CustomerProfile ||--|| Cart : "has"
+    Customer ||--|| Cart : "has"
     Cart ||--o{ CartItem : "contains"
     CartItem }o--|| Product : "references"
     
+    Customer ||--o{ Order : "places"
     Order ||--o{ OrderItem : "contains"
     OrderItem }o--|| Product : "references"
-    OrderItem }o--|| DealerProfile : "sold_by"
+    OrderItem }o--|| Dealer : "sold_by"
     
     Product ||--o{ OrderItem : "appears_in"
 ```
@@ -27,8 +25,8 @@ erDiagram
 
 ## Table Specifications
 
-### User
-Stores authentication and role information for all platform users.
+### Admin
+Stores admin user accounts. Separate from other roles for security.
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
@@ -37,37 +35,49 @@ Stores authentication and role information for all platform users.
 | PasswordHash | TEXT | NOT NULL | BCrypt hashed password |
 | FullName | VARCHAR(256) | NOT NULL | Display name |
 | Phone | VARCHAR(32) | NULLABLE | Contact phone |
-| Role | VARCHAR(32) | NOT NULL | Admin / Dealer / Customer |
 | IsActive | BOOLEAN | NOT NULL, DEFAULT true | Account status |
 | CreatedAt | TIMESTAMP | NOT NULL, DEFAULT now() | Account creation |
 | UpdatedAt | TIMESTAMP | NOT NULL, DEFAULT now() | Last update |
 
 **Indexes:** Email (unique)
 
-### DealerProfile
-Extended profile for users with Dealer role. 1:1 with User.
+### Dealer
+Dealer accounts with integrated shop information.
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
 | Id | UUID | PK | Primary key |
-| UserId | UUID | FK → User(Id), UNIQUE, NOT NULL | Owner user |
+| Email | VARCHAR(256) | UNIQUE, NOT NULL | Login identifier |
+| PasswordHash | TEXT | NOT NULL | BCrypt hashed password |
+| FullName | VARCHAR(256) | NOT NULL | Owner display name |
+| Phone | VARCHAR(32) | NULLABLE | Contact phone |
 | ShopName | VARCHAR(256) | NOT NULL | Shop display name |
 | ShopDescription | TEXT | NULLABLE | Shop bio |
 | ShopCategory | VARCHAR(128) | NOT NULL | Primary category |
 | Address | TEXT | NOT NULL | Shop address |
 | LogoUrl | TEXT | NULLABLE | Logo image URL |
 | IsApproved | BOOLEAN | NOT NULL, DEFAULT false | Dealer approval status |
-| CreatedAt | TIMESTAMP | NOT NULL, DEFAULT now() | Registration date |
+| IsActive | BOOLEAN | NOT NULL, DEFAULT true | Account status |
+| CreatedAt | TIMESTAMP | NOT NULL, DEFAULT now() | Account creation |
+| UpdatedAt | TIMESTAMP | NOT NULL, DEFAULT now() | Last update |
 
-### CustomerProfile
-Extended profile for users with Customer role. 1:1 with User.
+**Indexes:** Email (unique)
+
+### Customer
+Customer accounts.
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
 | Id | UUID | PK | Primary key |
-| UserId | UUID | FK → User(Id), UNIQUE, NOT NULL | Owner user |
-| ShippingAddress | TEXT | NULLABLE | Default shipping address |
-| CreatedAt | TIMESTAMP | NOT NULL, DEFAULT now() | Registration date |
+| Email | VARCHAR(256) | UNIQUE, NOT NULL | Login identifier |
+| PasswordHash | TEXT | NOT NULL | BCrypt hashed password |
+| FullName | VARCHAR(256) | NOT NULL | Display name |
+| Phone | VARCHAR(32) | NULLABLE | Contact phone |
+| IsActive | BOOLEAN | NOT NULL, DEFAULT true | Account status |
+| CreatedAt | TIMESTAMP | NOT NULL, DEFAULT now() | Account creation |
+| UpdatedAt | TIMESTAMP | NOT NULL, DEFAULT now() | Last update |
+
+**Indexes:** Email (unique)
 
 ### Category
 Product categories with optional parent for subcategories.
@@ -87,14 +97,14 @@ Products listed by dealers. Starts Pending until Admin approves.
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
 | Id | UUID | PK | Primary key |
-| DealerId | UUID | FK → DealerProfile(Id), NOT NULL | Seller |
+| DealerId | UUID | FK → Dealer(Id), NOT NULL | Seller |
 | CategoryId | UUID | FK → Category(Id), NOT NULL | Category |
 | Name | VARCHAR(256) | NOT NULL | Product name |
 | Description | TEXT | NULLABLE | Product description |
 | Price | DECIMAL(10,2) | NOT NULL | Unit price |
 | StockQuantity | INTEGER | NOT NULL, DEFAULT 0 | Available stock |
 | SKU | VARCHAR(128) | NULLABLE | Stock keeping unit |
-| ApprovalStatus | VARCHAR(32) | NOT NULL, DEFAULT 'Pending' | Pending/Approved/Rejected/Unpublished |
+| ApprovalStatus | VARCHAR(50) | NOT NULL, DEFAULT 'Pending' | Pending/Approved/Rejected/Unpublished (stored as string) |
 | RejectionReason | TEXT | NULLABLE | Reason if rejected |
 | CreatedAt | TIMESTAMP | NOT NULL, DEFAULT now() | Creation date |
 | UpdatedAt | TIMESTAMP | NOT NULL, DEFAULT now() | Last update |
@@ -113,12 +123,12 @@ Multiple images per product with display order.
 | DisplayOrder | INTEGER | NOT NULL, DEFAULT 0 | Sort order |
 
 ### Cart
-One active cart per customer. 1:1 with CustomerProfile.
+One active cart per customer.
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
 | Id | UUID | PK | Primary key |
-| CustomerId | UUID | FK → CustomerProfile(Id), UNIQUE, NOT NULL | Owner |
+| CustomerId | UUID | FK → Customer(Id), UNIQUE, NOT NULL | Owner |
 | CreatedAt | TIMESTAMP | NOT NULL, DEFAULT now() | Creation date |
 | UpdatedAt | TIMESTAMP | NOT NULL, DEFAULT now() | Last modification |
 
@@ -141,22 +151,22 @@ Customer orders with server-calculated totals.
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
 | Id | UUID | PK | Primary key |
-| CustomerId | UUID | FK → CustomerProfile(Id), NOT NULL | Buyer |
-| Status | VARCHAR(32) | NOT NULL, DEFAULT 'Pending' | Order status |
+| CustomerId | UUID | FK → Customer(Id), NOT NULL | Buyer |
+| Status | VARCHAR(50) | NOT NULL, DEFAULT 'Pending' | Order status (stored as string) |
 | TotalAmount | DECIMAL(12,2) | NOT NULL | Server-calculated total |
 | ShippingAddress | TEXT | NOT NULL | Delivery address snapshot |
 | CreatedAt | TIMESTAMP | NOT NULL, DEFAULT now() | Order date |
 | UpdatedAt | TIMESTAMP | NOT NULL, DEFAULT now() | Last status change |
 
 ### OrderItem
-Line items in an order. DealerId denormalized for fast queries.
+Line items in an order. Dealer reference denormalized for fast queries.
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
 | Id | UUID | PK | Primary key |
 | OrderId | UUID | FK → Order(Id), NOT NULL | Parent order |
 | ProductId | UUID | FK → Product(Id), NOT NULL | Product reference |
-| DealerId | UUID | FK → DealerProfile(Id), NOT NULL | Seller (denormalized) |
+| DealerId | UUID | FK → Dealer(Id), NOT NULL | Seller (denormalized) |
 | Quantity | INTEGER | NOT NULL | Units ordered |
 | UnitPriceAtPurchase | DECIMAL(10,2) | NOT NULL | Price at time of order |
 | Subtotal | DECIMAL(12,2) | NOT NULL | Quantity × UnitPrice |
@@ -167,26 +177,25 @@ Line items in an order. DealerId denormalized for fast queries.
 
 | Relationship | Type | Notes |
 |--------------|------|-------|
-| User → DealerProfile | 1:1 | Only when Role = Dealer |
-| User → CustomerProfile | 1:1 | Only when Role = Customer |
-| DealerProfile → Product | 1:N | Dealer owns products |
+| Dealer → Product | 1:N | Dealer owns products |
 | Category → Product | 1:N | Product belongs to one category |
 | Product → ProductImage | 1:N | Product has images |
-| CustomerProfile → Cart | 1:1 | One active cart per customer |
+| Customer → Cart | 1:1 | One active cart per customer |
 | Cart → CartItem | 1:N | Cart contains items |
-| CustomerProfile → Order | 1:N | Customer places orders |
+| Customer → Order | 1:N | Customer places orders |
 | Order → OrderItem | 1:N | Order has line items |
 | Product → OrderItem | 1:N | Product appears in orders |
-| DealerProfile → OrderItem | 1:N | Dealer sells items (via OrderItem.DealerId) |
+| Dealer → OrderItem | 1:N | Dealer sells items (via OrderItem.DealerId) |
 
 ---
 
 ## Implementation Notes
 
-- Schema is managed via EF Core code-first approach (`EnsureCreated()`)
-- Table names use lowercase (e.g., `users`, `products`, `orders`) per EF Core configuration
+- Schema is managed via SQL scripts (`SQL/database.sql`) on Supabase cloud
+- Table names use lowercase (e.g., `admins`, `dealers`, `customers`, `products`)
 - Fluent API configurations in `ECommerce.Infrastructure/Data/Configurations/`
-- Database seeded on startup in Development mode with comprehensive demo data
+- OrderStatus and ApprovalStatus stored as VARCHAR with EF Core HasConversion
+- Database seeded via SQL scripts, not code-based seeder
 
 ---
 
@@ -194,9 +203,10 @@ Line items in an order. DealerId denormalized for fast queries.
 
 | Entity | Count | Notes |
 |--------|-------|-------|
-| Users | 21 | 1 admin, 10 dealers, 10 customers |
-| Dealer Profiles | 10 | All approved, various categories |
-| Customer Profiles | 10 | Various shipping addresses |
+| Admins | 1 | admin@ecommerce.com |
+| Dealers | 10 | 8 approved, 2 pending, various categories |
+| Customers | 10 | All active |
 | Categories | 8 | Electronics, Clothing, Home & Garden, Books, Sports, Beauty, Automotive, Food & Beverage |
-| Products | 500 | 50 per dealer, mix of Pending/Approved/Rejected |
-| Orders | 56 | Across multiple customers with order items |
+| Products | 550 | 50 per dealer, mix of Approved/Pending/Rejected |
+| Orders | 57 | Across multiple customers with order items |
+| Product Images | 550 | One image per product |

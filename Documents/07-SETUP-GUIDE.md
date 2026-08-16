@@ -4,7 +4,7 @@
 
 - [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
 - [Node.js 18+](https://nodejs.org/)
-- [PostgreSQL 14+](https://www.postgresql.org/download/)
+- PostgreSQL access (Supabase cloud or local)
 
 ---
 
@@ -12,12 +12,13 @@
 
 ### 1. Database Setup
 
-```bash
-# Create PostgreSQL database
-psql -U md.prantoislam -c "CREATE DATABASE ecommerce_db;"
-```
+The database is hosted on **Supabase** (cloud). Connection details are in `backend/src/ECommerce.API/appsettings.Development.json`.
 
-Database tables and seed data are created automatically on backend startup in Development mode.
+To reseed the database from scratch:
+```bash
+psql "host=aws-0-ap-south-1.pooler.supabase.com port=6543 dbname=postgres user=postgres.pqkgfmbnvvrsntoqhhoo password=L8hgSMS\$zD-6.2w sslmode=require" \
+  -f SQL/database.sql
+```
 
 ### 2. Backend Setup
 
@@ -29,8 +30,6 @@ ASPNETCORE_ENVIRONMENT=Development dotnet run --urls "http://localhost:5001"
 ```
 
 API will be available at `http://localhost:5001` with Swagger at `/swagger`.
-
-> **Note:** The `ASPNETCORE_ENVIRONMENT=Development` flag is required for database seeding (demo users + data). Seeding takes ~30-45 seconds due to 21 BCrypt hashes.
 
 ### 3. Frontend Setup
 
@@ -62,7 +61,7 @@ open http://localhost:3000
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Port=5432;Database=ecommerce_db;Username=md.prantoislam"
+    "DefaultConnection": "Host=aws-0-ap-south-1.pooler.supabase.com;Port=6543;Database=postgres;Username=postgres.pqkgfmbnvvrsntoqhhoo;Password=L8hgSMS%24zD-6.2w;SSL Mode=Require;Command Timeout=120;Timeout=60;Keepalive=30;Pooling=false"
   },
   "JwtSettings": {
     "SecretKey": "SUPER_SECRET_KEY_MUST_BE_LONG_ENOUGH_1234567890",
@@ -86,12 +85,12 @@ NEXT_PUBLIC_APP_NAME=E-Commerce Platform
 ## Troubleshooting
 
 ### "Login failed" / No demo users
-- Ensure PostgreSQL is running: `pg_isready -h localhost -p 5432`
-- Ensure backend is in Development mode: `ASPNETCORE_ENVIRONMENT=Development`
-- Check DB username is `md.prantoislam` in `appsettings.Development.json`
+- Ensure Supabase database is accessible
+- Check connection string in `appsettings.Development.json`
+- Verify demo credentials in `Documents/06-DEMO-CREDENTIALS.md`
 
-### "relation users does not exist"
-- Database tables not created. Ensure backend starts in Development mode (triggers `EnsureCreated()`)
+### "relation admins does not exist"
+- Database tables not created. Run `SQL/database.sql` on Supabase
 
 ### CORS Error
 - Ensure `NEXT_PUBLIC_API_URL=http://localhost:5001/api` in `frontend/.env.local`
@@ -111,5 +110,8 @@ npm run dev
 lsof -ti:5001 | xargs kill -9
 ```
 
-### Seeding Takes Too Long
-- BCrypt hashing 21 passwords takes ~30-45 seconds. Wait for backend to log ready.
+### Supabase Connection Issues
+- Supabase free tier has connection limits
+- Backend uses `Pooling=false` to avoid pool exhaustion
+- If timeouts occur, increase `Command Timeout` in connection string
+- Password contains `$` — use `%24` in Npgsql connection strings, raw `$` in JSON config

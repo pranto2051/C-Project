@@ -29,7 +29,7 @@ Next.js 14+ App Router with TypeScript, Tailwind CSS, and React Context for stat
 | `/checkout` | Checkout | Shipping address, order placement |
 | `/orders` | Orders | Order history list |
 | `/orders/[id]` | Order Detail | Order details with items |
-| `/account` | Account | User profile management |
+| `/account` | Account | User profile management + password change |
 
 ### Dealer Pages (require Dealer role)
 | Route | Page | Description |
@@ -49,6 +49,7 @@ Next.js 14+ App Router with TypeScript, Tailwind CSS, and React Context for stat
 | `/admin/products/pending` | Pending Products | Product approval queue |
 | `/admin/categories` | Categories | Category management |
 | `/admin/stats` | Statistics | Platform statistics |
+| `/admin/profile` | Profile | Admin profile management |
 
 ---
 
@@ -83,32 +84,6 @@ Next.js 14+ App Router with TypeScript, Tailwind CSS, and React Context for stat
 | `ProductDetailSkeleton` | Full page skeleton for product detail |
 | `useLoadingProgress` | Custom hook for programmatic loading progress control |
 
-### Loading Animation Features
-- **Percentage Progress Bar**: Shows real-time loading percentage (0-100%)
-- **Shimmer Effect**: Animated gradient sweep on skeleton elements
-- **Smooth Transitions**: Progress bar fades out when loading completes
-- **Configurable**: Customizable grid columns and skeleton counts
-- **Reusable**: All components export from `components/ui/index.ts`
-
-### Usage Examples
-```tsx
-// Loading progress bar
-import { LoadingProgress } from '@/components/ui';
-<LoadingProgress isLoading={isLoading} />
-
-// Product grid skeleton
-import { ProductGridSkeleton } from '@/components/ui';
-<ProductGridSkeleton count={8} columns={4} />
-
-// Product detail skeleton
-import { ProductDetailSkeleton } from '@/components/ui';
-<ProductDetailSkeleton />
-
-// Custom hook for progress
-import { useLoadingProgress } from '@/hooks';
-const { progress, start, complete } = useLoadingProgress();
-```
-
 ### Layout Components (`components/layout/`)
 | Component | Purpose |
 |-----------|---------|
@@ -137,7 +112,7 @@ Axios-based with:
 
 ### Usage
 ```typescript
-import { authApi, adminApi, dealerApi, customerApi } from '@/services/api';
+import { authApi, adminApi, dealerApi, customerApi, publicApi } from '@/services/api';
 
 // Login
 const response = await authApi.login({ email, password });
@@ -148,9 +123,30 @@ const dealers = await adminApi.getDealers({ search, category });
 // Dealer: create product
 await dealerApi.createProduct(productData);
 
-// Customer: add to cart
-await customerApi.addToCart({ productId, quantity });
+// Customer: add to cart (two arguments: productId, quantity)
+await customerApi.addToCart(productId, 1);
+
+// Customer: update cart item
+await customerApi.updateCartItem(itemId, newQuantity);
+
+// Customer: remove cart item
+await customerApi.removeCartItem(itemId);
+
+// Public: get products
+const products = await publicApi.getProducts({ categoryId, pageSize: 20 });
 ```
+
+---
+
+## Account Page Features
+
+The Account page (`/account`) includes:
+1. **Profile Update** — Edit full name, phone number
+2. **Password Change** — New password + confirm password with validation
+   - Both fields must match
+   - Minimum 6 characters
+   - Real-time "Passwords do not match" indicator
+   - Current password is optional (can change without knowing old password)
 
 ---
 
@@ -159,6 +155,6 @@ await customerApi.addToCart({ productId, quantity });
 - **Tailwind CSS** for all styling
 - **Utility-first** approach — no CSS modules or styled-components
 - **Responsive design** — mobile-first with `sm:`, `md:`, `lg:` breakpoints
-- **Color palette:** Primary (blue), neutral (gray), success (green), danger (red), warning (yellow)
-- **Font:** Inter (via next/font)
+- **Color palette:** Primary (indigo), neutral (gray), success (green), danger (red), warning (yellow), accent (emerald)
+- **Font:** Inter (via next/font), CSS variable `--font-heading`
 - **Animations:** Custom shimmer animation for skeleton loaders (defined in `tailwind.config.ts`)

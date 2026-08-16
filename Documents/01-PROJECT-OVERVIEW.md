@@ -24,7 +24,7 @@ A production-quality multi-vendor e-commerce web application where multiple deal
 |-------|-----------|---------|
 | Backend | C# / ASP.NET Core Web API | .NET 9.0 |
 | ORM | Entity Framework Core | 9.0 |
-| Database | PostgreSQL | 14+ |
+| Database | PostgreSQL (Supabase cloud) | 14+ |
 | Auth | JWT Bearer + BCrypt | BCrypt.Net-Next 4.2.0 |
 | Frontend | Next.js (App Router) + TypeScript + React | Next.js 14+ |
 | Styling | Tailwind CSS | 3.x |
@@ -36,8 +36,8 @@ A production-quality multi-vendor e-commerce web application where multiple deal
 
 ### Admin
 - View platform statistics (users, dealers, products, orders, revenue)
-- Manage users (activate/deactivate accounts)
 - Manage dealers (view, create, edit, delete, approve)
+- Manage customers (activate/deactivate accounts)
 - Approve/reject dealer products
 - Manage categories (create, edit, delete)
 - Clear demo data for fresh testing
@@ -55,7 +55,7 @@ A production-quality multi-vendor e-commerce web application where multiple deal
 - Add to cart, update quantities, remove items
 - Checkout with shipping address
 - View order history and order details
-- Manage account profile
+- Manage account profile and change password
 
 ---
 

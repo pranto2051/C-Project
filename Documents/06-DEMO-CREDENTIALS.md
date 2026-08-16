@@ -63,10 +63,10 @@ All passwords are BCrypt-hashed with cost factor 11.
 |-------|---------|-------------|
 | admins | 1 | Admin accounts |
 | dealers | 10 | Dealer accounts + shop info |
-| customers | 10 | Customer accounts + shipping info |
+| customers | 10 | Customer accounts |
 | categories | 8 | Product categories |
-| products | 550 | Product listings (500 + 50 additional) |
+| products | 550 | Product listings |
 | product_images | 550 | One image per product |
 | carts | 10 | One cart per customer |
-| orders | ~50 | Sample orders |
-| order_items | ~140 | Items within orders |
+| orders | 57 | Sample orders |
+| order_items | ~170 | Items within orders |

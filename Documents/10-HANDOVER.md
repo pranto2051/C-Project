@@ -14,7 +14,7 @@ Build a complete, production-quality **multi-vendor e-commerce web application**
 |-------|-----------|
 | Backend | C# / ASP.NET Core Web API (.NET 9.0) |
 | ORM | Entity Framework Core 9.0 |
-| Database | PostgreSQL 14+ |
+| Database | PostgreSQL (Supabase cloud) |
 | Auth | JWT Bearer + BCrypt password hashing |
 | Frontend | Next.js 14+ (App Router) + TypeScript + React |
 | Styling | Tailwind CSS |
@@ -42,8 +42,8 @@ curl http://localhost:5001/api/auth/login -X POST \
 | Role | Email | Password |
 |------|-------|----------|
 | Admin | admin@ecommerce.com | Admin@123 |
-| Dealer | dealer@ecommerce.com | Dealer@123 |
-| Customer | customer@ecommerce.com | Customer@123 |
+| Dealer | dealer1@test.com | Dealer@123 |
+| Customer | customer1@test.com | Customer@123 |
 
 10 seeded dealers (Dealer@123) and 10 seeded customers (Customer@123) also available.
 
@@ -58,18 +58,19 @@ curl http://localhost:5001/api/auth/login -X POST \
 | Module | Status |
 |--------|--------|
 | Documentation | Complete (10 files in Documents/) |
-| Database Schema | Complete (EF Core entities + configurations) |
-| Database Seeding | Complete (21 users, 500 products, 56 orders, 8 categories) |
+| Database Schema | Complete (SQL scripts on Supabase) |
+| Database Seeding | Complete (1 admin, 10 dealers, 10 customers, 550 products, 57 orders) |
 | Backend Structure | Complete (.NET 9.0, 4 projects) |
-| Authentication | Complete (JWT + BCrypt) |
+| Authentication | Complete (JWT + BCrypt, separate tables for each role) |
 | Authorization | Complete (role-based + ownership checks) |
-| API Controllers | Complete (Auth, Admin, Dealer, Products, Cart, Order) |
+| API Controllers | Complete (Auth, Admin, Dealer, Products, Cart, Order, Categories) |
 | Frontend Structure | Complete (Next.js 14, App Router, Tailwind) |
 | Frontend Pages | Complete (shop, auth, dealer dashboard, admin dashboard) |
-| Frontend Components | Complete (UI kit + layout components) |
+| Frontend Components | Complete (UI kit + layout + loading animations) |
 | API Client | Complete (Axios with interceptors) |
 | Auth Context | Complete (React Context + localStorage) |
-| UI Design | Complete (Navbar, Footer, ProductCard, filters) |
+| UI Design | Complete (Navbar, Footer, ProductCard, skeletons, progress bar) |
+| Password Change | Complete (Account page with new + confirm password) |
 | Testing | Pending (need browser testing) |
 
 ## Key Files
@@ -78,7 +79,7 @@ curl http://localhost:5001/api/auth/login -X POST \
 |------|---------|
 | `backend/src/ECommerce.API/Program.cs` | Backend entry point, DI, middleware |
 | `backend/src/ECommerce.Infrastructure/Data/AppDbContext.cs` | EF Core DbContext |
-| `backend/src/ECommerce.Infrastructure/Data/DatabaseSeeder.cs` | Demo data seeder |
+| `SQL/database.sql` | Database schema + seed data |
 | `backend/src/ECommerce.API/Controllers/*.cs` | API endpoints |
 | `frontend/services/api.ts` | API client (all endpoints) |
 | `frontend/features/auth/AuthProvider.tsx` | Auth state management |
@@ -89,10 +90,9 @@ curl http://localhost:5001/api/auth/login -X POST \
 ## Known Issues
 
 1. Dealer filtering in `GetAllDealersAsync` broken (returns all dealers)
-2. Using `EnsureCreated()` instead of EF Core migrations
+2. Schema managed via SQL scripts (not EF Core migrations)
 3. Refresh tokens not persisted in DB (endpoint returns 401)
 4. AutoMapper has known vulnerability (NU1903)
-5. `.next` build cache can corrupt (fix: `rm -rf .next`)
 
 ## What Must NOT Change
 
@@ -113,16 +113,16 @@ curl http://localhost:5001/api/auth/login -X POST \
 
 ```
 CURRENT STATUS:
-Backend and frontend fully implemented with comprehensive UI redesign.
-Demo login working for all roles (3 original + 10 seeded dealers + 10 seeded customers).
+Backend and frontend fully implemented with comprehensive UI.
+Demo login working for all roles (1 admin + 10 seeded dealers + 10 seeded customers).
 All documentation consolidated into Documents/ folder (10 organized files).
+Database hosted on Supabase cloud with 550 products, 57 orders.
 Backend runs on http://localhost:5001 (Development).
 Frontend runs on http://localhost:3000.
 
 LAST COMPLETED TASK:
-UI overhaul (Navbar, Footer, Home, Products, Product Detail, Cart, About, Contact pages).
-Deleted unused files and consolidated documentation.
+Password change feature on Account page. Cart add-to-cart bug fix.
 
 KNOWN ISSUES:
-Dealer filtering broken. EnsureCreated() used instead of migrations. Refresh tokens not persisted.
+Dealer filtering broken. Schema managed via SQL scripts. Refresh tokens not persisted.
 ```

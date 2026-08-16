@@ -28,7 +28,7 @@ Register a new user (Dealer or Customer).
 }
 ```
 
-**Response 201:**
+**Response 200:**
 ```json
 {
   "id": "uuid",
@@ -68,6 +68,25 @@ Get current authenticated user profile. **Requires auth.**
   "createdAt": "2024-01-01T00:00:00Z"
 }
 ```
+
+### PUT /auth/me
+Update current user profile. **Requires auth.**
+
+**Request:**
+```json
+{
+  "fullName": "John Doe Updated",
+  "phone": "+1234567890",
+  "newPassword": "NewPassword123!",
+  "currentPassword": "OldPassword123!"
+}
+```
+
+- `fullName`, `phone` are optional
+- `newPassword` is optional (min 6 characters)
+- `currentPassword` is optional (if provided, validates before changing)
+
+**Response 200:** Updated UserDto.
 
 ### POST /auth/refresh
 Refresh an expired access token. Currently returns 401 (refresh tokens not persisted in demo).
@@ -132,7 +151,7 @@ Get orders containing dealer's products.
 
 ---
 
-## Customer / Public Endpoints
+## Public Endpoints
 
 ### GET /products
 Browse approved products with search, filter, sort, pagination.
@@ -151,13 +170,18 @@ Get product detail.
 Get all categories (public).
 
 ### GET /dealers/{id}/public-profile
-Get public dealer shop profile.
+Get public dealer shop profile. **Note: Backend endpoint not yet implemented.**
 
-### POST /cart
-Create cart (or get existing). **Requires Customer role.**
+---
 
-### GET /cart
-Get current cart with items. **Requires Customer role.**
+## Customer / Cart / Order Endpoints
+
+All customer endpoints require **auth + Customer role**.
+
+### Cart Endpoints
+
+#### GET /cart
+Get current cart with items.
 
 **Response 200:**
 ```json
@@ -180,13 +204,35 @@ Get current cart with items. **Requires Customer role.**
 }
 ```
 
-### PUT /cart/items/{id}
-Update cart item quantity. **Requires Customer role.**
+#### POST /cart/items
+Add item to cart (or increase quantity if already exists).
 
-### DELETE /cart/items/{id}
-Remove cart item. **Requires Customer role.**
+**Request:**
+```json
+{
+  "productId": "uuid",
+  "quantity": 1
+}
+```
 
-### POST /orders
+**Response 200:** CartItemResponse with the added/updated item.
+
+#### PUT /cart/items/{id}
+Update cart item quantity.
+
+**Request:**
+```json
+{
+  "quantity": 3
+}
+```
+
+#### DELETE /cart/items/{id}
+Remove cart item.
+
+### Order Endpoints
+
+#### POST /orders
 Create order from cart. **Requires Customer role.**
 
 **Request:**
@@ -196,10 +242,12 @@ Create order from cart. **Requires Customer role.**
 }
 ```
 
-### GET /orders
+#### GET /orders
 Get customer's orders. **Requires Customer role.**
 
-### GET /orders/{id}
+**Query params:** `page`, `pageSize`
+
+#### GET /orders/{id}
 Get order detail. **Requires ownership or Admin/Dealer involvement.**
 
 ---
@@ -220,9 +268,9 @@ All admin endpoints require **auth + Admin role**.
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | /admin/dealers | List dealers (query: `search`, `category`, `page`, `pageSize`) |
-| POST | /admin/dealers | Create dealer (creates user account + profile) |
-| PUT | /admin/dealers/{id} | Update dealer profile |
-| DELETE | /admin/dealers/{id} | Delete dealer and user account |
+| POST | /admin/dealers | Create dealer (creates account + dealer record) |
+| PUT | /admin/dealers/{id} | Update dealer |
+| DELETE | /admin/dealers/{id} | Delete dealer |
 | PUT | /admin/dealers/{id}/approve | Approve dealer |
 
 ### Product Management
@@ -248,7 +296,7 @@ All admin endpoints require **auth + Admin role**.
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | /admin/stats | Get platform statistics |
-| POST | /admin/clear-demo-data | Clear all seeded demo data |
+| POST | /admin/clear-demo-data | Clear all demo data |
 
 ---
 

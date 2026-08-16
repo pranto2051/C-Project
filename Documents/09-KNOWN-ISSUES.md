@@ -9,8 +9,16 @@
 | # | Issue | Severity | Status | Notes |
 |---|-------|----------|--------|-------|
 | 1 | Dealer filtering in `GetAllDealersAsync` broken | Medium | Open | Returns all dealers regardless of `search` or `category` query params |
-| 2 | `.next` build cache can become corrupted | Low | Workaround | Delete `.next` folder and restart dev server |
-| 3 | Stale backend processes on port 5001 | Low | Workaround | Kill with `lsof -ti:5001 \| xargs kill -9` |
+
+---
+
+## Fixed Issues
+
+| # | Issue | Fixed On | Notes |
+|---|-------|----------|-------|
+| 1 | Cart add-to-cart calling PUT instead of POST | 2026-08-16 | `ProductCard.tsx` and Home page used `updateCartItem` with product ID |
+| 2 | `.next` build cache corruption | — | Workaround: delete `.next` folder |
+| 3 | Stale backend processes on port 5001 | — | Workaround: kill with `lsof -ti:5001 \| xargs kill -9` |
 
 ---
 
@@ -18,7 +26,7 @@
 
 | # | Limitation | Impact | Notes |
 |---|-----------|--------|-------|
-| 1 | `EnsureCreated()` used instead of EF Core migrations | Can't modify schema after creation | Need to generate migrations for production |
+| 1 | `EnsureCreated()` used instead of EF Core migrations | Can't modify schema after creation | Schema managed via SQL scripts |
 | 2 | Refresh tokens not persisted in DB | Refresh endpoint always returns 401 | Demo-only limitation |
 | 3 | File upload for product images not implemented | Products use placeholder images | Would need blob storage |
 | 4 | Payment integration not implemented | Checkout is order creation only | No actual payment processing |
