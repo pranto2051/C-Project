@@ -28,7 +28,7 @@ export function ProductCard({ product }: ProductCardProps) {
       if (existingItem) {
         await customerApi.updateCartItem(existingItem.id, existingItem.quantity + 1);
       } else {
-        await customerApi.updateCartItem(product.id, 1);
+        await customerApi.addToCart(product.id, 1);
       }
       toast.success('Added to cart!');
     } catch {
