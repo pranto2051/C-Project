@@ -9,10 +9,12 @@ namespace ECommerce.API.Controllers;
 public class ProductsController : ControllerBase
 {
     private readonly IProductService _productService;
+    private readonly ICategoryService _categoryService;
 
-    public ProductsController(IProductService productService)
+    public ProductsController(IProductService productService, ICategoryService categoryService)
     {
         _productService = productService;
+        _categoryService = categoryService;
     }
 
     [HttpGet]
@@ -28,5 +30,24 @@ public class ProductsController : ControllerBase
         var product = await _productService.GetPublicProductAsync(id);
         if (product == null) return NotFound();
         return Ok(product);
+    }
+}
+
+[ApiController]
+[Route("api/[controller]")]
+public class CategoriesController : ControllerBase
+{
+    private readonly ICategoryService _categoryService;
+
+    public CategoriesController(ICategoryService categoryService)
+    {
+        _categoryService = categoryService;
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetCategories()
+    {
+        var categories = await _categoryService.GetAllAsync();
+        return Ok(categories);
     }
 }
