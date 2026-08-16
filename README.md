@@ -1,5 +1,7 @@
 # Multi-Vendor E-Commerce Platform
 
+![Demo Image](Demo.png)
+
 A production-quality multi-vendor e-commerce web application built with **C# / ASP.NET Core** (backend) and **Next.js + TypeScript** (frontend), using **PostgreSQL** as the database.
 
 ## Features
@@ -81,7 +83,7 @@ Use the following credentials to test the different user roles in the applicatio
 | **Email** | `admin@ecommerce.com` |
 | **Password** | `Admin@123` |
 | **Status** | ✅ Verified |
-![Demo Image](Demo.png)
+
 #### Dealer Account
 
 | Field | Details |
