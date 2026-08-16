@@ -10,6 +10,7 @@ import type {
   CreateOrderRequest,
   UpdateUserStatusRequest,
   RejectProductRequest,
+  UpdateProfileRequest,
 } from '@/types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://localhost:7001/api';
@@ -68,6 +69,7 @@ export const authApi = {
   login: (data: LoginRequest) => api.post<AuthResponse>('/auth/login', data),
   register: (data: RegisterRequest) => api.post<AuthResponse>('/auth/register', data),
   me: () => api.get<User>('/auth/me'),
+  updateProfile: (data: UpdateProfileRequest) => api.put<User>('/auth/me', data),
 };
 
 export const dealerApi = {

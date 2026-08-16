@@ -123,6 +123,7 @@ export function Navbar() {
                           <Link href="/admin/dealers" className="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50">Manage Dealers</Link>
                           <Link href="/admin/users" className="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50">Manage Users</Link>
                           <Link href="/admin/products/pending" className="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50">Pending Products</Link>
+                          <Link href="/admin/profile" className="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50">Edit Profile</Link>
                         </>
                       )}
                       <div className="border-t border-neutral-100 mt-1 pt-1">

@@ -96,4 +96,33 @@ public class AuthController : ControllerBase
             return BadRequest(new { message = ex.Message });
         }
     }
+
+    [Authorize]
+    [HttpPut("me")]
+    public async Task<IActionResult> UpdateMe([FromBody] UpdateProfileRequest request)
+    {
+        try
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null) return Unauthorized();
+            
+            if (!Guid.TryParse(userIdClaim.Value, out var userId))
+                return Unauthorized();
+            
+            var user = await _authService.UpdateProfileAsync(userId, request);
+            return Ok(user);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound(new { message = "User not found" });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
 }

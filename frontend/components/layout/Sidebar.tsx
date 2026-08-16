@@ -20,6 +20,7 @@ const adminLinks = [
   { href: '/admin/categories', label: 'Categories', icon: '📁' },
   { href: '/admin/users', label: 'Customers', icon: '👥' },
   { href: '/admin/stats', label: 'Stats', icon: '📈' },
+  { href: '/admin/profile', label: 'My Profile', icon: '👤' },
 ];
 
 export function Sidebar() {

@@ -245,7 +245,20 @@ function DealersContent() {
             </>
           )}
           <Input label="Shop Name" value={formData.shopName} onChange={e => setFormData({ ...formData, shopName: e.target.value })} required />
-          <Input label="Shop Category" value={formData.shopCategory} onChange={e => setFormData({ ...formData, shopCategory: e.target.value })} required />
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-1">Shop Category *</label>
+            <select
+              value={formData.shopCategory}
+              onChange={e => setFormData({ ...formData, shopCategory: e.target.value })}
+              className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none bg-white"
+              required
+            >
+              <option value="">Select a category</option>
+              {categories.map(cat => (
+                <option key={cat.id} value={cat.name}>{cat.name}</option>
+              ))}
+            </select>
+          </div>
           <Input label="Address" value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} required />
           <Input label="Logo URL" value={formData.logoUrl} onChange={e => setFormData({ ...formData, logoUrl: e.target.value })} />
           <div className="flex items-center gap-2">

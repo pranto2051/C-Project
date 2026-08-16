@@ -174,3 +174,11 @@ export interface UpdateUserStatusRequest {
 export interface RejectProductRequest {
   rejectionReason: string;
 }
+
+export interface UpdateProfileRequest {
+  fullName?: string;
+  email?: string;
+  phone?: string;
+  newPassword?: string;
+  currentPassword?: string;
+}

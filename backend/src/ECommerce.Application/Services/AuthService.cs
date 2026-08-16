@@ -100,4 +100,45 @@ public class AuthService : IAuthService
         // Return null to signal the caller should re-authenticate.
         throw new UnauthorizedAccessException("Refresh token expired. Please log in again.");
     }
+
+    public async Task<UserDto> UpdateProfileAsync(Guid userId, UpdateProfileRequest request)
+    {
+        var user = await _unitOfWork.Users.GetByIdAsync(userId)
+            ?? throw new KeyNotFoundException("User not found");
+
+        // If changing password, verify current password
+        if (!string.IsNullOrWhiteSpace(request.NewPassword))
+        {
+            if (string.IsNullOrWhiteSpace(request.CurrentPassword))
+                throw new InvalidOperationException("Current password is required to set a new password");
+
+            if (!_passwordHasher.Verify(request.CurrentPassword, user.PasswordHash))
+                throw new InvalidOperationException("Current password is incorrect");
+
+            user.PasswordHash = _passwordHasher.Hash(request.NewPassword);
+        }
+
+        // Update profile fields if provided
+        if (!string.IsNullOrWhiteSpace(request.FullName))
+            user.FullName = request.FullName;
+
+        if (!string.IsNullOrWhiteSpace(request.Email))
+        {
+            // Check if email is already taken by another user
+            var existingUser = await _unitOfWork.Users.GetQueryable()
+                .FirstOrDefaultAsync(u => u.Email == request.Email && u.Id != userId);
+            if (existingUser != null)
+                throw new InvalidOperationException("Email is already taken by another user");
+            user.Email = request.Email;
+        }
+
+        if (request.Phone != null)
+            user.Phone = request.Phone;
+
+        user.UpdatedAt = DateTime.UtcNow;
+        await _unitOfWork.Users.UpdateAsync(user);
+        await _unitOfWork.SaveChangesAsync();
+
+        return _mapper.Map<UserDto>(user);
+    }
 }

@@ -204,29 +204,29 @@ INSERT INTO users ("Id", "Email", "PasswordHash", "FullName", "Phone", "Role", "
 
 -- Dealer users (10)
 INSERT INTO users ("Id", "Email", "PasswordHash", "FullName", "Phone", "Role", "IsActive", "CreatedAt", "UpdatedAt") VALUES
-('b2000000-0000-0000-0000-000000000001', 'tech@demo.com',     '$2a$11$Lx9F4rmuo3l6ujspZS4w4OLWOjfwrsgpzVB2vcXvrGwAYdqAO795q', 'Alex Tech',        '+1000001001', 2, TRUE, NOW(), NOW()),
-('b2000000-0000-0000-0000-000000000002', 'fashion@demo.com',  '$2a$11$Lx9F4rmuo3l6ujspZS4w4OLWOjfwrsgpzVB2vcXvrGwAYdqAO795q', 'Sarah Fashion',    '+1000001002', 2, TRUE, NOW(), NOW()),
-('b2000000-0000-0000-0000-000000000003', 'home@demo.com',     '$2a$11$Lx9F4rmuo3l6ujspZS4w4OLWOjfwrsgpzVB2vcXvrGwAYdqAO795q', 'Mike Home',        '+1000001003', 2, TRUE, NOW(), NOW()),
-('b2000000-0000-0000-0000-000000000004', 'books@demo.com',    '$2a$11$Lx9F4rmuo3l6ujspZS4w4OLWOjfwrsgpzVB2vcXvrGwAYdqAO795q', 'Emma Books',       '+1000001004', 2, TRUE, NOW(), NOW()),
-('b2000000-0000-0000-0000-000000000005', 'sports@demo.com',   '$2a$11$Lx9F4rmuo3l6ujspZS4w4OLWOjfwrsgpzVB2vcXvrGwAYdqAO795q', 'David Sports',     '+1000001005', 2, TRUE, NOW(), NOW()),
-('b2000000-0000-0000-0000-000000000006', 'toys@demo.com',     '$2a$11$Lx9F4rmuo3l6ujspZS4w4OLWOjfwrsgpzVB2vcXvrGwAYdqAO795q', 'Lisa Toys',        '+1000001006', 2, TRUE, NOW(), NOW()),
-('b2000000-0000-0000-0000-000000000007', 'auto@demo.com',     '$2a$11$Lx9F4rmuo3l6ujspZS4w4OLWOjfwrsgpzVB2vcXvrGwAYdqAO795q', 'James Auto',       '+1000001007', 2, TRUE, NOW(), NOW()),
-('b2000000-0000-0000-0000-000000000008', 'health@demo.com',   '$2a$11$Lx9F4rmuo3l6ujspZS4w4OLWOjfwrsgpzVB2vcXvrGwAYdqAO795q', 'Olivia Health',    '+1000001008', 2, TRUE, NOW(), NOW()),
-('b2000000-0000-0000-0000-000000000009', 'gadgets@demo.com',  '$2a$11$Lx9F4rmuo3l6ujspZS4w4OLWOjfwrsgpzVB2vcXvrGwAYdqAO795q', 'Noah Gadgets',     '+1000001009', 2, TRUE, NOW(), NOW()),
-('b2000000-0000-0000-0000-000000000010', 'style@demo.com',    '$2a$11$Lx9F4rmuo3l6ujspZS4w4OLWOjfwrsgpzVB2vcXvrGwAYdqAO795q', 'Ava Style',        '+1000001010', 2, TRUE, NOW(), NOW());
+('b2000000-0000-0000-0000-000000000001', 'dealer1@test.com',    '$2a$11$Lx9F4rmuo3l6ujspZS4w4OLWOjfwrsgpzVB2vcXvrGwAYdqAO795q', 'Alex Tech',        '+1000001001', 2, TRUE, NOW(), NOW()),
+('b2000000-0000-0000-0000-000000000002', 'dealer2@test.com',    '$2a$11$Lx9F4rmuo3l6ujspZS4w4OLWOjfwrsgpzVB2vcXvrGwAYdqAO795q', 'Sarah Fashion',    '+1000001002', 2, TRUE, NOW(), NOW()),
+('b2000000-0000-0000-0000-000000000003', 'dealer3@test.com',    '$2a$11$Lx9F4rmuo3l6ujspZS4w4OLWOjfwrsgpzVB2vcXvrGwAYdqAO795q', 'Mike Home',        '+1000001003', 2, TRUE, NOW(), NOW()),
+('b2000000-0000-0000-0000-000000000004', 'dealer4@test.com',    '$2a$11$Lx9F4rmuo3l6ujspZS4w4OLWOjfwrsgpzVB2vcXvrGwAYdqAO795q', 'Emma Books',       '+1000001004', 2, TRUE, NOW(), NOW()),
+('b2000000-0000-0000-0000-000000000005', 'dealer5@test.com',    '$2a$11$Lx9F4rmuo3l6ujspZS4w4OLWOjfwrsgpzVB2vcXvrGwAYdqAO795q', 'David Sports',     '+1000001005', 2, TRUE, NOW(), NOW()),
+('b2000000-0000-0000-0000-000000000006', 'dealer6@test.com',    '$2a$11$Lx9F4rmuo3l6ujspZS4w4OLWOjfwrsgpzVB2vcXvrGwAYdqAO795q', 'Lisa Toys',        '+1000001006', 2, TRUE, NOW(), NOW()),
+('b2000000-0000-0000-0000-000000000007', 'dealer7@test.com',    '$2a$11$Lx9F4rmuo3l6ujspZS4w4OLWOjfwrsgpzVB2vcXvrGwAYdqAO795q', 'James Auto',       '+1000001007', 2, TRUE, NOW(), NOW()),
+('b2000000-0000-0000-0000-000000000008', 'dealer8@test.com',    '$2a$11$Lx9F4rmuo3l6ujspZS4w4OLWOjfwrsgpzVB2vcXvrGwAYdqAO795q', 'Olivia Health',    '+1000001008', 2, TRUE, NOW(), NOW()),
+('b2000000-0000-0000-0000-000000000009', 'dealer9@test.com',    '$2a$11$Lx9F4rmuo3l6ujspZS4w4OLWOjfwrsgpzVB2vcXvrGwAYdqAO795q', 'Noah Gadgets',     '+1000001009', 2, TRUE, NOW(), NOW()),
+('b2000000-0000-0000-0000-000000000010', 'dealer10@test.com',   '$2a$11$Lx9F4rmuo3l6ujspZS4w4OLWOjfwrsgpzVB2vcXvrGwAYdqAO795q', 'Ava Style',        '+1000001010', 2, TRUE, NOW(), NOW());
 
 -- Customer users (10)
 INSERT INTO users ("Id", "Email", "PasswordHash", "FullName", "Phone", "Role", "IsActive", "CreatedAt", "UpdatedAt") VALUES
-('b3000000-0000-0000-0000-000000000001', 'john@demo.com',    '$2a$11$IYBD96EyES3aYh5pEcMqkOAHFt.2boQuF4TnQrLgxB3hj7KI1K2te', 'John Buyer',       '+1000002001', 3, TRUE, NOW(), NOW()),
-('b3000000-0000-0000-0000-000000000002', 'jane@demo.com',    '$2a$11$IYBD96EyES3aYh5pEcMqkOAHFt.2boQuF4TnQrLgxB3hj7KI1K2te', 'Jane Shopper',     '+1000002002', 3, TRUE, NOW(), NOW()),
-('b3000000-0000-0000-0000-000000000003', 'bob@demo.com',     '$2a$11$IYBD96EyES3aYh5pEcMqkOAHFt.2boQuF4TnQrLgxB3hj7KI1K2te', 'Bob Customer',     '+1000002003', 3, TRUE, NOW(), NOW()),
-('b3000000-0000-0000-0000-000000000004', 'alice@demo.com',   '$2a$11$IYBD96EyES3aYh5pEcMqkOAHFt.2boQuF4TnQrLgxB3hj7KI1K2te', 'Alice Consumer',   '+1000002004', 3, TRUE, NOW(), NOW()),
-('b3000000-0000-0000-0000-000000000005', 'tom@demo.com',     '$2a$11$IYBD96EyES3aYh5pEcMqkOAHFt.2boQuF4TnQrLgxB3hj7KI1K2te', 'Tom Price',        '+1000002005', 3, TRUE, NOW(), NOW()),
-('b3000000-0000-0000-0000-000000000006', 'mary@demo.com',    '$2a$11$IYBD96EyES3aYh5pEcMqkOAHFt.2boQuF4TnQrLgxB3hj7KI1K2te', 'Mary Saver',       '+1000002006', 3, TRUE, NOW(), NOW()),
-('b3000000-0000-0000-0000-000000000007', 'chris@demo.com',   '$2a$11$IYBD96EyES3aYh5pEcMqkOAHFt.2boQuF4TnQrLgxB3hj7KI1K2te', 'Chris Deal',       '+1000002007', 3, TRUE, NOW(), NOW()),
-('b3000000-0000-0000-0000-000000000008', 'nina@demo.com',    '$2a$11$IYBD96EyES3aYh5pEcMqkOAHFt.2boQuF4TnQrLgxB3hj7KI1K2te', 'Nina Bargain',     '+1000002008', 3, TRUE, NOW(), NOW()),
-('b3000000-0000-0000-0000-000000000009', 'eric@demo.com',    '$2a$11$IYBD96EyES3aYh5pEcMqkOAHFt.2boQuF4TnQrLgxB3hj7KI1K2te', 'Eric Value',       '+1000002009', 3, TRUE, NOW(), NOW()),
-('b3000000-0000-0000-0000-000000000010', 'sara@demo.com',    '$2a$11$IYBD96EyES3aYh5pEcMqkOAHFt.2boQuF4TnQrLgxB3hj7KI1K2te', 'Sara Smart',       '+1000002010', 3, TRUE, NOW(), NOW());
+('b3000000-0000-0000-0000-000000000001', 'customer1@test.com',  '$2a$11$IYBD96EyES3aYh5pEcMqkOAHFt.2boQuF4TnQrLgxB3hj7KI1K2te', 'John Buyer',       '+1000002001', 3, TRUE, NOW(), NOW()),
+('b3000000-0000-0000-0000-000000000002', 'customer2@test.com',  '$2a$11$IYBD96EyES3aYh5pEcMqkOAHFt.2boQuF4TnQrLgxB3hj7KI1K2te', 'Jane Shopper',     '+1000002002', 3, TRUE, NOW(), NOW()),
+('b3000000-0000-0000-0000-000000000003', 'customer3@test.com',  '$2a$11$IYBD96EyES3aYh5pEcMqkOAHFt.2boQuF4TnQrLgxB3hj7KI1K2te', 'Bob Customer',     '+1000002003', 3, TRUE, NOW(), NOW()),
+('b3000000-0000-0000-0000-000000000004', 'customer4@test.com',  '$2a$11$IYBD96EyES3aYh5pEcMqkOAHFt.2boQuF4TnQrLgxB3hj7KI1K2te', 'Alice Consumer',   '+1000002004', 3, TRUE, NOW(), NOW()),
+('b3000000-0000-0000-0000-000000000005', 'customer5@test.com',  '$2a$11$IYBD96EyES3aYh5pEcMqkOAHFt.2boQuF4TnQrLgxB3hj7KI1K2te', 'Tom Price',        '+1000002005', 3, TRUE, NOW(), NOW()),
+('b3000000-0000-0000-0000-000000000006', 'customer6@test.com',  '$2a$11$IYBD96EyES3aYh5pEcMqkOAHFt.2boQuF4TnQrLgxB3hj7KI1K2te', 'Mary Saver',       '+1000002006', 3, TRUE, NOW(), NOW()),
+('b3000000-0000-0000-0000-000000000007', 'customer7@test.com',  '$2a$11$IYBD96EyES3aYh5pEcMqkOAHFt.2boQuF4TnQrLgxB3hj7KI1K2te', 'Chris Deal',       '+1000002007', 3, TRUE, NOW(), NOW()),
+('b3000000-0000-0000-0000-000000000008', 'customer8@test.com',  '$2a$11$IYBD96EyES3aYh5pEcMqkOAHFt.2boQuF4TnQrLgxB3hj7KI1K2te', 'Nina Bargain',     '+1000002008', 3, TRUE, NOW(), NOW()),
+('b3000000-0000-0000-0000-000000000009', 'customer9@test.com',  '$2a$11$IYBD96EyES3aYh5pEcMqkOAHFt.2boQuF4TnQrLgxB3hj7KI1K2te', 'Eric Value',       '+1000002009', 3, TRUE, NOW(), NOW()),
+('b3000000-0000-0000-0000-000000000010', 'customer10@test.com', '$2a$11$IYBD96EyES3aYh5pEcMqkOAHFt.2boQuF4TnQrLgxB3hj7KI1K2te', 'Sara Smart',       '+1000002010', 3, TRUE, NOW(), NOW());
 
 
 -- ============================================================================
@@ -434,6 +434,8 @@ UNION ALL SELECT 'Order Items', COUNT(*) FROM order_items;
 --
 -- Demo Credentials:
 --   Admin:     admin@ecommerce.com     / Admin@123
---   Dealers:   tech@demo.com           / Dealer@123
---   Customers: john@demo.com           / Customer@123
+--   Dealers:   dealer1@test.com        / Dealer@123
+--              dealer2@test.com ... dealer10@test.com (same password)
+--   Customers: customer1@test.com      / Customer@123
+--              customer2@test.com ... customer10@test.com (same password)
 -- ============================================================================
