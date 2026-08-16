@@ -17,17 +17,17 @@ public class JwtTokenGenerator : IJwtTokenGenerator
 
     public JwtTokenGenerator(IConfiguration configuration)
     {
-        _key = configuration["Jwt:Key"] ?? string.Empty;
-        _issuer = configuration["Jwt:Issuer"] ?? "ECommerceAPI";
-        _audience = configuration["Jwt:Audience"] ?? "ECommerceClient";
-        _expiryMinutes = int.Parse(configuration["Jwt:AccessTokenExpiryMinutes"] ?? "15");
+        _key = configuration["JWT_SECRET_KEY"] ?? configuration["Jwt:Key"] ?? "SuperSecretJwtKey123456789012345678901234567890";
+        _issuer = configuration["JWT_ISSUER"] ?? configuration["Jwt:Issuer"] ?? "ECommerceAPI";
+        _audience = configuration["JWT_AUDIENCE"] ?? configuration["Jwt:Audience"] ?? "ECommerceClient";
+        _expiryMinutes = int.Parse(configuration["JWT_ACCESS_TOKEN_EXPIRY_MINUTES"] ?? configuration["Jwt:AccessTokenExpiryMinutes"] ?? "15");
     }
 
     public string GenerateAccessToken(User user)
     {
         var claims = new[]
         {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.Email, user.Email),
             new Claim(JwtRegisteredClaimNames.Name, user.FullName),
             new Claim(ClaimTypes.Role, user.Role.ToString())

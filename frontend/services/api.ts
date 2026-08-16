@@ -106,8 +106,16 @@ export const adminApi = {
     api.get('/admin/users', { params }),
   updateUserStatus: (id: string, data: UpdateUserStatusRequest) =>
     api.put(`/admin/users/${id}/status`, data),
-  getDealers: (params?: { page?: number; pageSize?: number }) =>
+  getDealers: (params?: { search?: string; category?: string; page?: number; pageSize?: number }) =>
     api.get('/admin/dealers', { params }),
+  getDealer: (id: string) => api.get(`/admin/dealers/${id}`),
+  createDealer: (data: { shopName: string; shopDescription?: string; shopCategory: string; address: string; logoUrl?: string; isApproved: boolean; email: string; password: string; fullName: string; phone?: string }) =>
+    api.post('/admin/dealers', data),
+  updateDealer: (id: string, data: { shopName: string; shopDescription?: string; shopCategory: string; address: string; logoUrl?: string; isApproved: boolean; email: string; password: string; fullName: string; phone?: string }) =>
+    api.put(`/admin/dealers/${id}`, data),
+  deleteDealer: (id: string) => api.delete(`/admin/dealers/${id}`),
+  approveDealer: (id: string) => api.put(`/admin/dealers/${id}/approve`),
+  clearDemoData: () => api.post('/admin/clear-demo-data'),
   getPendingProducts: (params?: { page?: number; pageSize?: number }) =>
     api.get('/admin/products/pending', { params }),
   approveProduct: (id: string) => api.put(`/admin/products/${id}/approve`),

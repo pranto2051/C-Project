@@ -1,6 +1,6 @@
 # API Documentation
 
-Base URL: `https://localhost:7001/api` (development)
+Base URL: `http://localhost:5001/api` (development)
 
 All endpoints return JSON. Errors follow this shape:
 ```json
@@ -66,6 +66,23 @@ Get current authenticated user profile. **Requires auth.**
   "role": "Customer",
   "isActive": true,
   "createdAt": "2024-01-01T00:00:00Z"
+}
+```
+
+### POST /auth/refresh
+Refresh an expired access token. Currently returns 401 (refresh tokens not persisted in demo).
+
+**Request:**
+```json
+{
+  "refreshToken": "base64_token"
+}
+```
+
+**Response 401:**
+```json
+{
+  "message": "Refresh token expired. Please log in again."
 }
 ```
 

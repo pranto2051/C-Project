@@ -93,4 +93,11 @@ public class AuthService : IAuthService
 
         return _mapper.Map<UserDto>(user);
     }
+
+    public Task<AuthResponse> RefreshTokenAsync(RefreshTokenRequest request)
+    {
+        // Refresh tokens are not persisted in this demo.
+        // Return null to signal the caller should re-authenticate.
+        throw new UnauthorizedAccessException("Refresh token expired. Please log in again.");
+    }
 }

@@ -9,3 +9,4 @@
 /Users/md.prantoislam/Desktop/C-Project/backend/src/ECommerce.Domain/obj/Debug/net8.0/refint/ECommerce.Domain.dll
 /Users/md.prantoislam/Desktop/C-Project/backend/src/ECommerce.Domain/obj/Debug/net8.0/ECommerce.Domain.pdb
 /Users/md.prantoislam/Desktop/C-Project/backend/src/ECommerce.Domain/obj/Debug/net8.0/ref/ECommerce.Domain.dll
+/Users/md.prantoislam/Desktop/C-Project/backend/src/ECommerce.Domain/obj/Debug/net8.0/ECommerce.Domain.sourcelink.json

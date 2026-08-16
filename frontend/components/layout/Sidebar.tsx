@@ -15,6 +15,7 @@ const dealerLinks = [
 
 const adminLinks = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: '📊' },
+  { href: '/admin/dealers', label: 'Dealers', icon: '🏪' },
   { href: '/admin/products/pending', label: 'Pending Products', icon: '⏳' },
   { href: '/admin/categories', label: 'Categories', icon: '📁' },
   { href: '/admin/users', label: 'Users', icon: '👥' },

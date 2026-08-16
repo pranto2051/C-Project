@@ -178,3 +178,10 @@ Line items in an order. DealerId denormalized for fast queries.
 ## Deviations from Master Prompt
 
 None at this stage. This schema matches Section 4 of the master prompt exactly.
+
+## Implementation Notes
+
+- Schema is managed via EF Core code-first approach (`EnsureCreated()`)
+- Table names use lowercase (e.g., `users`, `products`, `orders`) per EF Core configuration
+- Fluent API configurations in `ECommerce.Infrastructure/Data/Configurations/`
+- Database seeded on startup in Development mode with 3 demo users and 5 categories

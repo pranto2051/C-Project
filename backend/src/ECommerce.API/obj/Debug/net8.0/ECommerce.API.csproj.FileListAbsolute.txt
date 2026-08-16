@@ -121,8 +121,11 @@
 /Users/md.prantoislam/Desktop/C-Project/backend/src/ECommerce.API/obj/Debug/net8.0/ECommerce.API.pdb
 /Users/md.prantoislam/Desktop/C-Project/backend/src/ECommerce.API/obj/Debug/net8.0/ECommerce.API.genruntimeconfig.cache
 /Users/md.prantoislam/Desktop/C-Project/backend/src/ECommerce.API/obj/Debug/net8.0/ref/ECommerce.API.dll
-/Users/md.prantoislam/Desktop/C-Project/backend/src/ECommerce.API/obj/Debug/net8.0/staticwebassets/msbuild.ECommerce.API.Microsoft.AspNetCore.StaticWebAssets.props
-/Users/md.prantoislam/Desktop/C-Project/backend/src/ECommerce.API/obj/Debug/net8.0/staticwebassets/msbuild.build.ECommerce.API.props
-/Users/md.prantoislam/Desktop/C-Project/backend/src/ECommerce.API/obj/Debug/net8.0/staticwebassets/msbuild.buildMultiTargeting.ECommerce.API.props
-/Users/md.prantoislam/Desktop/C-Project/backend/src/ECommerce.API/obj/Debug/net8.0/staticwebassets/msbuild.buildTransitive.ECommerce.API.props
-/Users/md.prantoislam/Desktop/C-Project/backend/src/ECommerce.API/obj/Debug/net8.0/staticwebassets.pack.json
+/Users/md.prantoislam/Desktop/C-Project/backend/src/ECommerce.API/bin/Debug/net8.0/ECommerce.API.staticwebassets.endpoints.json
+/Users/md.prantoislam/Desktop/C-Project/backend/src/ECommerce.API/obj/Debug/net8.0/rpswa.dswa.cache.json
+/Users/md.prantoislam/Desktop/C-Project/backend/src/ECommerce.API/obj/Debug/net8.0/ECommerce.API.sourcelink.json
+/Users/md.prantoislam/Desktop/C-Project/backend/src/ECommerce.API/obj/Debug/net8.0/rjimswa.dswa.cache.json
+/Users/md.prantoislam/Desktop/C-Project/backend/src/ECommerce.API/obj/Debug/net8.0/rjsmrazor.dswa.cache.json
+/Users/md.prantoislam/Desktop/C-Project/backend/src/ECommerce.API/obj/Debug/net8.0/rjsmcshtml.dswa.cache.json
+/Users/md.prantoislam/Desktop/C-Project/backend/src/ECommerce.API/obj/Debug/net8.0/staticwebassets.build.json.cache
+/Users/md.prantoislam/Desktop/C-Project/backend/src/ECommerce.API/obj/Debug/net8.0/staticwebassets.build.endpoints.json

@@ -103,6 +103,30 @@ var app = builder.Build();
 
 app.UseMiddleware<ECommerce.API.Middleware.ExceptionHandlingMiddleware>();
 
+// Seed database on startup
+if (app.Environment.IsDevelopment())
+{
+    using (var scope = app.Services.CreateScope())
+    {
+        var context = scope.ServiceProvider.GetRequiredService<ECommerce.Infrastructure.Data.AppDbContext>();
+        var passwordHasher = scope.ServiceProvider.GetRequiredService<ECommerce.Domain.Interfaces.IPasswordHasher>();
+        
+        // Apply migrations or ensure database exists
+        if (context.Database.GetMigrations().Any())
+        {
+            context.Database.Migrate();
+        }
+        else
+        {
+            context.Database.EnsureCreated();
+        }
+        
+        // Seed data
+        var seeder = new ECommerce.Infrastructure.Data.DatabaseSeeder(context, passwordHasher);
+        await seeder.SeedAsync();
+    }
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

@@ -6,6 +6,7 @@ using ECommerce.Application.DTOs.Auth;
 using ECommerce.Application.DTOs.Dealer;
 using ECommerce.Application.DTOs.Product;
 using ECommerce.Application.DTOs.Category;
+using ECommerce.Domain.Interfaces;
 
 namespace ECommerce.API.Controllers;
 
@@ -40,10 +41,56 @@ public class AdminController : ControllerBase
     }
 
     [HttpGet("dealers")]
-    public async Task<IActionResult> GetDealers()
+    public async Task<IActionResult> GetDealers([FromQuery] string? search, [FromQuery] string? category, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
     {
-        var dealers = await _adminService.GetAllDealersAsync();
-        return Ok(new { items = dealers, total = dealers.Count, page = 1, pageSize = dealers.Count });
+        var dealers = await _adminService.GetAllDealersAsync(search, category, page, pageSize);
+        return Ok(new { items = dealers, total = dealers.Count, page, pageSize });
+    }
+
+    [HttpGet("dealers/{id}")]
+    public async Task<IActionResult> GetDealer(Guid id)
+    {
+        var dealer = await _adminService.GetDealerByIdAsync(id);
+        if (dealer == null) return NotFound();
+        return Ok(dealer);
+    }
+
+    [HttpPost("dealers")]
+    public async Task<IActionResult> CreateDealer([FromBody] AdminDealerRequest request)
+    {
+        try
+        {
+            var dealer = await _adminService.CreateDealerAsync(request);
+            return Ok(dealer);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpPut("dealers/{id}")]
+    public async Task<IActionResult> UpdateDealer(Guid id, [FromBody] AdminDealerRequest request)
+    {
+        var dealer = await _adminService.UpdateDealerAsync(id, request);
+        if (dealer == null) return NotFound();
+        return Ok(dealer);
+    }
+
+    [HttpDelete("dealers/{id}")]
+    public async Task<IActionResult> DeleteDealer(Guid id)
+    {
+        var result = await _adminService.DeleteDealerAsync(id);
+        if (!result) return NotFound();
+        return NoContent();
+    }
+
+    [HttpPut("dealers/{id}/approve")]
+    public async Task<IActionResult> ApproveDealer(Guid id)
+    {
+        var result = await _adminService.ApproveDealerAsync(id);
+        if (!result) return NotFound();
+        return Ok(new { message = "Dealer approved" });
     }
 
     [HttpGet("products/pending")]
@@ -108,5 +155,15 @@ public class AdminController : ControllerBase
     {
         var stats = await _adminService.GetStatsAsync();
         return Ok(stats);
+    }
+
+    [HttpPost("clear-demo-data")]
+    public async Task<IActionResult> ClearDemoData()
+    {
+        var seeder = new ECommerce.Infrastructure.Data.DatabaseSeeder(
+            HttpContext.RequestServices.GetRequiredService<ECommerce.Infrastructure.Data.AppDbContext>(),
+            HttpContext.RequestServices.GetRequiredService<IPasswordHasher>());
+        await seeder.ClearDemoDataAsync();
+        return Ok(new { message = "Demo data cleared. Restart backend to re-seed." });
     }
 }

@@ -148,8 +148,8 @@ frontend/
 
 ## Database Architecture
 
-- **PostgreSQL** via EF Core 8
-- **Code-first migrations** for schema evolution
+- **PostgreSQL** via EF Core 9.0 (Npgsql provider)
+- **Code-first schema** via `EnsureCreated()` (migrations pending)
 - **Foreign keys** with proper cascade rules
 - **Indexes** on frequently queried columns (ApprovalStatus, CategoryId, DealerId)
 - **Transactions** for order creation + stock decrement

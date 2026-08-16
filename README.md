@@ -44,10 +44,9 @@ C-Project/
 
 ## Prerequisites
 
-- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
 - [Node.js 18+](https://nodejs.org/)
 - [PostgreSQL 14+](https://www.postgresql.org/download/)
-- [pgAdmin 4](https://www.pgadmin.org/) (optional, for DB management)
 
 ## Setup
 
@@ -69,10 +68,13 @@ Or apply EF Core migrations (see backend README).
 ```bash
 cd backend
 dotnet restore
-dotnet run --project src/ECommerce.API
+cd src/ECommerce.API
+ASPNETCORE_ENVIRONMENT=Development dotnet run --urls "http://localhost:5001"
 ```
 
-API will be available at `https://localhost:7001` with Swagger at `/swagger`.
+API will be available at `http://localhost:5001` with Swagger at `/swagger`.
+
+> **Note:** The `ASPNETCORE_ENVIRONMENT=Development` flag is required for database seeding (demo users + categories).
 
 ### 3. Frontend Setup
 
