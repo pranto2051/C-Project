@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { publicApi, customerApi } from '@/services/api';
 import { useAuth } from '@/features/auth';
-import { Button, Spinner } from '@/components/ui';
+import { Button } from '@/components/ui';
 import { ProductCard } from '@/features/products';
+import { ProductGridSkeleton } from '@/components/ui/ProductGridSkeleton';
+import { LoadingProgress } from '@/components/ui/LoadingProgress';
 import type { Product, Category, PaginatedResponse } from '@/types';
 import toast from 'react-hot-toast';
 
@@ -68,6 +70,9 @@ export default function Home() {
 
   return (
     <div>
+      {/* Loading Progress Bar */}
+      <LoadingProgress isLoading={isLoading} />
+
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 text-white overflow-hidden">
         <div className="absolute inset-0 opacity-10">
@@ -172,7 +177,7 @@ export default function Home() {
             </Link>
           </div>
           {isLoading ? (
-            <div className="flex justify-center py-12"><Spinner size="lg" /></div>
+            <ProductGridSkeleton count={8} columns={4} />
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {featuredProducts.map((product) => (
@@ -207,11 +212,15 @@ export default function Home() {
                   </svg>
                 </Link>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
-                {catProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
+              {isLoading ? (
+                <ProductGridSkeleton count={5} columns={4} />
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
+                  {catProducts.map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+              )}
             </div>
           </section>
         );

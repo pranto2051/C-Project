@@ -43,9 +43,9 @@ Next.js 14+ App Router with TypeScript, Tailwind CSS, and React Context for stat
 ### Admin Pages (require Admin role)
 | Route | Page | Description |
 |-------|------|-------------|
-| `/admin/dashboard` | Dashboard | Platform stats overview |
-| `/admin/dealers` | Dealers | Dealer management (filter, CRUD) |
-| `/admin/users` | Users | User management (activate/deactivate) |
+| `/admin/dashboard` | Dashboard | Stats overview + dealer table with all info |
+| `/admin/dealers` | Dealers | Dealer management (filter, CRUD, owner info) |
+| `/admin/users` | Customers | Customer management (activate/deactivate) |
 | `/admin/products/pending` | Pending Products | Product approval queue |
 | `/admin/categories` | Categories | Category management |
 | `/admin/stats` | Statistics | Platform statistics |
@@ -69,6 +69,45 @@ Next.js 14+ App Router with TypeScript, Tailwind CSS, and React Context for stat
 | `Pagination` | Page navigation |
 | `Spinner` | Loading spinner (sm/md/lg) |
 | `EmptyState` | Empty state with icon, title, description, action |
+| `ProductCardSkeleton` | Skeleton loader for product cards with shimmer animation |
+| `ProductGridSkeleton` | Grid of skeleton cards (configurable count and columns) |
+| `ProductDetailSkeleton` | Full skeleton for product detail page |
+| `LoadingProgress` | Top progress bar with percentage badge and animated spinner |
+
+### Loading Animation System
+| Component | Purpose |
+|-----------|---------|
+| `LoadingProgress` | Fixed top progress bar with percentage (0-100%) and shimmer effect |
+| `ProductCardSkeleton` | Animated skeleton matching ProductCard layout |
+| `ProductGridSkeleton` | Configurable grid of skeleton cards |
+| `ProductDetailSkeleton` | Full page skeleton for product detail |
+| `useLoadingProgress` | Custom hook for programmatic loading progress control |
+
+### Loading Animation Features
+- **Percentage Progress Bar**: Shows real-time loading percentage (0-100%)
+- **Shimmer Effect**: Animated gradient sweep on skeleton elements
+- **Smooth Transitions**: Progress bar fades out when loading completes
+- **Configurable**: Customizable grid columns and skeleton counts
+- **Reusable**: All components export from `components/ui/index.ts`
+
+### Usage Examples
+```tsx
+// Loading progress bar
+import { LoadingProgress } from '@/components/ui';
+<LoadingProgress isLoading={isLoading} />
+
+// Product grid skeleton
+import { ProductGridSkeleton } from '@/components/ui';
+<ProductGridSkeleton count={8} columns={4} />
+
+// Product detail skeleton
+import { ProductDetailSkeleton } from '@/components/ui';
+<ProductDetailSkeleton />
+
+// Custom hook for progress
+import { useLoadingProgress } from '@/hooks';
+const { progress, start, complete } = useLoadingProgress();
+```
 
 ### Layout Components (`components/layout/`)
 | Component | Purpose |
@@ -122,3 +161,4 @@ await customerApi.addToCart({ productId, quantity });
 - **Responsive design** — mobile-first with `sm:`, `md:`, `lg:` breakpoints
 - **Color palette:** Primary (blue), neutral (gray), success (green), danger (red), warning (yellow)
 - **Font:** Inter (via next/font)
+- **Animations:** Custom shimmer animation for skeleton loaders (defined in `tailwind.config.ts`)

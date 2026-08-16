@@ -11,4 +11,10 @@ public class DealerProfileResponse
     public string? LogoUrl { get; set; }
     public bool IsApproved { get; set; }
     public DateTime CreatedAt { get; set; }
+
+    // User info
+    public string? UserFullName { get; set; }
+    public string? UserEmail { get; set; }
+    public string? UserPhone { get; set; }
+    public bool UserIsActive { get; set; }
 }

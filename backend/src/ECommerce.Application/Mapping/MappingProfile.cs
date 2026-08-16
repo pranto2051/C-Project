@@ -16,7 +16,11 @@ public class MappingProfile : Profile
         CreateMap<User, UserDto>()
             .ForMember(d => d.Role, opt => opt.MapFrom(s => s.Role.ToString()));
 
-        CreateMap<DealerProfile, DealerProfileResponse>();
+        CreateMap<DealerProfile, DealerProfileResponse>()
+            .ForMember(d => d.UserFullName, opt => opt.MapFrom(s => s.User != null ? s.User.FullName : null))
+            .ForMember(d => d.UserEmail, opt => opt.MapFrom(s => s.User != null ? s.User.Email : null))
+            .ForMember(d => d.UserPhone, opt => opt.MapFrom(s => s.User != null ? s.User.Phone : null))
+            .ForMember(d => d.UserIsActive, opt => opt.MapFrom(s => s.User != null && s.User.IsActive));
 
         CreateMap<Product, ProductResponse>()
             .ForMember(d => d.ApprovalStatus, opt => opt.MapFrom(s => s.ApprovalStatus.ToString()));

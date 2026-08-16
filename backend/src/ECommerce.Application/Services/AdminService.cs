@@ -57,10 +57,12 @@ public class AdminService : IAdminService
 
     public async Task<List<DealerProfileResponse>> GetAllDealersAsync(string? search, string? category, int page, int pageSize)
     {
-        var query = _unitOfWork.DealerProfiles.GetQueryable();
+        var query = _unitOfWork.DealerProfiles.GetQueryable()
+            .Include(d => d.User)
+            .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(search))
-            query = query.Where(d => d.ShopName.Contains(search));
+            query = query.Where(d => d.ShopName.Contains(search) || (d.User != null && d.User.FullName.Contains(search)));
 
         if (!string.IsNullOrWhiteSpace(category))
             query = query.Where(d => d.ShopCategory == category);

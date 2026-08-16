@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { publicApi } from '@/services/api';
 import { useDebounce } from '@/hooks';
-import { Button, Input, Select, Spinner, EmptyState, Pagination } from '@/components/ui';
+import { Button, Input, Select, EmptyState, Pagination } from '@/components/ui';
 import { ProductCard } from '@/features/products';
+import { ProductGridSkeleton } from '@/components/ui/ProductGridSkeleton';
+import { LoadingProgress } from '@/components/ui/LoadingProgress';
 import type { Product, Category, PaginatedResponse } from '@/types';
 
 export default function ProductsPage() {
@@ -79,13 +81,23 @@ export default function ProductsPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Loading Progress Bar */}
+      <LoadingProgress isLoading={isLoading} />
+
       {/* Page Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-neutral-900 font-heading">
           {selectedCategory ? categories.find(c => c.id === selectedCategory)?.name || 'Products' : 'All Products'}
         </h1>
         <p className="text-neutral-500 mt-1">
-          {isLoading ? 'Loading...' : `${total} products found`}
+          {isLoading ? (
+            <span className="inline-flex items-center gap-2">
+              <span className="w-4 h-4 bg-neutral-200 rounded-full animate-pulse" />
+              Loading products...
+            </span>
+          ) : (
+            `${total} products found`
+          )}
         </p>
       </div>
 
@@ -170,9 +182,7 @@ export default function ProductsPage() {
         {/* Product Grid */}
         <div className="flex-1">
           {isLoading ? (
-            <div className="flex justify-center py-16">
-              <Spinner size="lg" />
-            </div>
+            <ProductGridSkeleton count={12} columns={3} />
           ) : error ? (
             <div className="text-center py-16 text-red-600">{error}</div>
           ) : products.length === 0 ? (

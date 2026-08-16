@@ -4,10 +4,12 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { publicApi, customerApi } from '@/services/api';
-import { Button, Spinner, Badge, EmptyState } from '@/components/ui';
+import { Button, Badge, EmptyState } from '@/components/ui';
 import { useAuth } from '@/features/auth';
 import { formatPrice, formatDate } from '@/lib/utils';
 import { ProductCard } from '@/features/products';
+import { ProductDetailSkeleton } from '@/components/ui/ProductDetailSkeleton';
+import { LoadingProgress } from '@/components/ui/LoadingProgress';
 import type { Product, PaginatedResponse } from '@/types';
 import toast from 'react-hot-toast';
 
@@ -70,9 +72,10 @@ export default function ProductDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex justify-center">
-        <Spinner size="lg" />
-      </div>
+      <>
+        <LoadingProgress isLoading={isLoading} />
+        <ProductDetailSkeleton />
+      </>
     );
   }
 

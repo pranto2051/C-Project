@@ -24,6 +24,10 @@ export interface DealerProfile {
   logoUrl?: string;
   isApproved: boolean;
   createdAt: string;
+  userFullName?: string;
+  userEmail?: string;
+  userPhone?: string;
+  userIsActive?: boolean;
 }
 
 export interface CustomerProfile {
