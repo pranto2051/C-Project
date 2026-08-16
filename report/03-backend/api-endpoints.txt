@@ -1,0 +1,226 @@
+API ENDPOINTS
+=============
+
+Base URL: http://localhost:5001/api
+Swagger: http://localhost:5001/swagger
+
+Total Endpoints: 30+
+Authentication: JWT Bearer (required for most endpoints)
+
+===============================================================================
+AUTHENTICATION ENDPOINTS
+===============================================================================
+
+POST /api/auth/register
+- Description: Register a new user (Dealer or Customer)
+- Auth: None
+- Request: { email, password, fullName, phone, role }
+- Response: { id, email, fullName, role, token, refreshToken }
+
+POST /api/auth/login
+- Description: Authenticate and receive JWT
+- Auth: None
+- Request: { email, password }
+- Response: { id, email, fullName, role, token, refreshToken }
+
+GET /api/auth/me
+- Description: Get current user profile
+- Auth: Required (any role)
+- Response: UserDto { id, email, fullName, phone, role, isActive, createdAt }
+
+PUT /api/auth/me
+- Description: Update current user profile
+- Auth: Required (any role)
+- Request: { fullName?, phone?, newPassword?, currentPassword? }
+- Response: Updated UserDto
+
+POST /api/auth/refresh
+- Description: Refresh expired token (not implemented - returns 401)
+- Auth: None
+- Request: { refreshToken }
+- Response: 401 always
+
+===============================================================================
+ADMIN ENDPOINTS (Admin role required)
+===============================================================================
+
+GET /api/admin/users
+- Description: List all customers
+- Query: role, isActive, search, page, pageSize
+- Response: { items, total, page, pageSize }
+
+PUT /api/admin/users/{id}/status
+- Description: Activate/deactivate customer
+- Request: { isActive: boolean }
+
+GET /api/admin/dealers
+- Description: List all dealers
+- Query: search, category, page, pageSize
+- Response: { items, total, page, pageSize }
+
+GET /api/admin/dealers/{id}
+- Description: Get dealer details
+- Response: Dealer object
+
+POST /api/admin/dealers
+- Description: Create new dealer
+- Request: { shopName, shopDescription, shopCategory, address, logoUrl, isApproved, email, password, fullName, phone }
+
+PUT /api/admin/dealers/{id}
+- Description: Update dealer
+- Request: Same as POST
+
+DELETE /api/admin/dealers/{id}
+- Description: Delete dealer
+- Response: 204 No Content
+
+PUT /api/admin/dealers/{id}/approve
+- Description: Approve dealer
+- Response: Updated dealer
+
+GET /api/admin/products/pending
+- Description: List pending products
+- Query: page, pageSize
+- Response: { items, total, page, pageSize }
+
+PUT /api/admin/products/{id}/approve
+- Description: Approve product
+- Response: Updated product
+
+PUT /api/admin/products/{id}/reject
+- Description: Reject product
+- Request: { rejectionReason: string }
+- Response: Updated product
+
+DELETE /api/admin/products/{id}
+- Description: Delete any product
+- Response: 204 No Content
+
+GET /api/admin/categories
+- Description: List all categories
+- Query: page, pageSize
+- Response: { items, total, page, pageSize }
+
+POST /api/admin/categories
+- Description: Create category
+- Request: { name, description?, parentCategoryId? }
+- Response: Created category
+
+PUT /api/admin/categories/{id}
+- Description: Update category
+- Request: { name?, description?, parentCategoryId? }
+
+DELETE /api/admin/categories/{id}
+- Description: Delete category (only if no products)
+- Response: 204 No Content
+
+GET /api/admin/stats
+- Description: Get platform statistics
+- Response: { totalUsers, totalDealers, totalCustomers, totalProducts, pendingProducts, approvedProducts, rejectedProducts, totalOrders, totalRevenue }
+
+POST /api/admin/clear-demo-data
+- Description: Clear all seeded data
+- Response: 204 No Content
+
+===============================================================================
+DEALER ENDPOINTS (Dealer role required)
+===============================================================================
+
+GET /api/dealer/profile
+- Description: Get dealer profile
+- Response: DealerProfileResponse
+
+PUT /api/dealer/profile
+- Description: Update dealer profile
+- Request: { shopName, shopDescription, shopCategory, address, logoUrl }
+
+GET /api/dealer/products
+- Description: Get dealer's products
+- Query: status, page, pageSize
+- Response: { items, total, page, pageSize }
+
+POST /api/dealer/products
+- Description: Create product (starts as Pending)
+- Request: { name, description, price, stockQuantity, categoryId, sku, images }
+- Response: Created product
+
+PUT /api/dealer/products/{id}
+- Description: Update own product
+- Request: Same as POST
+- Ownership check required
+
+DELETE /api/dealer/products/{id}
+- Description: Delete own product
+- Ownership check required
+- Response: 204 No Content
+
+GET /api/dealer/orders
+- Description: Get orders containing dealer's products
+- Query: page, pageSize
+- Response: { items, total, page, pageSize }
+
+===============================================================================
+PUBLIC ENDPOINTS (No auth required)
+===============================================================================
+
+GET /api/products
+- Description: Browse approved products
+- Query: search, categoryId, minPrice, maxPrice, sortBy, page, pageSize
+- Response: { items, total, page, pageSize }
+
+GET /api/products/{id}
+- Description: Get product detail
+- Response: Product with images, dealer, category
+
+GET /api/categories
+- Description: Get all categories
+- Response: Category[]
+
+===============================================================================
+CUSTOMER / CART / ORDER ENDPOINTS (Customer role required)
+===============================================================================
+
+GET /api/cart
+- Description: Get current cart with items
+- Response: { id, customerId, items[], totalAmount, createdAt }
+
+POST /api/cart/items
+- Description: Add item to cart (or increase quantity)
+- Request: { productId, quantity }
+- Response: CartItemResponse
+
+PUT /api/cart/items/{id}
+- Description: Update cart item quantity
+- Request: { quantity }
+- Response: CartItemResponse
+
+DELETE /api/cart/items/{id}
+- Description: Remove cart item
+- Response: 204 No Content
+
+POST /api/orders
+- Description: Create order from cart
+- Request: { shippingAddress }
+- Response: Order with items
+
+GET /api/orders
+- Description: Get customer's orders
+- Query: page, pageSize
+- Response: { items, total, page, pageSize }
+
+GET /api/orders/{id}
+- Description: Get order detail
+- Response: Order with items
+
+===============================================================================
+ENDPOINT SUMMARY
+===============================================================================
+
+| Category    | Count | Auth Required |
+|-------------|-------|---------------|
+| Auth        | 5     | Partial       |
+| Admin       | 15    | Admin role    |
+| Dealer      | 7     | Dealer role   |
+| Public      | 3     | None          |
+| Customer    | 7     | Customer role |
+| **Total**   | **37**|               |

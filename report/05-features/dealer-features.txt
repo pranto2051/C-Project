@@ -1,0 +1,157 @@
+DEALER (SELLER) FEATURES
+=========================
+
+Role: Dealer
+Login: dealer1@test.com / Dealer@123
+Access: Shop and product management
+
+===============================================================================
+DASHBOARD
+===============================================================================
+
+Route: /dealer/dashboard
+Features:
+- Stats cards
+  - Total Products
+  - Approved Products
+  - Pending Products
+  - Total Orders
+- Recent products list
+- Quick action buttons (Add Product, View Orders)
+
+===============================================================================
+PROFILE MANAGEMENT
+===============================================================================
+
+Route: /dealer/profile (via API)
+Features:
+1. View Profile
+   - Shop Name
+   - Shop Description
+   - Shop Category
+   - Address
+   - Logo URL
+   - Approval Status
+
+2. Update Profile
+   - Edit shop name
+   - Edit description
+   - Edit category
+   - Edit address
+   - Upload logo URL
+   - Changes save immediately
+
+API Endpoints:
+- GET /api/dealer/profile
+- PUT /api/dealer/profile
+
+===============================================================================
+PRODUCT MANAGEMENT
+===============================================================================
+
+Route: /dealer/products
+
+Features:
+1. View Own Products
+   - List view with columns: Name, Category, Price, Stock, Status, Actions
+   - Filter by status (All/Pending/Approved/Rejected)
+   - Pagination
+   - Only shows products owned by this dealer
+
+2. Create New Product
+   - Route: /dealer/products/new
+   - Form fields:
+     - Product Name (required)
+     - Description
+     - Price (required, min 0)
+     - Stock Quantity (required, min 0)
+     - Category (required, dropdown)
+     - SKU (optional, unique)
+     - Image URLs (multiple, optional)
+   - Product starts with ApprovalStatus = "Pending"
+   - Must wait for admin approval
+
+3. Edit Product
+   - Route: /dealer/products/[id]/edit
+   - Pre-filled form with existing data
+   - Can update all fields
+   - Ownership check (can only edit own products)
+   - Changes may reset status to Pending (if significant changes)
+
+4. Delete Product
+   - Confirmation dialog
+   - Permanently removes product
+   - Ownership check required
+   - Cannot undo
+
+5. Product Status
+   - Pending: Awaiting admin approval
+   - Approved: Visible on storefront
+   - Rejected: Not visible (check rejection reason)
+   - Unpublished: Not visible (dealer can toggle)
+
+API Endpoints:
+- GET /api/dealer/products
+- POST /api/dealer/products
+- PUT /api/dealer/products/{id}
+- DELETE /api/dealer/products/{id}
+
+===============================================================================
+ORDER MANAGEMENT
+===============================================================================
+
+Route: /dealer/orders
+
+Features:
+1. View Orders
+   - List of orders containing dealer's products
+   - Shows: Order ID, Customer, Date, Total, Status
+   - Only shows orders with this dealer's items
+
+2. Order Details
+   - Order items with dealer's products
+   - Customer shipping address
+   - Order status
+   - Quantity and price per item
+
+Note: Dealers cannot modify order status (admin or system only)
+
+API Endpoint:
+- GET /api/dealer/orders
+
+===============================================================================
+DEALER APPROVAL WORKFLOW
+===============================================================================
+
+Flow:
+1. Admin creates dealer account (or dealer registers)
+2. Dealer starts with IsApproved = false
+3. Admin reviews and approves dealer
+4. Once approved, dealer can create products
+5. Products start as Pending
+6. Admin approves/rejects products
+7. Approved products appear on storefront
+
+Status Checks:
+- Dealer approval checked at controller level
+- Product approval checked at service level
+- Both must be approved for products to be visible
+
+===============================================================================
+PRODUCT APPROVAL WORKFLOW
+===============================================================================
+
+Flow:
+1. Dealer creates product
+2. Product starts with ApprovalStatus = "Pending"
+3. Admin reviews in pending products queue
+4. Admin can:
+   - Approve → Status = "Approved", PublishedAt set
+   - Reject → Status = "Rejected", RejectionReason set
+5. Only approved products visible on storefront
+
+Status Values:
+- Pending: Awaiting admin review
+- Approved: Visible to customers
+- Rejected: Not visible, check reason
+- Unpublished: Hidden by dealer (optional)

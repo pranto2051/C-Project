@@ -1,0 +1,180 @@
+DEVELOPMENT TIMELINE
+====================
+
+Project Duration: August 15-16, 2026 (2 days)
+Developer: md.prantoislam
+
+===============================================================================
+DAY 1 — AUGUST 15, 2026
+===============================================================================
+
+Phase 1: Project Initialization
+- Created project directory structure
+- Created documentation placeholder files
+- Designed database schema
+- Created SQL scripts for schema and seed data
+- Set up .NET solution with 4 projects
+- Set up Next.js frontend project
+
+Phase 2: Backend Foundation
+- Implemented domain entities (User, Product, Category, Cart, Order)
+- Created EF Core DbContext
+- Implemented repository pattern
+- Created Unit of Work
+- Implemented JWT token generator
+- Implemented password hasher (BCrypt)
+
+Phase 3: Authentication
+- Created AuthService (login, register)
+- Created AuthController
+- Implemented JWT authentication
+- Added role-based authorization
+- Fixed JWT key mismatch issue
+- Upgraded to .NET 9.0
+
+Phase 4: Core API
+- Created ProductsController (public)
+- Created CartController
+- Created OrderController
+- Created AdminController (basic)
+
+Phase 5: Frontend Foundation
+- Set up Next.js App Router
+- Created Tailwind configuration
+- Implemented AuthProvider (React Context)
+- Created API client (services/api.ts)
+- Created UI component library
+
+===============================================================================
+DAY 2 — AUGUST 16, 2026
+===============================================================================
+
+Phase 6: Database Refactoring
+- Split users table into admins, dealers, customers
+- Created Admin.cs, Dealer.cs, Customer.cs entities
+- Deleted old User.cs, DealerProfile.cs, CustomerProfile.cs
+- Updated all entity references
+- Updated EF Core configurations
+- Created SQL/database.sql with 550 products
+
+Phase 7: Admin Features
+- Created AdminService with full CRUD
+- Implemented dealer management (create, edit, delete, approve)
+- Implemented product approval (approve, reject)
+- Implemented category management
+- Implemented stats endpoint
+- Created admin dashboard UI
+- Created admin dealers page
+- Created admin users page
+- Created admin pending products page
+- Created admin categories page
+- Created admin profile page
+
+Phase 8: Dealer Features
+- Updated DealerService for new entity structure
+- Implemented dealer profile management
+- Implemented dealer product CRUD
+- Implemented dealer orders view
+- Created dealer dashboard UI
+- Created dealer products page
+- Created dealer new product page
+- Created dealer edit product page
+- Created dealer orders page
+
+Phase 9: Customer Features
+- Updated CartService with Include for items
+- Fixed OrderService with batch-loading
+- Implemented cart operations (add, update, remove)
+- Implemented order creation
+- Implemented order history
+- Created cart page UI
+- Created checkout page UI
+- Created orders page UI
+- Created order detail page UI
+- Created account page with password change
+
+Phase 10: UI Overhaul
+- Redesigned Navbar (logo, links, dropdown, mobile)
+- Created Footer (5 columns)
+- Created ShopLayout (Navbar + Footer wrapper)
+- Redesigned Home page (hero, stats, categories, products)
+- Redesigned ProductCard (hover, add-to-cart)
+- Redesigned Products page (sidebar filters)
+- Redesigned Product Detail (breadcrumb, gallery)
+- Created About page
+- Created Contact page
+- Created loading animation system (skeletons, progress bar)
+
+Phase 11: Bug Fixes & Polish
+- Fixed cart add-to-cart bug (PUT → POST)
+- Fixed login router.push during render
+- Made CurrentPassword optional for password change
+- Fixed OrderStatus HasConversion (string storage)
+- Increased Supabase timeouts
+- Verified all API endpoints
+
+Phase 12: Documentation
+- Created 10 documentation files in Documents/
+- Created comprehensive progress log
+- Updated all existing documentation
+- Created report/ folder with prompt for AI report generation
+
+===============================================================================
+COMPLETED FEATURES
+===============================================================================
+
+| Feature                    | Status | Date       |
+|---------------------------|--------|------------|
+| Backend Structure         | Done   | Aug 15     |
+| Domain Entities           | Done   | Aug 15     |
+| EF Core Setup             | Done   | Aug 15     |
+| JWT Authentication        | Done   | Aug 15     |
+| Role-Based Authorization  | Done   | Aug 15     |
+| Database Refactoring      | Done   | Aug 16     |
+| Admin Dashboard           | Done   | Aug 16     |
+| Admin Dealer CRUD         | Done   | Aug 16     |
+| Admin Product Approval    | Done   | Aug 16     |
+| Admin Category Mgmt       | Done   | Aug 16     |
+| Dealer Dashboard          | Done   | Aug 16     |
+| Dealer Product CRUD       | Done   | Aug 16     |
+| Dealer Orders             | Done   | Aug 16     |
+| Customer Browsing         | Done   | Aug 16     |
+| Shopping Cart             | Done   | Aug 16     |
+| Checkout & Orders         | Done   | Aug 16     |
+| Account Management        | Done   | Aug 16     |
+| Password Change           | Done   | Aug 16     |
+| UI Redesign               | Done   | Aug 16     |
+| Loading Animations        | Done   | Aug 16     |
+| Documentation             | Done   | Aug 16     |
+
+===============================================================================
+TECHNICAL CHALLENGES SOLVED
+===============================================================================
+
+1. JWT Key Mismatch
+   - Problem: Frontend and backend used different JWT keys
+   - Solution: Unified to single key in appsettings
+
+2. .NET Version Upgrade
+   - Problem: Started with .NET 8.0, needed .NET 9.0
+   - Solution: Upgraded all projects and NuGet packages
+
+3. Database Refactoring
+   - Problem: Single users table not scalable
+   - Solution: Split into admins, dealers, customers tables
+
+4. Cart Not Loading Items
+   - Problem: GetAllAsync() didn't include items
+   - Solution: Used GetQueryable().Include(Items).FirstOrDefault()
+
+5. Order Service Timeout
+   - Problem: Deep .Include() chains caused query explosion
+   - Solution: Batch-loading with FindAsync() and ToDictionary()
+
+6. Cart Add-to-Cart Bug
+   - Problem: ProductCard called PUT instead of POST
+   - Solution: Fixed to use addToCart() for new items
+
+7. Supabase Connection
+   - Problem: Cloud database with SSL and connection limits
+   - Solution: Configured pooling=false, increased timeouts

@@ -1,0 +1,247 @@
+FRONTEND PAGES
+==============
+
+Framework: Next.js 14 (App Router)
+Language: TypeScript
+Total Pages: 20+
+
+===============================================================================
+PUBLIC PAGES (with Navbar + Footer)
+===============================================================================
+
+Route: /
+File: frontend/app/(shop)/page.tsx
+Description: Home page with hero banner, stats, category grid, featured products
+Features:
+- Gradient hero section with CTA buttons
+- Stats bar (500+ products, 50+ dealers, 8 categories, 100% verified)
+- Category grid with icons
+- Featured products (8 items)
+- Products by category rows
+- Features section (Verified Dealers, Secure Payments, Fast Delivery)
+- CTA section
+
+Route: /about
+File: frontend/app/(shop)/about/page.tsx
+Description: About page with company story, stats, values, team
+Features:
+- Hero section
+- Company story
+- Stats section
+- Values grid
+- Team section
+- CTA section
+
+Route: /contact
+File: frontend/app/(shop)/contact/page.tsx
+Description: Contact page with form and FAQ
+Features:
+- Contact form
+- Contact info cards
+- FAQ accordion
+
+Route: /products
+File: frontend/app/(shop)/products/page.tsx
+Description: Product listing with filters
+Features:
+- Sidebar filters (search, category, sort, price)
+- Product grid (3 columns)
+- Pagination
+- Empty state
+- Loading skeletons
+
+Route: /products/[id]
+File: frontend/app/(shop)/products/[id]/page.tsx
+Description: Product detail page
+Features:
+- Breadcrumb navigation
+- Image gallery
+- Product info (name, dealer, price, description)
+- Stock information
+- Quantity selector
+- Add to cart button
+- Related products
+
+Route: /cart
+File: frontend/app/(shop)/cart/page.tsx
+Description: Shopping cart
+Features:
+- Cart items list with images
+- Quantity controls (+/-)
+- Remove item button
+- Order summary sidebar
+- Proceed to checkout
+
+Route: /checkout
+File: frontend/app/(shop)/checkout/page.tsx
+Description: Checkout flow
+Features:
+- Shipping address form
+- Order items summary
+- Place order button
+- Order total display
+
+Route: /orders
+File: frontend/app/(shop)/orders/page.tsx
+Description: Order history
+Features:
+- Orders list with status
+- Order details link
+- Empty state
+
+Route: /orders/[id]
+File: frontend/app/(shop)/orders/[id]/page.tsx
+Description: Order detail
+Features:
+- Order info (status, date, total)
+- Order items list
+- Shipping address
+
+Route: /account
+File: frontend/app/(shop)/account/page.tsx
+Description: User profile + password change
+Features:
+- Profile update form (name, phone)
+- Password change form (new + confirm)
+- Real-time validation
+- Success messages
+
+===============================================================================
+AUTHENTICATION PAGES
+===============================================================================
+
+Route: /auth/login
+File: frontend/app/auth/login/page.tsx
+Description: Login form
+Features:
+- Email/password fields
+- Login button
+- Register link
+- Error handling
+
+Route: /auth/register
+File: frontend/app/auth/register/page.tsx
+Description: Registration form
+Features:
+- Full name, email, phone, password fields
+- Role selection (Dealer/Customer)
+- Register button
+- Login link
+- Validation
+
+===============================================================================
+ADMIN PAGES (Admin role required)
+===============================================================================
+
+Route: /admin/dashboard
+File: frontend/app/admin/dashboard/page.tsx
+Description: Admin dashboard with stats
+Features:
+- Stats cards (products, dealers, customers, orders, revenue)
+- Recent dealers table
+- Quick actions
+
+Route: /admin/dealers
+File: frontend/app/admin/dealers/page.tsx
+Description: Dealer management
+Features:
+- Dealers list with search/filter
+- Create dealer modal
+- Edit dealer modal
+- Delete confirmation
+- Approval status
+
+Route: /admin/users
+File: frontend/app/admin/users/page.tsx
+Description: Customer management
+Features:
+- Customers list with search
+- Activate/deactivate toggle
+- User details
+
+Route: /admin/products/pending
+File: frontend/app/admin/products/pending/page.tsx
+Description: Pending product approval
+Features:
+- Pending products list
+- Approve button
+- Reject button with reason
+- Product details
+
+Route: /admin/categories
+File: frontend/app/admin/categories/page.tsx
+Description: Category management
+Features:
+- Categories list
+- Create category
+- Edit category
+- Delete category (with product check)
+
+Route: /admin/stats
+File: frontend/app/admin/stats/page.tsx
+Description: Platform statistics
+Features:
+- Detailed stats
+- Charts (if implemented)
+
+Route: /admin/profile
+File: frontend/app/admin/profile/page.tsx
+Description: Admin profile
+Features:
+- Profile update form
+- Password change
+
+===============================================================================
+DEALER PAGES (Dealer role required)
+===============================================================================
+
+Route: /dealer/dashboard
+File: frontend/app/dealer/dashboard/page.tsx
+Description: Dealer dashboard
+Features:
+- Stats (products, orders)
+- Recent products
+- Quick actions
+
+Route: /dealer/products
+File: frontend/app/dealer/products/page.tsx
+Description: Dealer product list
+Features:
+- Products with status filter
+- Create product button
+- Edit/delete actions
+
+Route: /dealer/products/new
+File: frontend/app/dealer/products/new/page.tsx
+Description: Create new product
+Features:
+- Product form (name, description, price, stock, category, SKU)
+- Image URL inputs
+- Submit button
+
+Route: /dealer/products/[id]/edit
+File: frontend/app/dealer/products/[id]/edit/page.tsx
+Description: Edit product
+Features:
+- Pre-filled form
+- Update button
+- Cancel button
+
+Route: /dealer/orders
+File: frontend/app/dealer/orders/page.tsx
+Description: Dealer orders
+Features:
+- Orders containing dealer's products
+- Order details
+
+===============================================================================
+PAGE COUNT SUMMARY
+===============================================================================
+
+| Section     | Count |
+|-------------|-------|
+| Public      | 8     |
+| Auth        | 2     |
+| Admin       | 7     |
+| Dealer      | 5     |
+| **Total**   | **22**|

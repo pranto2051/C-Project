@@ -1,0 +1,195 @@
+ENTITY RELATIONSHIP DIAGRAM
+============================
+
+Text-based ER Diagram:
+
+    ┌─────────────┐
+    │    ADMINS    │
+    │─────────────│
+    │ Id (PK)     │
+    │ Email       │
+    │ PasswordHash│
+    │ FullName    │
+    │ Phone       │
+    │ IsActive    │
+    │ CreatedAt   │
+    │ UpdatedAt   │
+    └─────────────┘
+
+    ┌─────────────────────┐         ┌─────────────────┐
+    │      DEALERS        │         │    CATEGORIES    │
+    │─────────────────────│         │─────────────────│
+    │ Id (PK)             │         │ Id (PK)         │
+    │ Email               │         │ Name            │
+    │ PasswordHash        │         │ Description     │
+    │ FullName            │         │ ParentCategoryId│──┐
+    │ Phone               │         │ CreatedAt       │  │
+    │ ShopName            │         │ UpdatedAt       │  │
+    │ ShopDescription     │         └────────┬────────┘  │
+    │ ShopCategory        │                  │           │
+    │ Address             │                  │           │
+    │ LogoUrl             │                  │           │
+    │ IsApproved          │                  │           │
+    │ IsActive            │                  │           │
+    │ CreatedAt           │                  │           │
+    │ UpdatedAt           │                  │           │
+    └──────────┬──────────┘                  │           │
+               │                             │           │
+               │    ┌─────────────────┐      │           │
+               │    │    PRODUCTS     │      │           │
+               │    │─────────────────│      │           │
+               │    │ Id (PK)         │      │           │
+               ├───>│ DealerId (FK)   │      │           │
+               │    │ CategoryId (FK) │<─────┘           │
+               │    │ Name            │                  │
+               │    │ Description     │                  │
+               │    │ Price           │                  │
+               │    │ StockQuantity   │                  │
+               │    │ Sku             │                  │
+               │    │ ApprovalStatus  │                  │
+               │    │ RejectionReason │                  │
+               │    │ PublishedAt     │                  │
+               │    │ CreatedAt       │                  │
+               │    │ UpdatedAt       │                  │
+               │    └────────┬────────┘                  │
+               │             │                           │
+               │             │                           │
+               │    ┌────────┴────────┐                  │
+               │    │ PRODUCT_IMAGES  │                  │
+               │    │─────────────────│                  │
+               │    │ Id (PK)         │                  │
+               │    │ ProductId (FK)  │                  │
+               │    │ ImageUrl        │                  │
+               │    │ DisplayOrder    │                  │
+               │    │ CreatedAt       │                  │
+               │    │ UpdatedAt       │                  │
+               │    └─────────────────┘                  │
+               │                                         │
+               │    ┌─────────────────┐                  │
+               │    │      CARTS      │                  │
+               │    │─────────────────│                  │
+               │    │ Id (PK)         │                  │
+               │    │ CustomerId (FK) │                  │
+               │    │ CreatedAt       │                  │
+               │    │ UpdatedAt       │                  │
+               │    └────────┬────────┘                  │
+               │             │                           │
+               │    ┌────────┴────────┐                  │
+               │    │   CART_ITEMS    │                  │
+               │    │─────────────────│                  │
+               │    │ Id (PK)         │                  │
+               │    │ CartId (FK)     │                  │
+               │    │ ProductId (FK)  │                  │
+               │    │ Quantity        │                  │
+               │    │ PriceAtAdd      │                  │
+               │    │ CreatedAt       │                  │
+               │    │ UpdatedAt       │                  │
+               │    └─────────────────┘                  │
+               │                                         │
+               │    ┌─────────────────────┐              │
+               │    │       ORDERS        │              │
+               │    │─────────────────────│              │
+               │    │ Id (PK)             │              │
+               │    │ CustomerId (FK)     │              │
+               │    │ Status              │              │
+               │    │ TotalAmount         │              │
+               │    │ ShippingAddress     │              │
+               │    │ CreatedAt           │              │
+               │    │ UpdatedAt           │              │
+               │    └────────┬────────────┘              │
+               │             │                           │
+               │    ┌────────┴────────────┐              │
+               │    │    ORDER_ITEMS      │              │
+               │    │─────────────────────│              │
+               │    │ Id (PK)             │              │
+               │    │ OrderId (FK)        │              │
+               │    │ ProductId (FK)      │              │
+               │    │ DealerId (FK)       │──────────────┘
+               │    │ Quantity            │
+               │    │ UnitPriceAtPurchase │
+               │    │ Subtotal            │
+               │    │ CreatedAt           │
+               │    │ UpdatedAt           │
+               │    └─────────────────────┘
+
+    ┌─────────────────┐
+    │    CUSTOMERS    │
+    │─────────────────│
+    │ Id (PK)         │
+    │ Email           │
+    │ PasswordHash    │
+    │ FullName        │
+    │ Phone           │
+    │ ShippingAddress │
+    │ IsActive        │
+    │ CreatedAt       │
+    │ UpdatedAt       │
+    └─────────────────┘
+
+
+RELATIONSHIP SUMMARY
+====================
+
+1. ADMINS — (standalone, no relationships to other auth tables)
+
+2. DEALERS 1:N PRODUCTS
+   - One dealer can have many products
+   - Each product belongs to exactly one dealer
+
+3. CATEGORIES 1:N PRODUCTS
+   - One category can contain many products
+   - Each product belongs to exactly one category
+
+4. CATEGORIES self-referencing (ParentCategoryId)
+   - A category can have a parent category
+   - Enables subcategory hierarchy
+
+5. PRODUCTS 1:N PRODUCT_IMAGES
+   - One product can have many images
+   - Each image belongs to exactly one product
+
+6. CUSTOMERS 1:1 CARTS
+   - Each customer has exactly one active cart
+   - Cart is created on first add-to-cart
+
+7. CARTS 1:N CART_ITEMS
+   - One cart can contain many items
+   - Each item belongs to exactly one cart
+
+8. CART_ITEMS N:1 PRODUCTS
+   - Each cart item references one product
+   - A product can appear in many cart items
+
+9. CUSTOMERS 1:N ORDERS
+   - One customer can place many orders
+   - Each order belongs to exactly one customer
+
+10. ORDERS 1:N ORDER_ITEMS
+    - One order can contain many items
+    - Each item belongs to exactly one order
+
+11. ORDER_ITEMS N:1 PRODUCTS
+    - Each order item references one product
+    - A product can appear in many order items
+
+12. ORDER_ITEMS N:1 DEALERS
+    - Each order item references one dealer (denormalized)
+    - Enables dealer-specific order queries
+
+
+CARDINALITY TABLE
+=================
+
+| Relationship                    | Type | FK Column           |
+|--------------------------------|------|---------------------|
+| Dealer → Product               | 1:N  | Product.DealerId    |
+| Category → Product             | 1:N  | Product.CategoryId  |
+| Product → ProductImage         | 1:N  | ProductImage.ProductId |
+| Customer → Cart                | 1:1  | Cart.CustomerId     |
+| Cart → CartItem                | 1:N  | CartItem.CartId     |
+| CartItem → Product             | N:1  | CartItem.ProductId  |
+| Customer → Order               | 1:N  | Order.CustomerId    |
+| Order → OrderItem              | 1:N  | OrderItem.OrderId   |
+| OrderItem → Product            | N:1  | OrderItem.ProductId |
+| OrderItem → Dealer             | N:1  | OrderItem.DealerId  |
+| Category → Category (Parent)   | 1:N  | Category.ParentCategoryId |

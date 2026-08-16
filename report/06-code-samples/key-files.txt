@@ -1,0 +1,255 @@
+KEY CODE FILES
+==============
+
+This document contains excerpts from key code files in the project.
+
+===============================================================================
+1. DOMAIN ENTITY EXAMPLE — Product.cs
+===============================================================================
+
+File: backend/src/ECommerce.Domain/Entities/Product.cs
+
+public class Product : BaseEntity
+{
+    [MaxLength(256)]
+    public string Name { get; set; } = string.Empty;
+
+    public string? Description { get; set; }
+
+    public decimal Price { get; set; }
+
+    public int StockQuantity { get; set; }
+
+    [MaxLength(128)]
+    public string? Sku { get; set; }
+
+    public ApprovalStatus ApprovalStatus { get; set; } = ApprovalStatus.Pending;
+
+    public string? RejectionReason { get; set; }
+
+    public DateTime? PublishedAt { get; set; }
+
+    public Guid DealerId { get; set; }
+    public Dealer Dealer { get; set; } = null!;
+
+    public Guid CategoryId { get; set; }
+    public Category Category { get; set; } = null!;
+
+    public ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();
+    public ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
+    public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
+}
+
+Key Points:
+- Inherits from BaseEntity (Id, CreatedAt, UpdatedAt)
+- Dealer navigation property (separate entity, not User)
+- Category navigation property
+- Collections for related entities
+- ApprovalStatus enum (Pending/Approved/Rejected/Unpublished)
+
+===============================================================================
+2. SERVICE EXAMPLE — CartService.cs
+===============================================================================
+
+File: backend/src/ECommerce.Application/Services/CartService.cs
+
+public async Task<CartItemResponse> AddItemAsync(Guid customerId, CartItemRequest request)
+{
+    var cart = await GetOrCreateCartAsync(customerId);
+    var product = await _unitOfWork.Products.GetByIdAsync(request.ProductId)
+        ?? throw new KeyNotFoundException("Product not found.");
+
+    if (product.ApprovalStatus != ApprovalStatus.Approved)
+        throw new InvalidOperationException("Product is not available.");
+
+    if (product.StockQuantity < request.Quantity)
+        throw new InvalidOperationException("Insufficient stock.");
+
+    var existing = cart.Items.FirstOrDefault(i => i.ProductId == request.ProductId);
+    if (existing != null)
+    {
+        existing.Quantity += request.Quantity;
+        existing.PriceAtAdd = product.Price;
+        await _unitOfWork.CartItems.UpdateAsync(existing);
+    }
+    else
+    {
+        var item = new CartItem
+        {
+            Id = Guid.NewGuid(),
+            CartId = cart.Id,
+            ProductId = request.ProductId,
+            Quantity = request.Quantity,
+            PriceAtAdd = product.Price
+        };
+        await _unitOfWork.CartItems.AddAsync(item);
+        cart.Items.Add(item);
+    }
+
+    cart.UpdatedAt = DateTime.UtcNow;
+    await _unitOfWork.SaveChangesAsync();
+
+    var addedItem = cart.Items.Last(i => i.ProductId == request.ProductId);
+    var prod = await _unitOfWork.Products.GetByIdAsync(addedItem.ProductId);
+    return MapCartItem(addedItem, prod);
+}
+
+Key Points:
+- Auto-creates cart if none exists
+- Validates product exists and is approved
+- Checks stock availability
+- Increments quantity if item already in cart
+- Server-calculates price at time of add
+- Uses Unit of Work for transactions
+
+===============================================================================
+3. API CONTROLLER EXAMPLE — CartController.cs
+===============================================================================
+
+File: backend/src/ECommerce.API/Controllers/CartController.cs
+
+[ApiController]
+[Route("api/cart")]
+[Authorize(Roles = "Customer")]
+public class CartController : ControllerBase
+{
+    private readonly ICartService _cartService;
+
+    public CartController(ICartService cartService)
+    {
+        _cartService = cartService;
+    }
+
+    private Guid GetCustomerId()
+    {
+        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+            throw new UnauthorizedAccessException("Invalid token");
+        return userId;
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetCart()
+    {
+        var customerId = GetCustomerId();
+        var cart = await _cartService.GetCartAsync(customerId);
+        return Ok(cart);
+    }
+
+    [HttpPost("items")]
+    public async Task<IActionResult> AddItem([FromBody] CartItemRequest request)
+    {
+        var customerId = GetCustomerId();
+        var item = await _cartService.AddItemAsync(customerId, request);
+        return Ok(item);
+    }
+}
+
+Key Points:
+- Role-based authorization [Authorize(Roles = "Customer")]
+- Extracts userId from JWT claims
+- Delegates to service layer
+- Returns appropriate HTTP status codes
+
+===============================================================================
+4. FRONTEND API CLIENT — api.ts
+===============================================================================
+
+File: frontend/services/api.ts
+
+export const customerApi = {
+  getCart: () => api.get('/cart'),
+  addToCart: (productId: string, quantity: number) =>
+    api.post('/cart/items', { productId, quantity }),
+  updateCartItem: (id: string, quantity: number) =>
+    api.put(`/cart/items/${id}`, { quantity }),
+  removeCartItem: (id: string) => api.delete(`/cart/items/${id}`),
+  createOrder: (data: CreateOrderRequest) => api.post('/orders', data),
+  getOrders: (params?: { page?: number; pageSize?: number }) =>
+    api.get('/orders', { params }),
+  getOrder: (id: string) => api.get(`/orders/${id}`),
+};
+
+Key Points:
+- Typed methods for each endpoint
+- Uses centralized axios instance
+- Base URL from environment variable
+- Auto-attaches JWT token via interceptor
+
+===============================================================================
+5. AUTH PROVIDER — AuthProvider.tsx
+===============================================================================
+
+File: frontend/features/auth/AuthProvider.tsx
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const login = async (data: LoginRequest) => {
+    const response = await authApi.login(data);
+    const { token, refreshToken, ...userData } = response.data as AuthResponse;
+    localStorage.setItem('accessToken', token);
+    localStorage.setItem('refreshToken', refreshToken);
+    setUser(userData as User);
+    toast.success('Welcome back!');
+  };
+
+  const logout = () => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    setUser(null);
+    toast.success('Logged out successfully');
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, isLoading, login, logout, ... }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+Key Points:
+- React Context for global auth state
+- Stores token in localStorage
+- Strips token from user data
+- Provides login/logout functions
+- Toast notifications for feedback
+
+===============================================================================
+6. EF CORE CONFIGURATION — ProductConfiguration.cs
+===============================================================================
+
+File: backend/src/ECommerce.Infrastructure/Data/Configurations/ProductConfiguration.cs
+
+public void Configure(EntityTypeBuilder<Product> builder)
+{
+    builder.HasKey(p => p.Id);
+
+    builder.Property(p => p.Name)
+        .IsRequired()
+        .HasMaxLength(256);
+
+    builder.Property(p => p.Price)
+        .HasColumnType("decimal(10,2)");
+
+    builder.Property(p => p.ApprovalStatus)
+        .HasConversion<string>()
+        .HasMaxLength(50);
+
+    builder.HasOne(p => p.Dealer)
+        .WithMany(d => d.Products)
+        .HasForeignKey(p => p.DealerId);
+
+    builder.HasOne(p => p.Category)
+        .WithMany(c => c.Products)
+        .HasForeignKey(p => p.CategoryId);
+
+    builder.HasIndex(p => new { p.ApprovalStatus, p.CategoryId });
+}
+
+Key Points:
+- Fluent API configuration
+- String conversion for enum (stored as VARCHAR)
+- Foreign key relationships
+- Composite index for common queries

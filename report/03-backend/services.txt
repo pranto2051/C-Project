@@ -1,0 +1,183 @@
+SERVICE LAYER DETAILS
+=====================
+
+Services implement business logic and orchestrate operations.
+
+===============================================================================
+SERVICES OVERVIEW
+===============================================================================
+
+| Service          | File                        | Purpose                    |
+|------------------|-----------------------------|----------------------------|
+| AuthService      | AuthService.cs              | Auth, login, register      |
+| AdminService     | AdminService.cs             | Admin CRUD operations      |
+| DealerService    | DealerService.cs            | Dealer profile & products  |
+| ProductService   | ProductService.cs           | Public product queries     |
+| CartService      | CartService.cs              | Cart operations            |
+| OrderService     | OrderService.cs             | Order creation & history   |
+| CategoryService  | CategoryService.cs          | Category management        |
+
+===============================================================================
+AUTH SERVICE
+===============================================================================
+
+File: backend/src/ECommerce.Application/Services/AuthService.cs
+Dependencies: IUnitOfWork, IJwtTokenGenerator, IPasswordHasher, IMapper
+
+Methods:
+- RegisterAsync(RegisterRequest) → AuthResponse
+- LoginAsync(LoginRequest) → AuthResponse
+- GetMeAsync(Guid userId) → UserDto
+- UpdateProfileAsync(Guid userId, UpdateProfileRequest) → UserDto
+- RefreshTokenAsync(RefreshTokenRequest) → AuthResponse (not implemented)
+
+Key Logic:
+- Checks all 3 auth tables (admins, dealers, customers) for login
+- Uses BCrypt for password verification
+- Updates profile supports optional password change
+
+===============================================================================
+ADMIN SERVICE
+===============================================================================
+
+File: backend/src/ECommerce.Application/Services/AdminService.cs
+Dependencies: IUnitOfWork, IMapper
+
+Methods:
+- GetAllUsersAsync(filter) → PaginatedResult<UserDto>
+- UpdateUserStatusAsync(userId, isActive) → UserDto
+- GetAllDealersAsync(filter) → PaginatedResult<DealerDto>
+- GetDealerAsync(dealerId) → DealerDto
+- CreateDealerAsync(request) → DealerDto
+- UpdateDealerAsync(dealerId, request) → DealerDto
+- DeleteDealerAsync(dealerId) → void
+- ApproveDealerAsync(dealerId) → DealerDto
+- GetPendingProductsAsync(filter) → PaginatedResult<ProductDto>
+- ApproveProductAsync(productId) → ProductDto
+- RejectProductAsync(productId, reason) → ProductDto
+- DeleteProductAsync(productId) → void
+- GetAllCategoriesAsync(filter) → PaginatedResult<CategoryDto>
+- CreateCategoryAsync(request) → CategoryDto
+- UpdateCategoryAsync(categoryId, request) → CategoryDto
+- DeleteCategoryAsync(categoryId) → void
+- GetStatsAsync() → StatsResponse
+- ClearDemoDataAsync() → void
+
+Key Logic:
+- Queries separate tables (admins, dealers, customers)
+- Dealer creation creates both dealer record and user account
+- Category deletion checks for associated products
+- Stats aggregates from multiple tables
+
+===============================================================================
+DEALER SERVICE
+===============================================================================
+
+File: backend/src/ECommerce.Application/Services/DealerService.cs
+Dependencies: IUnitOfWork, IMapper
+
+Methods:
+- GetProfileAsync(userId) → DealerProfileResponse
+- UpdateProfileAsync(userId, request) → DealerProfileResponse
+
+Key Logic:
+- Directly queries Dealer entity (not via User table)
+- Updates shop information fields
+
+===============================================================================
+PRODUCT SERVICE
+===============================================================================
+
+File: backend/src/ECommerce.Application/Services/ProductService.cs
+Dependencies: IUnitOfWork, IMapper
+
+Methods:
+- GetPublicProductsAsync(filter) → PaginatedResult<ProductDto>
+- GetPublicProductAsync(productId) → ProductDto
+- GetDealerProductsAsync(dealerId, status, page, pageSize) → PaginatedResult<ProductDto>
+- CreateAsync(dealerId, request) → ProductDto
+- UpdateAsync(dealerId, productId, request) → ProductDto
+- DeleteAsync(dealerId, productId) → void
+
+Key Logic:
+- Public queries filter by ApprovalStatus = "Approved"
+- Dealer queries filter by DealerId
+- Product creation sets ApprovalStatus = "Pending"
+- Includes related data (Images, Dealer, Category)
+
+===============================================================================
+CART SERVICE
+===============================================================================
+
+File: backend/src/ECommerce.Application/Services/CartService.cs
+Dependencies: IUnitOfWork
+
+Methods:
+- GetCartAsync(customerId) → CartResponse
+- AddItemAsync(customerId, request) → CartItemResponse
+- UpdateItemAsync(customerId, cartItemId, quantity) → CartItemResponse
+- DeleteItemAsync(customerId, cartItemId) → void
+- ClearCartAsync(customerId) → void
+
+Key Logic:
+- Auto-creates cart if none exists (GetOrCreateCartAsync)
+- Uses .Include() to load cart items
+- Adding existing item increments quantity
+- Validates stock availability
+- Server-calculates subtotals
+
+===============================================================================
+ORDER SERVICE
+===============================================================================
+
+File: backend/src/ECommerce.Application/Services/OrderService.cs
+Dependencies: IUnitOfWork
+
+Methods:
+- CreateOrderAsync(customerId, request) → OrderResponse
+- GetCustomerOrdersAsync(customerId) → List<OrderResponse>
+- GetOrderAsync(customerId, orderId) → OrderResponse
+- GetDealerOrdersAsync(dealerId) → List<OrderResponse>
+
+Key Logic:
+- Batch-loading pattern (avoids deep .Include() chains)
+- Server-calculates total amount
+- Creates OrderItems with denormalized DealerId
+- Clears cart after successful order
+- Ownership validation
+
+===============================================================================
+CATEGORY SERVICE
+===============================================================================
+
+File: backend/src/ECommerce.Application/Services/CategoryService.cs
+Dependencies: IUnitOfWork
+
+Methods:
+- GetAllAsync() → List<CategoryDto>
+
+Key Logic:
+- Simple query returning all categories
+- Used by public endpoint and admin management
+
+===============================================================================
+UNIT OF WORK PATTERN
+===============================================================================
+
+File: backend/src/ECommerce.Infrastructure/Repositories/UnitOfWork.cs
+
+Repositories:
+- Admins → IRepository<Admin>
+- Dealers → IRepository<Dealer>
+- Customers → IRepository<Customer>
+- Products → IRepository<Product>
+- ProductImages → IRepository<ProductImage>
+- Categories → IRepository<Category>
+- Carts → IRepository<Cart>
+- CartItems → IRepository<Cart>
+- Orders → IRepository<Order>
+- OrderItems → IRepository<OrderItem>
+
+Methods:
+- SaveChangesAsync() → int
+- GetQueryable<T>() → IQueryable<T>

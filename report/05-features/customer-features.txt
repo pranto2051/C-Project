@@ -1,0 +1,221 @@
+CUSTOMER FEATURES
+=================
+
+Role: Customer
+Login: customer1@test.com / Customer@123
+Access: Shopping, cart, orders, account
+
+===============================================================================
+BROWSING PRODUCTS
+===============================================================================
+
+Route: /products
+Features:
+1. Product Grid
+   - Display approved products in 3-column grid
+   - Product cards show: Image, Name, Category, Price, Stock Status
+   - Hover effects (shadow, scale image)
+
+2. Search & Filter
+   - Search by product name/description
+   - Filter by category (sidebar)
+   - Sort by: Price (low/high), Newest, Popular
+   - Clear filters button
+
+3. Pagination
+   - Navigate through product pages
+   - Configurable page size
+
+4. Product Detail
+   - Route: /products/[id]
+   - Breadcrumb navigation
+   - Image gallery (main image + thumbnails)
+   - Product info:
+     - Name
+     - Category badge
+     - Dealer name (linked)
+     - Price
+     - Description
+     - Stock quantity
+     - SKU
+   - Quantity selector (+/- buttons)
+   - Add to Cart button
+   - Related products (same category)
+
+===============================================================================
+SHOPPING CART
+===============================================================================
+
+Route: /cart
+Features:
+1. Cart Items List
+   - Product image
+   - Product name
+   - Price per unit
+   - Quantity controls (+/-)
+   - Subtotal per item
+   - Remove button
+
+2. Order Summary
+   - Subtotal (all items)
+   - Shipping: Free
+   - Total amount
+   - Proceed to Checkout button
+   - Continue Shopping link
+
+3. Cart Operations
+   - Add item (from product detail or product card)
+   - Update quantity (increment/decrement)
+   - Remove item
+   - Cart persists across sessions (stored in DB)
+
+4. Cart Behavior
+   - Auto-creates cart on first add
+   - Adding existing item increments quantity
+   - Validates stock availability
+   - Shows real-time totals
+
+API Endpoints:
+- GET /api/cart
+- POST /api/cart/items
+- PUT /api/cart/items/{id}
+- DELETE /api/cart/items/{id}
+
+===============================================================================
+CHECKOUT
+===============================================================================
+
+Route: /checkout
+Features:
+1. Shipping Address
+   - Required text field
+   - Full address input
+
+2. Order Summary
+   - List of items with quantities
+   - Product names and subtotals
+   - Order total
+
+3. Place Order
+   - Validates address is provided
+   - Validates cart is not empty
+   - Creates order from cart
+   - Clears cart after success
+   - Redirects to order confirmation
+
+4. Order Validation
+   - Server-calculates total (not client)
+   - Validates stock availability
+   - Creates order items with dealer references
+
+API Endpoint:
+- POST /api/orders
+
+===============================================================================
+ORDER HISTORY
+===============================================================================
+
+Route: /orders
+Features:
+1. Orders List
+   - All customer's orders
+   - Columns: Order ID, Date, Total, Status, Items Count
+   - Sorted by date (newest first)
+   - Pagination
+
+2. Order Status
+   - Pending: Order placed, awaiting processing
+   - Confirmed: Order confirmed
+   - Processing: Being prepared
+   - Shipped: On the way
+   - Delivered: Completed
+   - Cancelled: Cancelled
+
+3. Order Details
+   - Route: /orders/[id]
+   - Order info (ID, date, status, total)
+   - Shipping address
+   - Items list with:
+     - Product name
+     - Dealer name
+     - Quantity
+     - Unit price
+     - Subtotal
+
+API Endpoints:
+- GET /api/orders
+- GET /api/orders/{id}
+
+===============================================================================
+ACCOUNT MANAGEMENT
+===============================================================================
+
+Route: /account
+Features:
+1. Profile Update
+   - View current info (email, name, phone, role)
+   - Edit full name
+   - Edit phone number
+   - Email is read-only (display only)
+   - Success message on save
+
+2. Password Change
+   - New Password field
+   - Confirm Password field
+   - Real-time validation:
+     - "Passwords do not match" indicator
+     - Minimum 6 characters
+   - Can change without knowing current password
+   - Success message on change
+
+3. Account Info
+   - Role display (Customer)
+   - Account status
+   - Join date
+
+API Endpoint:
+- PUT /api/auth/me
+
+===============================================================================
+AUTHENTICATION
+===============================================================================
+
+Login:
+- Email + password form
+- JWT token stored in localStorage
+- Token attached to all API requests
+- 15-minute token expiry
+
+Registration:
+- Full name, email, phone
+- Password + confirm
+- Role selection (Dealer or Customer)
+- Email uniqueness check
+- Password hashed with BCrypt
+
+Logout:
+- Clears localStorage
+- Redirects to home
+- Toast confirmation
+
+===============================================================================
+ERROR HANDLING
+===============================================================================
+
+Toast Notifications:
+- Success: Green toast (top-right)
+- Error: Red toast (top-right)
+- Info: Default toast
+
+Common Errors:
+- "Failed to add to cart" — API error
+- "Failed to update quantity" — API error
+- "Failed to remove item" — API error
+- "Failed to place order" — API error
+- "Please login as a customer" — Not authenticated
+- "Passwords do not match" — Client validation
+
+Empty States:
+- Empty cart: "Your cart is empty" with Browse Products button
+- No orders: "No orders yet" with Browse Products button
+- Product not found: "Product not found" with Back to Products button

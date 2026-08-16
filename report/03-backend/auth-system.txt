@@ -1,0 +1,134 @@
+AUTHENTICATION SYSTEM
+=====================
+
+Implementation: JWT Bearer + BCrypt
+
+===============================================================================
+JWT CONFIGURATION
+===============================================================================
+
+Secret Key: SUPER_SECRET_KEY_MUST_BE_LONG_ENOUGH_1234567890
+Issuer: ECommerceAPI
+Audience: ECommerceApp
+Access Token Expiry: 15 minutes
+Refresh Token Expiry: 7 days (not persisted)
+
+Token Contents (Claims):
+- NameIdentifier: User ID (GUID)
+- Email: User email
+- Name: User full name
+- Role: "Admin" / "Dealer" / "Customer"
+
+===============================================================================
+AUTHENTICATION FLOW
+===============================================================================
+
+1. Login Flow:
+   Client → POST /api/auth/login { email, password }
+   Server → Validate credentials (BCrypt hash comparison)
+   Server → Generate JWT with user claims
+   Server → Return { token, refreshToken, userData }
+   Client → Store token in localStorage
+
+2. Authenticated Request:
+   Client → Add header: Authorization: Bearer {token}
+   Server → Validate JWT signature and expiry
+   Server → Extract claims (userId, role)
+   Server → Check [Authorize] attribute
+
+3. Token Refresh:
+   Client → On 401 response, try refresh
+   Client → POST /api/auth/refresh { refreshToken }
+   Server → Currently returns 401 (not implemented)
+   Client → Redirect to login
+
+===============================================================================
+PASSWORD HASHING
+===============================================================================
+
+Library: BCrypt.Net-Next 4.2.0
+Cost Factor: 11
+
+Example Hash:
+$2a$11$S2ZoaWf3hknWcI/Og0uzg.vHxucE3fJcbHU91qFAH/p.tYRX4heWy
+
+Verification:
+_passwordHasher.Verify(plainText, hashedPassword) → bool
+
+Hashing:
+_passwordHasher.Hash(plainText) → string
+
+===============================================================================
+ROLE-BASED AUTHORIZATION
+===============================================================================
+
+Controller Level:
+[Authorize(Roles = "Admin")]    → Only admins
+[Authorize(Roles = "Dealer")]   → Only dealers
+[Authorize(Roles = "Customer")] → Only customers
+
+Claim-Based:
+var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+// Use userId for ownership checks
+
+===============================================================================
+JWT TOKEN GENERATOR
+===============================================================================
+
+File: backend/src/ECommerce.Infrastructure/Services/JwtTokenGenerator.cs
+
+Methods:
+- GenerateAccessToken(userId, email, fullName, role) → string
+- GenerateRefreshToken() → string (random base64)
+
+Implementation:
+- Uses HMAC-SHA512 for signing
+- Adds claims for userId, email, name, role
+- Sets expiry from configuration
+
+===============================================================================
+PASSWORD HASHER
+===============================================================================
+
+File: backend/src/ECommerce.Infrastructure/Services/PasswordHasher.cs
+
+Methods:
+- Hash(password) → string (BCrypt hash)
+- Verify(password, hash) → bool
+
+===============================================================================
+AUTH SERVICE
+===============================================================================
+
+File: backend/src/ECommerce.Application/Services/AuthService.cs
+
+Methods:
+- RegisterAsync(request) → AuthResponse
+- LoginAsync(request) → AuthResponse
+- GetMeAsync(userId) → UserDto
+- UpdateProfileAsync(userId, request) → UserDto
+
+Login Logic:
+1. Check admins table → if found, verify password → return Admin token
+2. Check dealers table → if found, verify password → return Dealer token
+3. Check customers table → if found, verify password → return Customer token
+4. If none found → throw UnauthorizedAccessException
+
+Register Logic:
+1. Check email uniqueness across all 3 tables
+2. Create Dealer or Customer record based on role
+3. Hash password with BCrypt
+4. Generate JWT
+5. Return AuthResponse
+
+===============================================================================
+SECURITY NOTES
+===============================================================================
+
+- JWT secret key is in appsettings.Development.json (not in source control)
+- BCrypt cost factor 11 provides good security vs performance
+- Tokens expire after 15 minutes (short-lived)
+- CORS locked to frontend origin only
+- No refresh token persistence (demo limitation)
+- Ownership checks prevent unauthorized access
+- SQL injection prevented by EF Core parameterized queries

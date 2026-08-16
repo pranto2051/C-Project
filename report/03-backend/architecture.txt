@@ -1,0 +1,98 @@
+BACKEND ARCHITECTURE
+====================
+
+Framework: ASP.NET Core Web API (.NET 9.0)
+Pattern: Clean Architecture (4 layers)
+Solution: ECommerce.sln
+
+===============================================================================
+LAYER STRUCTURE
+===============================================================================
+
+┌─────────────────────────────────────────────────────────────┐
+│                    ECommerce.API                            │
+│                    (Presentation Layer)                      │
+│                                                             │
+│  - Controllers (6 controllers)                              │
+│  - Middleware (ExceptionHandlingMiddleware)                  │
+│  - Program.cs (DI, CORS, Swagger)                          │
+│  - appsettings.json / appsettings.Development.json          │
+└─────────────────────────┬───────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────┐
+│                ECommerce.Application                        │
+│                (Application Layer)                           │
+│                                                             │
+│  - Services (7 services)                                    │
+│  - DTOs (Request/Response models)                           │
+│  - Interfaces (Service contracts)                           │
+│  - Mapping (AutoMapper profile)                             │
+│  - Validators (FluentValidation)                            │
+└─────────────────────────┬───────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────┐
+│                 ECommerce.Domain                            │
+│                 (Domain Layer - Pure)                        │
+│                                                             │
+│  - Entities (11 entities)                                   │
+│  - Enums (2 enums)                                          │
+│  - Interfaces (Repository, UnitOfWork, JWT, Password)       │
+│  - No dependencies on other layers                          │
+└─────────────────────────┬───────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────┐
+│              ECommerce.Infrastructure                        │
+│              (Infrastructure Layer)                          │
+│                                                             │
+│  - Data/AppDbContext.cs (EF Core DbContext)                 │
+│  - Data/Configurations/ (10 Fluent API configs)             │
+│  - Repositories/ (Repository + UnitOfWork)                  │
+│  - Services/ (JwtTokenGenerator + PasswordHasher)           │
+└─────────────────────────────────────────────────────────────┘
+
+===============================================================================
+DEPENDENCY RULES
+===============================================================================
+
+- API → Application, Infrastructure
+- Application → Domain
+- Infrastructure → Domain
+- Domain → Nothing (pure, no dependencies)
+
+This ensures:
+- Domain logic is testable without infrastructure
+- Application logic is testable without API
+- Infrastructure can be swapped (e.g., different database)
+- Clean separation of concerns
+
+===============================================================================
+KEY FILES
+===============================================================================
+
+Entry Point:
+- backend/src/ECommerce.API/Program.cs
+
+Configuration:
+- backend/src/ECommerce.API/appsettings.json
+- backend/src/ECommerce.API/appsettings.Development.json
+
+Middleware:
+- backend/src/ECommerce.API/Middleware/ExceptionHandlingMiddleware.cs
+
+DbContext:
+- backend/src/ECommerce.Infrastructure/Data/AppDbContext.cs
+
+Unit of Work:
+- backend/src/ECommerce.Infrastructure/Repositories/UnitOfWork.cs
+
+JWT:
+- backend/src/ECommerce.Infrastructure/Services/JwtTokenGenerator.cs
+
+Password:
+- backend/src/ECommerce.Infrastructure/Services/PasswordHasher.cs
+
+Mapping:
+- backend/src/ECommerce.Application/Mapping/MappingProfile.cs

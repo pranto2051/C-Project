@@ -1,0 +1,161 @@
+UI COMPONENTS
+=============
+
+Component Library: Custom built with Tailwind CSS
+Location: frontend/components/ui/
+
+===============================================================================
+UI KIT COMPONENTS
+===============================================================================
+
+1. Button
+   File: components/ui/Button.tsx
+   Props: variant (primary/secondary/danger/ghost), size (sm/md/lg), isLoading, disabled
+   Usage: <Button onClick={handleClick}>Click Me</Button>
+
+2. Input
+   File: components/ui/Input.tsx
+   Props: label, type, value, onChange, placeholder, error, disabled
+   Usage: <Input label="Email" type="email" value={email} onChange={setEmail} />
+
+3. Textarea
+   File: components/ui/Textarea.tsx
+   Props: label, value, onChange, placeholder, rows
+   Usage: <Textarea label="Description" value={desc} onChange={setDesc} />
+
+4. Select
+   File: components/ui/Select.tsx
+   Props: label, value, onChange, options
+   Usage: <Select label="Category" value={cat} onChange={setCat} options={[...]} />
+
+5. Card
+   File: components/ui/Card.tsx
+   Props: children, className
+   Usage: <Card><CardBody>...</CardBody><CardFooter>...</CardFooter></Card>
+
+6. Badge
+   File: components/ui/Badge.tsx
+   Props: status (Pending/Approved/Rejected/Delivered/etc.)
+   Usage: <Badge status="Approved" />
+
+7. Modal
+   File: components/ui/Modal.tsx
+   Props: isOpen, onClose, title, children
+   Usage: <Modal isOpen={show} onClose={close} title="Edit">...</Modal>
+
+8. ConfirmDialog
+   File: components/ui/ConfirmDialog.tsx
+   Props: isOpen, onClose, onConfirm, title, message
+   Usage: <ConfirmDialog isOpen={show} onConfirm={delete} title="Delete?" />
+
+9. Table
+   File: components/ui/Table.tsx
+   Props: columns, data, onRowClick
+   Usage: <Table columns={[...]} data={[...]} />
+
+10. Pagination
+    File: components/ui/Pagination.tsx
+    Props: currentPage, totalPages, onPageChange
+    Usage: <Pagination current={1} total={10} onChange={setPage} />
+
+11. Spinner
+    File: components/ui/Spinner.tsx
+    Props: size (sm/md/lg)
+    Usage: <Spinner size="lg" />
+
+12. EmptyState
+    File: components/ui/EmptyState.tsx
+    Props: icon, title, description, action
+    Usage: <EmptyState icon="🛒" title="No items" description="..." action={<Button>Add</Button>} />
+
+13. ProductCardSkeleton
+    File: components/ui/ProductCardSkeleton.tsx
+    Props: none (static skeleton)
+    Usage: <ProductCardSkeleton />
+
+14. ProductGridSkeleton
+    File: components/ui/ProductGridSkeleton.tsx
+    Props: count, columns
+    Usage: <ProductGridSkeleton count={8} columns={4} />
+
+15. ProductDetailSkeleton
+    File: components/ui/ProductDetailSkeleton.tsx
+    Props: none (full page skeleton)
+    Usage: <ProductDetailSkeleton />
+
+16. LoadingProgress
+    File: components/ui/LoadingProgress.tsx
+    Props: isLoading
+    Usage: <LoadingProgress isLoading={loading} />
+
+===============================================================================
+LAYOUT COMPONENTS
+===============================================================================
+
+1. Navbar
+   File: components/layout/Navbar.tsx
+   Features: Logo, nav links, user dropdown, mobile menu
+   Links: Products, About, Contact, Cart (customer), Dashboard (admin/dealer)
+
+2. Footer
+   File: components/layout/Footer.tsx
+   Features: 5 columns (brand, Shop, Company, Support, Newsletter)
+   Social links, copyright
+
+3. ShopLayout
+   File: components/layout/ShopLayout.tsx
+   Features: Wraps Navbar + children + Footer
+
+4. Sidebar
+   File: components/layout/Sidebar.tsx
+   Features: Dashboard navigation (admin/dealer specific links)
+
+5. DashboardLayout
+   File: components/layout/DashboardLayout.tsx
+   Features: Sidebar + content wrapper
+
+===============================================================================
+FEATURE COMPONENTS
+===============================================================================
+
+1. AuthProvider
+   File: features/auth/AuthProvider.tsx
+   Features: React Context for auth state, login, register, logout
+
+2. ProtectedRoute
+   File: features/auth/ProtectedRoute.tsx
+   Features: Route guard, redirects unauthorized users
+
+3. ProductCard
+   File: features/products/ProductCard.tsx
+   Features: Product card with image, name, price, category, add-to-cart
+
+===============================================================================
+COMPONENT USAGE PATTERNS
+===============================================================================
+
+Loading States:
+- <LoadingProgress isLoading={loading} /> — Top progress bar
+- <ProductGridSkeleton count={8} columns={4} /> — Grid skeleton
+- <Spinner size="lg" /> — Centered spinner
+
+Forms:
+- <Input label="..." value={x} onChange={setX} /> — Text input
+- <Select label="..." value={x} onChange={setX} options={[...]} /> — Dropdown
+- <Button type="submit" isLoading={submitting}>Submit</Button> — Submit button
+
+Modals:
+- <Modal isOpen={show} onClose={close} title="Edit">...</Modal>
+- <ConfirmDialog isOpen={show} onConfirm={delete} title="Delete?" />
+
+Data Display:
+- <Badge status="Approved" /> — Status badge
+- <Card><CardBody>...</CardBody></Card> — Content card
+- <Table columns={[...]} data={[...]} /> — Data table
+
+Empty States:
+- <EmptyState icon="🛒" title="No items" description="..." action={<Button>Add</Button>} />
+
+Error Handling:
+- toast.error('Error message') — Toast notification
+- toast.success('Success message') — Success toast

@@ -1,0 +1,107 @@
+SEED DATA SUMMARY
+==================
+
+Total Records: ~800+ across 10 tables
+
+===============================================================================
+TABLE-BY-TABLE BREAKDOWN
+===============================================================================
+
+1. ADMINS
+   Count: 1
+   Data:
+   - admin@ecommerce.com / Admin@123 (System Admin)
+
+2. DEALERS
+   Count: 10 (8 approved, 2 pending approval)
+   Password for all: Dealer@123
+
+   | #  | Email               | Shop Name          | Category      | Approved |
+   |----|---------------------|--------------------|---------------|----------|
+   | 1  | dealer1@test.com   | AlexTechs Shop     | Electronics   | Yes      |
+   | 2  | dealer2@test.com   | SarahFashions Shop | Clothing      | Yes      |
+   | 3  | dealer3@test.com   | MikeHomes Shop     | Home & Garden | Yes      |
+   | 4  | dealer4@test.com   | EmmaBookss Shop    | Books         | Yes      |
+   | 5  | dealer5@test.com   | DavidSportss Shop  | Sports        | Yes      |
+   | 6  | dealer6@test.com   | LisaToyss Shop     | Toys          | Yes      |
+   | 7  | dealer7@test.com   | JamesAutos Shop    | Automotive    | Yes      |
+   | 8  | dealer8@test.com   | OliviaHealths Shop | Health        | Yes      |
+   | 9  | dealer9@test.com   | NoahGadgetss Shop  | Electronics   | No       |
+   | 10 | dealer10@test.com  | AvaStyles Shop     | Clothing      | No       |
+
+3. CUSTOMERS
+   Count: 10
+   Password for all: Customer@123
+
+   | #  | Email                |
+   |----|----------------------|
+   | 1  | customer1@test.com   |
+   | 2  | customer2@test.com   |
+   | 3  | customer3@test.com   |
+   | 4  | customer4@test.com   |
+   | 5  | customer5@test.com   |
+   | 6  | customer6@test.com   |
+   | 7  | customer7@test.com   |
+   | 8  | customer8@test.com   |
+   | 9  | customer9@test.com   |
+   | 10 | customer10@test.com  |
+
+4. CATEGORIES
+   Count: 8
+
+   | #  | Name            | Description                              |
+   |----|-----------------|------------------------------------------|
+   | 1  | Electronics     | Electronic devices and accessories       |
+   | 2  | Clothing        | Fashion and apparel                      |
+   | 3  | Home & Garden   | Home improvement and garden supplies     |
+   | 4  | Books           | Books and educational materials          |
+   | 5  | Sports          | Sports equipment and accessories         |
+   | 6  | Toys            | Toys and games for all ages              |
+   | 7  | Automotive      | Car parts and accessories                |
+   | 8  | Health          | Health and wellness products             |
+
+5. PRODUCTS
+   Count: 550 (50 per dealer)
+   Status Distribution:
+   - Approved: ~340 products (visible on storefront)
+   - Pending: ~110 products (awaiting admin approval)
+   - Rejected: ~100 products (rejected by admin)
+
+6. PRODUCT_IMAGES
+   Count: 550 (one per product)
+   Note: Using placeholder image URLs
+
+7. CARTS
+   Count: 10 (one per customer, created on first add-to-cart)
+   Note: Created dynamically when customer adds first item
+
+8. CART_ITEMS
+   Count: Variable (depends on customer activity)
+   Note: Created when customers add items to cart
+
+9. ORDERS
+   Count: 57
+   Note: Distributed across multiple customers
+
+10. ORDER_ITEMS
+    Count: ~170 (average 3 items per order)
+    Note: Each order has 1-5 items on average
+
+===============================================================================
+DATA DISTRIBUTION
+===============================================================================
+
+Products per Category:
+- Electronics: ~100 products (2 dealers × 50)
+- Clothing: ~100 products (2 dealers × 50)
+- Home & Garden: ~50 products (1 dealer × 50)
+- Books: ~50 products (1 dealer × 50)
+- Sports: ~50 products (1 dealer × 50)
+- Toys: ~50 products (1 dealer × 50)
+- Automotive: ~50 products (1 dealer × 50)
+- Health: ~50 products (1 dealer × 50)
+
+Order Distribution:
+- 57 total orders across 10 customers
+- Average order value varies by product prices
+- All orders have order_items (no empty orders)

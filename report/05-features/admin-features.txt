@@ -1,0 +1,194 @@
+ADMIN FEATURES
+==============
+
+Role: Admin
+Login: admin@ecommerce.com / Admin@123
+Access: Full platform management
+
+===============================================================================
+DASHBOARD
+===============================================================================
+
+Route: /admin/dashboard
+Features:
+- Platform statistics cards
+  - Total Products
+  - Total Dealers
+  - Total Customers
+  - Total Orders
+  - Total Revenue
+- Recent dealers table
+- Quick action buttons
+
+===============================================================================
+DEALER MANAGEMENT
+===============================================================================
+
+Route: /admin/dealers
+
+Features:
+1. View All Dealers
+   - List view with columns: Shop Name, Owner, Category, Approved, Status
+   - Search by shop name or owner name
+   - Filter by category
+   - Pagination
+
+2. Create Dealer
+   - Modal form with fields:
+     - Shop Name (required)
+     - Shop Description
+     - Shop Category (required)
+     - Address (required)
+     - Logo URL
+     - Is Approved (checkbox)
+     - Email (required)
+     - Password (required)
+     - Full Name (required)
+     - Phone
+   - Creates both dealer record and login account
+   - Password is BCrypt hashed
+
+3. Edit Dealer
+   - Pre-filled modal form
+   - Can update all fields
+   - Can change approval status
+   - Can change active status
+
+4. Delete Dealer
+   - Confirmation dialog
+   - Deletes dealer record
+   - Note: Does not delete associated products (orphaned)
+
+5. Approve Dealer
+   - One-click approval
+   - Sets IsApproved = true
+   - Dealer can then list products
+
+API Endpoints:
+- GET /api/admin/dealers
+- POST /api/admin/dealers
+- PUT /api/admin/dealers/{id}
+- DELETE /api/admin/dealers/{id}
+- PUT /api/admin/dealers/{id}/approve
+
+===============================================================================
+CUSTOMER MANAGEMENT
+===============================================================================
+
+Route: /admin/users
+
+Features:
+1. View All Customers
+   - List view with columns: Name, Email, Phone, Active, Joined
+   - Search by name or email
+   - Pagination
+
+2. Activate/Deactivate Customer
+   - Toggle switch for each customer
+   - Inactive customers cannot login
+   - Immediate effect
+
+3. View Customer Details
+   - Email, name, phone
+   - Account status
+   - Join date
+
+API Endpoints:
+- GET /api/admin/users
+- PUT /api/admin/users/{id}/status
+
+===============================================================================
+PRODUCT APPROVAL
+===============================================================================
+
+Route: /admin/products/pending
+
+Features:
+1. View Pending Products
+   - List of products with ApprovalStatus = "Pending"
+   - Shows: Product Name, Dealer, Category, Price, Stock
+   - Pagination
+
+2. Approve Product
+   - One-click approval
+   - Sets ApprovalStatus = "Approved"
+   - Sets PublishedAt timestamp
+   - Product becomes visible on storefront
+
+3. Reject Product
+   - Opens modal with reason field
+   - Sets ApprovalStatus = "Rejected"
+   - Sets RejectionReason
+   - Product hidden from storefront
+
+4. Delete Product
+   - Confirmation dialog
+   - Permanently removes product
+   - Cannot be undone
+
+API Endpoints:
+- GET /api/admin/products/pending
+- PUT /api/admin/products/{id}/approve
+- PUT /api/admin/products/{id}/reject
+- DELETE /api/admin/products/{id}
+
+===============================================================================
+CATEGORY MANAGEMENT
+===============================================================================
+
+Route: /admin/categories
+
+Features:
+1. View All Categories
+   - List view with: Name, Description, Product Count
+   - Sort by name
+
+2. Create Category
+   - Modal form:
+     - Name (required, unique)
+     - Description
+     - Parent Category (optional, for subcategories)
+
+3. Edit Category
+   - Pre-filled modal form
+   - Can update name and description
+
+4. Delete Category
+   - Only allowed if no products in category
+   - Shows error if products exist
+   - Confirmation dialog
+
+API Endpoints:
+- GET /api/admin/categories
+- POST /api/admin/categories
+- PUT /api/admin/categories/{id}
+- DELETE /api/admin/categories/{id}
+
+===============================================================================
+STATISTICS
+===============================================================================
+
+Route: /admin/stats
+
+Features:
+- Detailed platform statistics
+- Product status breakdown (Pending/Approved/Rejected)
+- Order statistics
+- Revenue totals
+- User growth
+
+API Endpoint:
+- GET /api/admin/stats
+
+===============================================================================
+CLEAR DEMO DATA
+===============================================================================
+
+Features:
+- Clears all seeded demo data
+- Resets database to empty state
+- Useful for fresh testing
+- Confirmation required
+
+API Endpoint:
+- POST /api/admin/clear-demo-data
