@@ -72,14 +72,35 @@ npm run dev
 
 ### 4. Demo Login
 
-| Role | Email | Password |
-|------|-------|----------|
-Login Verification
-Role	Email	Password	Status
-Admin	admin@ecommerce.com	Admin@123	✓
-Dealer	dealer1@test.com	Dealer@123	✓
-Customer	customer1@test.com	Customer@123	✓
+Use the following credentials to test the different user roles in the application.
 
+#### Admin Account
+
+| Field | Details |
+|-------|---------|
+| **Email** | `admin@ecommerce.com` |
+| **Password** | `Admin@123` |
+| **Status** | ✅ Verified |
+
+#### Dealer Account
+
+| Field | Details |
+|-------|---------|
+| **Email** | `dealer1@test.com` |
+| **Password** | `Dealer@123` |
+| **Status** | ✅ Verified |
+
+#### Customer Account
+
+| Field | Details |
+|-------|---------|
+| **Email** | `customer1@test.com` |
+| **Password** | `Customer@123` |
+| **Status** | ✅ Verified |
+
+
+
+> **Note:** Demo credentials are intended for development and testing only. Replace them with secure credentials before deploying to production.
 
 > 10 seeded dealers (Dealer@123) and 10 seeded customers (Customer@123) also available. See [Documents/06-DEMO-CREDENTIALS.md](./Documents/06-DEMO-CREDENTIALS.md) for full list.
 

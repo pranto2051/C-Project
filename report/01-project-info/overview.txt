@@ -1,0 +1,24 @@
+PROJECT OVERVIEW
+================
+
+Project Name: Multi-Vendor E-Commerce Platform
+
+Description:
+A production-quality multi-vendor e-commerce web application where multiple dealers (vendors) can sell their products. The platform supports three user roles: Admin, Dealer, and Customer. Admin oversees the platform, Dealers manage their shops and products, and Customers browse, purchase, and track orders.
+
+Core Feature:
+Dealer Product Approval Workflow — New dealer products start as "Pending" and require Admin approval before becoming publicly visible on the storefront. This ensures quality control and prevents unauthorized listings.
+
+Project Type: University Final Year Project
+Development Period: August 15-16, 2026
+Developer: md.prantoislam
+
+Key Highlights:
+- Complete full-stack application (C# backend + Next.js frontend)
+- Three-role authentication system (Admin, Dealer, Customer)
+- Product approval workflow (core requirement)
+- 550+ seeded products across 8 categories
+- Cloud-hosted database on Supabase
+- Clean Architecture with separation of concerns
+- Responsive UI with Tailwind CSS
+- JWT-based authentication with BCrypt password hashing

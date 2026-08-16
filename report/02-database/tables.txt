@@ -1,0 +1,212 @@
+DATABASE SCHEMA
+===============
+
+The database is hosted on Supabase (PostgreSQL cloud). The complete schema is defined in SQL/database.sql.
+
+Schema Version: 2.0 (Refactored - Separate Auth Tables)
+Database Engine: PostgreSQL 14+
+Cloud Provider: Supabase
+Total Tables: 10
+Total Seed Records: ~800+
+
+===============================================================================
+TABLE DEFINITIONS
+===============================================================================
+
+1. ADMINS
+---------
+Purpose: Admin user accounts (completely separate from other roles)
+
+Columns:
+- Id              UUID            PRIMARY KEY
+- Email           VARCHAR(256)    UNIQUE, NOT NULL
+- PasswordHash    TEXT            NOT NULL (BCrypt)
+- FullName        VARCHAR(256)    NOT NULL
+- Phone           VARCHAR(32)     NULLABLE
+- IsActive        BOOLEAN         NOT NULL, DEFAULT true
+- CreatedAt       TIMESTAMPTZ     NOT NULL, DEFAULT NOW()
+- UpdatedAt       TIMESTAMPTZ     NOT NULL, DEFAULT NOW()
+
+Indexes: ix_admins_email (unique on Email)
+Seed Data: 1 record (admin@ecommerce.com)
+
+2. DEALERS
+----------
+Purpose: Dealer/vendor accounts with integrated shop information
+
+Columns:
+- Id                UUID            PRIMARY KEY
+- Email             VARCHAR(256)    UNIQUE, NOT NULL
+- PasswordHash      TEXT            NOT NULL (BCrypt)
+- FullName          VARCHAR(256)    NOT NULL
+- Phone             VARCHAR(32)     NULLABLE
+- ShopName          VARCHAR(256)    NOT NULL
+- ShopDescription   TEXT            NULLABLE
+- ShopCategory      VARCHAR(128)    NOT NULL
+- Address           TEXT            NOT NULL
+- LogoUrl           TEXT            NULLABLE
+- IsApproved        BOOLEAN         NOT NULL, DEFAULT false
+- IsActive          BOOLEAN         NOT NULL, DEFAULT true
+- CreatedAt         TIMESTAMPTZ     NOT NULL, DEFAULT NOW()
+- UpdatedAt         TIMESTAMPTZ     NOT NULL, DEFAULT NOW()
+
+Indexes: ix_dealers_email (unique on Email)
+Seed Data: 10 records (8 approved, 2 pending)
+
+3. CUSTOMERS
+------------
+Purpose: Customer accounts
+
+Columns:
+- Id                UUID            PRIMARY KEY
+- Email             VARCHAR(256)    UNIQUE, NOT NULL
+- PasswordHash      TEXT            NOT NULL (BCrypt)
+- FullName          VARCHAR(256)    NOT NULL
+- Phone             VARCHAR(32)     NULLABLE
+- ShippingAddress   TEXT            NULLABLE
+- IsActive          BOOLEAN         NOT NULL, DEFAULT true
+- CreatedAt         TIMESTAMPTZ     NOT NULL, DEFAULT NOW()
+- UpdatedAt         TIMESTAMPTZ     NOT NULL, DEFAULT NOW()
+
+Indexes: ix_customers_email (unique on Email)
+Seed Data: 10 records
+
+4. CATEGORIES
+-------------
+Purpose: Product categories with optional parent for subcategories
+
+Columns:
+- Id                UUID            PRIMARY KEY
+- Name              VARCHAR(128)    UNIQUE, NOT NULL
+- Description       TEXT            NULLABLE
+- ParentCategoryId  UUID            FK → Categories(Id), NULLABLE
+- CreatedAt         TIMESTAMPTZ     NOT NULL, DEFAULT NOW()
+- UpdatedAt         TIMESTAMPTZ     NOT NULL, DEFAULT NOW()
+
+Indexes: ix_categories_name (unique on Name)
+Seed Data: 8 records (Electronics, Clothing, Home & Garden, Books, Sports, Toys, Automotive, Health)
+
+5. PRODUCTS
+-----------
+Purpose: Product listings by dealers
+
+Columns:
+- Id                UUID            PRIMARY KEY
+- Name              VARCHAR(256)    NOT NULL
+- Description       TEXT            NULLABLE
+- Price             DECIMAL(10,2)   NOT NULL, CHECK (Price >= 0)
+- StockQuantity     INTEGER         NOT NULL, DEFAULT 0, CHECK (StockQuantity >= 0)
+- Sku               VARCHAR(128)    UNIQUE, NULLABLE
+- ApprovalStatus    VARCHAR(32)     NOT NULL, DEFAULT 'Pending'
+- RejectionReason   TEXT            NULLABLE
+- PublishedAt       TIMESTAMPTZ     NULLABLE
+- DealerId          UUID            FK → Dealers(Id), NOT NULL
+- CategoryId        UUID            FK → Categories(Id), NOT NULL
+- CreatedAt         TIMESTAMPTZ     NOT NULL, DEFAULT NOW()
+- UpdatedAt         TIMESTAMPTZ     NOT NULL, DEFAULT NOW()
+
+Indexes:
+- ix_products_approval_category (ApprovalStatus, CategoryId)
+- ix_products_dealer (DealerId)
+- ix_products_sku (unique on Sku)
+
+Foreign Keys:
+- fk_products_dealer → Dealers(Id)
+- fk_products_category → Categories(Id)
+
+Seed Data: 550 records (50 per dealer)
+
+6. PRODUCT_IMAGES
+-----------------
+Purpose: Multiple images per product with display order
+
+Columns:
+- Id            UUID            PRIMARY KEY
+- ImageUrl      TEXT            NOT NULL
+- DisplayOrder  INTEGER         NOT NULL, DEFAULT 0
+- ProductId     UUID            FK → Products(Id), NOT NULL
+- CreatedAt     TIMESTAMPTZ     NOT NULL, DEFAULT NOW()
+- UpdatedAt     TIMESTAMPTZ     NOT NULL, DEFAULT NOW()
+
+Indexes: ix_product_images_product (ProductId)
+Foreign Keys: fk_product_images_product → Products(Id) ON DELETE CASCADE
+Seed Data: 550 records (one per product)
+
+7. CARTS
+--------
+Purpose: One active cart per customer
+
+Columns:
+- Id            UUID            PRIMARY KEY
+- CustomerId    UUID            FK → Customers(Id), UNIQUE, NOT NULL
+- CreatedAt     TIMESTAMPTZ     NOT NULL, DEFAULT NOW()
+- UpdatedAt     TIMESTAMPTZ     NOT NULL, DEFAULT NOW()
+
+Indexes: ix_carts_customerid (unique on CustomerId)
+Foreign Keys: fk_carts_customer → Customers(Id) ON DELETE CASCADE
+Seed Data: Created on first add-to-cart per customer
+
+8. CART_ITEMS
+-------------
+Purpose: Items in a shopping cart
+
+Columns:
+- Id            UUID            PRIMARY KEY
+- CartId        UUID            FK → Carts(Id), NOT NULL
+- ProductId     UUID            FK → Products(Id), NOT NULL
+- Quantity      INTEGER         NOT NULL, DEFAULT 1, CHECK (Quantity > 0)
+- PriceAtAdd    DECIMAL(10,2)   NOT NULL, CHECK (PriceAtAdd >= 0)
+- CreatedAt     TIMESTAMPTZ     NOT NULL, DEFAULT NOW()
+- UpdatedAt     TIMESTAMPTZ     NOT NULL, DEFAULT NOW()
+
+Indexes: ix_cart_items_cart_product (unique on CartId, ProductId)
+Foreign Keys:
+- fk_cart_items_cart → Carts(Id) ON DELETE CASCADE
+- fk_cart_items_product → Products(Id) ON DELETE CASCADE
+
+9. ORDERS
+---------
+Purpose: Customer orders with server-calculated totals
+
+Columns:
+- Id                UUID            PRIMARY KEY
+- CustomerId        UUID            FK → Customers(Id), NOT NULL
+- Status            VARCHAR(32)     NOT NULL, DEFAULT 'Pending'
+- TotalAmount       DECIMAL(12,2)   NOT NULL, CHECK (TotalAmount >= 0)
+- ShippingAddress   TEXT            NOT NULL
+- CreatedAt         TIMESTAMPTZ     NOT NULL, DEFAULT NOW()
+- UpdatedAt         TIMESTAMPTZ     NOT NULL, DEFAULT NOW()
+
+Indexes:
+- ix_orders_customer (CustomerId)
+- ix_orders_status (Status)
+- ix_orders_created (CreatedAt)
+
+Foreign Keys: fk_orders_customer → Customers(Id)
+Seed Data: 57 records
+
+10. ORDER_ITEMS
+---------------
+Purpose: Line items in an order
+
+Columns:
+- Id                    UUID            PRIMARY KEY
+- OrderId               UUID            FK → Orders(Id), NOT NULL
+- ProductId             UUID            FK → Products(Id), NOT NULL
+- DealerId              UUID            FK → Dealers(Id), NOT NULL
+- Quantity              INTEGER         NOT NULL, CHECK (Quantity > 0)
+- UnitPriceAtPurchase   DECIMAL(10,2)   NOT NULL, CHECK (UnitPriceAtPurchase >= 0)
+- Subtotal              DECIMAL(12,2)   NOT NULL, CHECK (Subtotal >= 0)
+- CreatedAt             TIMESTAMPTZ     NOT NULL, DEFAULT NOW()
+- UpdatedAt             TIMESTAMPTZ     NOT NULL, DEFAULT NOW()
+
+Indexes:
+- ix_order_items_order (OrderId)
+- ix_order_items_dealer (DealerId)
+
+Foreign Keys:
+- fk_order_items_order → Orders(Id) ON DELETE CASCADE
+- fk_order_items_product → Products(Id)
+- fk_order_items_dealer → Dealers(Id)
+
+Seed Data: ~170 records

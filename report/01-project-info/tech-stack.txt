@@ -1,0 +1,53 @@
+TECHNOLOGY STACK
+================
+
+Backend Technologies:
+- Language: C# 13.0
+- Framework: ASP.NET Core Web API (.NET 9.0)
+- ORM: Entity Framework Core 9.0
+- Database Provider: Npgsql (PostgreSQL)
+- Authentication: JWT Bearer Tokens
+- Password Hashing: BCrypt.Net-Next 4.2.0
+- Object Mapping: AutoMapper
+- API Documentation: Swagger / OpenAPI (built-in)
+
+Frontend Technologies:
+- Framework: Next.js 14 (App Router)
+- Language: TypeScript 5.4
+- UI Library: React 18.2
+- Styling: Tailwind CSS 3.4
+- HTTP Client: Axios 1.7
+- Notifications: React Hot Toast 2.4
+- Utilities: clsx, tailwind-merge
+
+Database:
+- Engine: PostgreSQL 14+
+- Hosting: Supabase Cloud
+- Connection: Npgsql with SSL
+- Schema Management: SQL scripts (database.sql)
+
+Development Tools:
+- IDE: Visual Studio Code / Visual Studio
+- Version Control: Git
+- Package Manager: NuGet (backend), npm (frontend)
+- Build Tools: dotnet CLI, Next.js CLI
+
+Architecture Pattern:
+- Backend: Clean Architecture (4 layers)
+  - Presentation (API)
+  - Application (Services, DTOs)
+  - Domain (Entities, Interfaces)
+  - Infrastructure (EF Core, Repositories)
+- Frontend: Feature-based organization
+  - App Router (pages)
+  - Components (UI kit)
+  - Features (auth, products)
+  - Services (API client)
+
+Security:
+- JWT tokens with 15-minute expiry
+- BCrypt password hashing (cost factor 11)
+- CORS locked to frontend origin
+- Role-based authorization
+- Ownership checks from JWT claims
+- No secrets in source code
