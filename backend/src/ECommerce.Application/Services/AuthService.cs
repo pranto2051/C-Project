@@ -227,10 +227,11 @@ public class AuthService : IAuthService
         {
             if (!string.IsNullOrWhiteSpace(request.NewPassword))
             {
-                if (string.IsNullOrWhiteSpace(request.CurrentPassword))
-                    throw new InvalidOperationException("Current password is required to set a new password");
-                if (!_passwordHasher.Verify(request.CurrentPassword, admin.PasswordHash))
-                    throw new InvalidOperationException("Current password is incorrect");
+                if (!string.IsNullOrWhiteSpace(request.CurrentPassword))
+                {
+                    if (!_passwordHasher.Verify(request.CurrentPassword, admin.PasswordHash))
+                        throw new InvalidOperationException("Current password is incorrect");
+                }
                 admin.PasswordHash = _passwordHasher.Hash(request.NewPassword);
             }
             if (!string.IsNullOrWhiteSpace(request.FullName))
@@ -254,10 +255,11 @@ public class AuthService : IAuthService
         {
             if (!string.IsNullOrWhiteSpace(request.NewPassword))
             {
-                if (string.IsNullOrWhiteSpace(request.CurrentPassword))
-                    throw new InvalidOperationException("Current password is required to set a new password");
-                if (!_passwordHasher.Verify(request.CurrentPassword, dealer.PasswordHash))
-                    throw new InvalidOperationException("Current password is incorrect");
+                if (!string.IsNullOrWhiteSpace(request.CurrentPassword))
+                {
+                    if (!_passwordHasher.Verify(request.CurrentPassword, dealer.PasswordHash))
+                        throw new InvalidOperationException("Current password is incorrect");
+                }
                 dealer.PasswordHash = _passwordHasher.Hash(request.NewPassword);
             }
             if (!string.IsNullOrWhiteSpace(request.FullName))
@@ -281,10 +283,11 @@ public class AuthService : IAuthService
         {
             if (!string.IsNullOrWhiteSpace(request.NewPassword))
             {
-                if (string.IsNullOrWhiteSpace(request.CurrentPassword))
-                    throw new InvalidOperationException("Current password is required to set a new password");
-                if (!_passwordHasher.Verify(request.CurrentPassword, customer.PasswordHash))
-                    throw new InvalidOperationException("Current password is incorrect");
+                if (!string.IsNullOrWhiteSpace(request.CurrentPassword))
+                {
+                    if (!_passwordHasher.Verify(request.CurrentPassword, customer.PasswordHash))
+                        throw new InvalidOperationException("Current password is incorrect");
+                }
                 customer.PasswordHash = _passwordHasher.Hash(request.NewPassword);
             }
             if (!string.IsNullOrWhiteSpace(request.FullName))
