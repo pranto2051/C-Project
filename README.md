@@ -74,9 +74,12 @@ npm run dev
 
 | Role | Email | Password |
 |------|-------|----------|
-| Admin | admin@ecommerce.com | Admin@123 |
-| Dealer | dealer@ecommerce.com | Dealer@123 |
-| Customer | customer@ecommerce.com | Customer@123 |
+Login Verification
+Role	Email	Password	Status
+Admin	admin@ecommerce.com	Admin@123	✓
+Dealer	dealer1@test.com	Dealer@123	✓
+Customer	customer1@test.com	Customer@123	✓
+
 
 > 10 seeded dealers (Dealer@123) and 10 seeded customers (Customer@123) also available. See [Documents/06-DEMO-CREDENTIALS.md](./Documents/06-DEMO-CREDENTIALS.md) for full list.
 
