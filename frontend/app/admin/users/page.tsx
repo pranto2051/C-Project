@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { adminApi } from '@/services/api';
 import { ProtectedRoute } from '@/features/auth/ProtectedRoute';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { Button, Spinner, EmptyState, Badge, Pagination, ConfirmDialog, Input } from '@/components/ui';
+import { Button, Spinner, EmptyState, Badge, Pagination, ConfirmDialog, Input , LoadingProgress} from '@/components/ui';
 import type { User, PaginatedResponse } from '@/types';
 
 function CustomersContent() {
@@ -55,16 +55,34 @@ function CustomersContent() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center py-12">
-        <Spinner size="lg" />
-      </div>
-    );
-  }
+  
+
 
   return (
-    <div className="space-y-6">
+
+
+    <>
+
+
+      <LoadingProgress isLoading={isLoading} />
+
+
+      {isLoading ? (
+
+
+        <div className="flex justify-center py-12">
+
+
+          <Spinner size="lg" />
+
+
+        </div>
+
+
+      ) : (
+
+
+        <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-semibold text-neutral-900">Customers</h2>
@@ -116,7 +134,17 @@ function CustomersContent() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-600">{new Date(user.createdAt).toLocaleDateString()}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
                       <button
-                        onClick={() => { setStatusId(user.id); setNewStatus(!user.isActive); }}
+                        onClick={() => { setStatusId(user.id); setNewStatus(!user.isActive
+
+
+      )}
+
+
+    </>
+
+
+  );
+}}
                         className={`font-medium ${user.isActive ? 'text-red-600 hover:text-red-700' : 'text-green-600 hover:text-green-700'}`}
                       >
                         {user.isActive ? 'Deactivate' : 'Activate'}

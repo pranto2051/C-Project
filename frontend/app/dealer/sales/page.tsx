@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { dealerApi } from '@/services/api';
 import { ProtectedRoute } from '@/features/auth/ProtectedRoute';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { Spinner, EmptyState, Card, CardBody } from '@/components/ui';
+import { Spinner, EmptyState, Card, CardBody , LoadingProgress} from '@/components/ui';
 import { formatPrice } from '@/lib/utils';
 import type { DealerSalesResponse } from '@/types';
 
@@ -27,14 +27,6 @@ function DealerSalesContent() {
     fetchSales();
   }, []);
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center py-12">
-        <Spinner size="lg" />
-      </div>
-    );
-  }
-
   if (!sales || sales.items.length === 0) {
     return (
       <EmptyState
@@ -45,8 +37,32 @@ function DealerSalesContent() {
     );
   }
 
+
   return (
-    <div className="space-y-6">
+
+
+    <>
+
+
+      <LoadingProgress isLoading={isLoading} />
+
+
+      {isLoading ? (
+
+
+        <div className="flex justify-center py-12">
+
+
+          <Spinner size="lg" />
+
+
+        </div>
+
+
+      ) : (
+
+
+        <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card>
           <CardBody>
@@ -137,6 +153,15 @@ function DealerSalesContent() {
         </div>
       </div>
     </div>
+  
+
+
+      )}
+
+
+    </>
+
+
   );
 }
 

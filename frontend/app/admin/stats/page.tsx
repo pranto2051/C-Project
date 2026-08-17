@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { adminApi } from '@/services/api';
 import { ProtectedRoute } from '@/features/auth/ProtectedRoute';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { Spinner, Card, CardBody } from '@/components/ui';
+import { Spinner, Card, CardBody , LoadingProgress} from '@/components/ui';
 import type { PlatformStats } from '@/types';
 
 function StatsContent() {
@@ -25,14 +25,6 @@ function StatsContent() {
     fetchStats();
   }, []);
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center py-12">
-        <Spinner size="lg" />
-      </div>
-    );
-  }
-
   if (!stats) return null;
 
   const statsData = [
@@ -47,8 +39,32 @@ function StatsContent() {
     { label: 'Total Revenue', value: `$${stats.totalRevenue.toFixed(2)}`, description: 'Lifetime revenue' },
   ];
 
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+
+    <>
+
+
+      <LoadingProgress isLoading={isLoading} />
+
+
+      {isLoading ? (
+
+
+        <div className="flex justify-center py-12">
+
+
+          <Spinner size="lg" />
+
+
+        </div>
+
+
+      ) : (
+
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {statsData.map((stat) => (
         <Card key={stat.label}>
           <CardBody>
@@ -59,6 +75,15 @@ function StatsContent() {
         </Card>
       ))}
     </div>
+  
+
+
+      )}
+
+
+    </>
+
+
   );
 }
 

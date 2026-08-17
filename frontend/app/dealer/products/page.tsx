@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { dealerApi } from '@/services/api';
 import { ProtectedRoute } from '@/features/auth/ProtectedRoute';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { Button, Spinner, EmptyState, Badge, Pagination, ConfirmDialog } from '@/components/ui';
+import { Button, Spinner, EmptyState, Badge, Pagination, ConfirmDialog , LoadingProgress} from '@/components/ui';
 import { formatPrice } from '@/lib/utils';
 import type { Product, PaginatedResponse } from '@/types';
 
@@ -47,16 +47,34 @@ function DealerProductsContent() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center py-12">
-        <Spinner size="lg" />
-      </div>
-    );
-  }
+  
+
 
   return (
-    <div className="space-y-6">
+
+
+    <>
+
+
+      <LoadingProgress isLoading={isLoading} />
+
+
+      {isLoading ? (
+
+
+        <div className="flex justify-center py-12">
+
+
+          <Spinner size="lg" />
+
+
+        </div>
+
+
+      ) : (
+
+
+        <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold text-neutral-900">My Products</h2>
         <Link href="/dealer/products/new"><Button>New Product</Button></Link>
@@ -113,6 +131,15 @@ function DealerProductsContent() {
         isLoading={isDeleting}
       />
     </div>
+  
+
+
+      )}
+
+
+    </>
+
+
   );
 }
 

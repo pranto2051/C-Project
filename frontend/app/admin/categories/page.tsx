@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { adminApi } from '@/services/api';
 import { ProtectedRoute } from '@/features/auth/ProtectedRoute';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { Button, Spinner, EmptyState, Card, CardBody, Pagination, ConfirmDialog } from '@/components/ui';
+import { Button, Spinner, EmptyState, Card, CardBody, Pagination, ConfirmDialog , LoadingProgress} from '@/components/ui';
 import type { Category, PaginatedResponse } from '@/types';
 
 function CategoriesContent() {
@@ -64,19 +64,47 @@ function CategoriesContent() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center py-12">
-        <Spinner size="lg" />
-      </div>
-    );
-  }
+  
+
 
   return (
-    <div className="space-y-6">
+
+
+    <>
+
+
+      <LoadingProgress isLoading={isLoading} />
+
+
+      {isLoading ? (
+
+
+        <div className="flex justify-center py-12">
+
+
+          <Spinner size="lg" />
+
+
+        </div>
+
+
+      ) : (
+
+
+        <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold text-neutral-900">Categories</h2>
-        <Button onClick={() => { setEditingCategory(null); setFormData({ name: '', description: '' }); setIsModalOpen(true); }}>New Category</Button>
+        <Button onClick={() => { setEditingCategory(null); setFormData({ name: '', description: '' }); setIsModalOpen(true
+
+
+      )}
+
+
+    </>
+
+
+  );
+}}>New Category</Button>
       </div>
       {categories.length === 0 ? (
         <EmptyState icon="📁" title="No categories" description="Create your first category." />

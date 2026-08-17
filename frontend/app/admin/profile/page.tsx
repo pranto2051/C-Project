@@ -5,7 +5,7 @@ import { authApi } from '@/services/api';
 import { useAuth } from '@/features/auth';
 import { ProtectedRoute } from '@/features/auth/ProtectedRoute';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { Button, Spinner, Input } from '@/components/ui';
+import { Button, Spinner, Input , LoadingProgress} from '@/components/ui';
 import type { User } from '@/types';
 import toast from 'react-hot-toast';
 
@@ -109,16 +109,34 @@ function ProfileContent() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center py-12">
-        <Spinner size="lg" />
-      </div>
-    );
-  }
+  
+
 
   return (
-    <div className="max-w-2xl">
+
+
+    <>
+
+
+      <LoadingProgress isLoading={isLoading} />
+
+
+      {isLoading ? (
+
+
+        <div className="flex justify-center py-12">
+
+
+          <Spinner size="lg" />
+
+
+        </div>
+
+
+      ) : (
+
+
+        <div className="max-w-2xl">
       <div className="bg-white rounded-xl border border-neutral-200 p-6">
         <div className="flex items-center gap-4 mb-6 pb-6 border-b border-neutral-200">
           <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center">
@@ -205,6 +223,15 @@ function ProfileContent() {
         </form>
       </div>
     </div>
+  
+
+
+      )}
+
+
+    </>
+
+
   );
 }
 

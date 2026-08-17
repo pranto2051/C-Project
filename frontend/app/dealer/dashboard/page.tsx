@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { dealerApi } from '@/services/api';
 import { ProtectedRoute } from '@/features/auth/ProtectedRoute';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { Button, Card, CardBody, Spinner, EmptyState, Badge } from '@/components/ui';
+import { Button, Card, CardBody, Spinner, EmptyState, Badge , LoadingProgress} from '@/components/ui';
 import { formatPrice } from '@/lib/utils';
 import type { Product, PaginatedResponse, DealerSalesResponse } from '@/types';
 
@@ -43,14 +43,6 @@ function DealerDashboardContent() {
     fetchData();
   }, []);
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center py-12">
-        <Spinner size="lg" />
-      </div>
-    );
-  }
-
   const statCards = [
     { label: 'Total Products', value: stats.total, color: 'bg-primary-50 text-primary-700' },
     { label: 'Pending Approval', value: stats.pending, color: 'bg-yellow-50 text-yellow-700' },
@@ -58,8 +50,32 @@ function DealerDashboardContent() {
     { label: 'Rejected', value: stats.rejected, color: 'bg-red-50 text-red-700' },
   ];
 
+
   return (
-    <div className="space-y-6">
+
+
+    <>
+
+
+      <LoadingProgress isLoading={isLoading} />
+
+
+      {isLoading ? (
+
+
+        <div className="flex justify-center py-12">
+
+
+          <Spinner size="lg" />
+
+
+        </div>
+
+
+      ) : (
+
+
+        <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((stat) => (
           <Card key={stat.label}>
@@ -151,6 +167,15 @@ function DealerDashboardContent() {
         </Card>
       </div>
     </div>
+  
+
+
+      )}
+
+
+    </>
+
+
   );
 }
 

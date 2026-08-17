@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { adminApi } from '@/services/api';
 import { ProtectedRoute } from '@/features/auth/ProtectedRoute';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { Button, Spinner, EmptyState, Badge, Pagination, ConfirmDialog } from '@/components/ui';
+import { Button, Spinner, EmptyState, Badge, Pagination, ConfirmDialog , LoadingProgress} from '@/components/ui';
 import toast from 'react-hot-toast';
 import type { Product, PaginatedResponse } from '@/types';
 
@@ -62,16 +62,34 @@ function PendingProductsContent() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center py-12">
-        <Spinner size="lg" />
-      </div>
-    );
-  }
+  
+
 
   return (
-    <div className="space-y-6">
+
+
+    <>
+
+
+      <LoadingProgress isLoading={isLoading} />
+
+
+      {isLoading ? (
+
+
+        <div className="flex justify-center py-12">
+
+
+          <Spinner size="lg" />
+
+
+        </div>
+
+
+      ) : (
+
+
+        <div className="space-y-6">
       <h2 className="text-xl font-semibold text-neutral-900">Pending Products</h2>
       {products.length === 0 ? (
         <EmptyState icon="✅" title="No pending products" description="All products have been reviewed." />
@@ -97,7 +115,17 @@ function PendingProductsContent() {
                     <td className="px-6 py-4 whitespace-nowrap"><Badge status={product.approvalStatus} /></td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
                       <Button size="sm" variant="primary" onClick={() => handleApprove(product.id)} className="mr-2">Approve</Button>
-                      <Button size="sm" variant="danger" onClick={() => { setRejectId(product.id); setRejectionReason(''); }}>Reject</Button>
+                      <Button size="sm" variant="danger" onClick={() => { setRejectId(product.id); setRejectionReason(''
+
+
+      )}
+
+
+    </>
+
+
+  );
+}}>Reject</Button>
                     </td>
                   </tr>
                 ))}

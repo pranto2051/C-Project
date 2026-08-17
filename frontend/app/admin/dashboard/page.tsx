@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { adminApi } from '@/services/api';
 import { ProtectedRoute } from '@/features/auth/ProtectedRoute';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { Spinner, Card, CardBody, Badge, Pagination } from '@/components/ui';
+import { Spinner, Card, CardBody, Badge, Pagination , LoadingProgress} from '@/components/ui';
 import { formatPrice } from '@/lib/utils';
 import type { PlatformStats, DealerProfile, PaginatedResponse } from '@/types';
 
@@ -46,14 +46,6 @@ function AdminDashboardContent() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center py-12">
-        <Spinner size="lg" />
-      </div>
-    );
-  }
-
   if (!stats) return null;
 
   const statCards = [
@@ -68,8 +60,32 @@ function AdminDashboardContent() {
     { label: '💰 Total Revenue', value: formatPrice(stats.totalRevenue), color: 'text-accent-600', bg: 'bg-amber-50' },
   ];
 
+
   return (
-    <div className="space-y-8">
+
+
+    <>
+
+
+      <LoadingProgress isLoading={isLoading} />
+
+
+      {isLoading ? (
+
+
+        <div className="flex justify-center py-12">
+
+
+          <Spinner size="lg" />
+
+
+        </div>
+
+
+      ) : (
+
+
+        <div className="space-y-8">
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {statCards.map((stat) => (
@@ -149,6 +165,15 @@ function AdminDashboardContent() {
         )}
       </div>
     </div>
+  
+
+
+      )}
+
+
+    </>
+
+
   );
 }
 
