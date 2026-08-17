@@ -67,3 +67,10 @@ The frontend will be available at **http://localhost:3000**
 | `Couldn't find a project to run` | Use `dotnet run --project src/ECommerce.API/ECommerce.API.csproj` from inside `backend/` |
 | `DATABASE_CONNECTION_STRING is not set` | Create/update `backend/.env` with the Supabase connection string |
 | `npm: command not found` | Install Node.js from https://nodejs.org |
+
+
+
+
+
+
+bash start.sh
