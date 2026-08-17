@@ -30,6 +30,12 @@ fi
 echo "✅  Supabase connection string loaded."
 
 # ── 3. Start backend ─────────────────────────────────────
+CSPROJ="$ROOT/backend/src/ECommerce.API/ECommerce.API.csproj"
+if [ ! -f "$CSPROJ" ]; then
+  echo "❌  Project file not found: $CSPROJ"
+  echo "    Make sure you are running start.sh from the project root."
+  exit 1
+fi
 echo ""
 echo "▶  Starting backend on http://localhost:5001 ..."
 cd "$ROOT/backend"
