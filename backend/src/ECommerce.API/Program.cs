@@ -14,12 +14,26 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.WebHost.ConfigureKestrel(options =>
+{
+    // Use a different port to avoid conflicts
+    options.ListenLocalhost(5001);
+});
 builder.Configuration.AddEnvironmentVariables();
 
-var connectionString = builder.Configuration.GetValue<string>("DATABASE_CONNECTION_STRING")
+// ──────────────────────────────────────────────────────────────
+// PERMANENT SUPABASE CONNECTION — NO LOCAL FALLBACK
+// If this variable is missing the app will refuse to start,
+// ensuring data always comes from the real database.
+// ──────────────────────────────────────────────────────────────
+var connectionString =
+    builder.Configuration.GetValue<string>("DATABASE_CONNECTION_STRING")
     ?? builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? "Host=localhost;Port=5432;Database=ecommerce_db;Username=postgres;Password=postgres";
+    ?? throw new InvalidOperationException(
+        "❌ DATABASE_CONNECTION_STRING is not set. " +
+        "Set it in backend/.env or as an environment variable. " +
+        "The app will NOT start without a real database connection.");
+
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString, npgsql =>
