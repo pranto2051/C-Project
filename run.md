@@ -68,9 +68,12 @@ The frontend will be available at **http://localhost:3000**
 | `DATABASE_CONNECTION_STRING is not set` | Create/update `backend/.env` with the Supabase connection string |
 | `npm: command not found` | Install Node.js from https://nodejs.org |
 
-
-
-
-
-
+## Fix Error
 bash start.sh
+
+
+
+## Run All In One Command
+
+cd /Users/md.prantoislam/Desktop/C-Project
+./start.sh

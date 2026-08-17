@@ -116,6 +116,17 @@ Use the following credentials to test the different user roles in the applicatio
 
 > 10 seeded dealers (Dealer@123) and 10 seeded customers (Customer@123) also available. See [Documents/06-DEMO-CREDENTIALS.md](./Documents/06-DEMO-CREDENTIALS.md) for full list.
 
+## Fix Error
+bash start.sh
+
+
+
+## Run All In One Command
+
+cd /Users/md.prantoislam/Desktop/C-Project
+./start.sh
+
+
 ## Documentation
 
 All project documentation is in the [Documents/](./Documents/) folder:
