@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 
 interface LoadingProgressProps {
@@ -9,110 +9,284 @@ interface LoadingProgressProps {
   onComplete?: () => void;
 }
 
-export function LoadingProgress({ isLoading, className, onComplete }: LoadingProgressProps) {
+export function LoadingProgress({
+  isLoading,
+  className,
+  onComplete,
+}: LoadingProgressProps) {
   const [progress, setProgress] = useState(0);
   const [visible, setVisible] = useState(false);
 
+  const progressRef = useRef(0);
+  const loadingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const finishIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // -------------------------------------------------------
+  // Cleanup helper
+  // -------------------------------------------------------
+  const clearTimers = () => {
+    if (loadingIntervalRef.current) {
+      clearInterval(loadingIntervalRef.current);
+      loadingIntervalRef.current = null;
+    }
+
+    if (finishIntervalRef.current) {
+      clearInterval(finishIntervalRef.current);
+      finishIntervalRef.current = null;
+    }
+
+    if (hideTimeoutRef.current) {
+      clearTimeout(hideTimeoutRef.current);
+      hideTimeoutRef.current = null;
+    }
+  };
+
   useEffect(() => {
+    clearTimers();
+
+    // =====================================================
+    // START LOADING
+    // =====================================================
     if (isLoading) {
       setVisible(true);
       setProgress(0);
+      progressRef.current = 0;
 
-      // Simulate realistic loading progress
-      const steps = [
-        { target: 20, delay: 100 },
-        { target: 45, delay: 200 },
-        { target: 70, delay: 300 },
-        { target: 85, delay: 400 },
-        { target: 95, delay: 500 },
-      ];
+      /*
+       * Smooth simulated loading
+       *
+       * 0  -> 70  = Normal/Fast
+       * 70 -> 90  = Medium
+       * 90 -> 95  = Slow
+       *
+       * It will NEVER reach 100% while isLoading === true.
+       */
 
-      let currentStep = 0;
-      const intervals: NodeJS.Timeout[] = [];
+      loadingIntervalRef.current = setInterval(() => {
+        setProgress((current) => {
+          let next = current;
 
-      steps.forEach((step, index) => {
-        const timeout = setTimeout(() => {
-          if (currentStep <= index) {
-            currentStep = index;
-            const interval = setInterval(() => {
-              setProgress(prev => {
-                if (prev >= step.target) {
-                  clearInterval(interval);
-                  return step.target;
-                }
-                return prev + 1;
-              });
-            }, 20);
-            intervals.push(interval);
+          if (current < 70) {
+            // Main loading phase
+            next = current + 0.75;
+          } else if (current < 90) {
+            // Slow down
+            next = current + 0.30;
+          } else if (current < 95) {
+            // Very slow near completion
+            next = current + 0.07;
+          } else {
+            // Stay at 95% until actual loading finishes
+            next = 95;
           }
-        }, step.delay);
-        intervals.push(timeout as unknown as NodeJS.Timeout);
-      });
+
+          progressRef.current = next;
+
+          return next;
+        });
+      }, 100);
 
       return () => {
-        intervals.forEach(clearTimeout);
+        clearTimers();
       };
-    } else {
-      // Complete the progress when loading finishes
+    }
+
+    // =====================================================
+    // LOADING FINISHED
+    // =====================================================
+
+    setVisible(true);
+
+    /*
+     * Complete the remaining progress.
+     *
+     * Example:
+     *
+     * 72% -> 100%
+     * 91% -> 100%
+     * 95% -> 100%
+     */
+
+    finishIntervalRef.current = setInterval(() => {
+      setProgress((current) => {
+        if (current >= 100) {
+          if (finishIntervalRef.current) {
+            clearInterval(finishIntervalRef.current);
+            finishIntervalRef.current = null;
+          }
+
+          return 100;
+        }
+
+        const remaining = 100 - current;
+
+        let increment: number;
+
+        if (remaining > 25) {
+          increment = 3;
+        } else if (remaining > 10) {
+          increment = 2;
+        } else if (remaining > 3) {
+          increment = 1;
+        } else {
+          increment = 0.5;
+        }
+
+        const next = Math.min(100, current + increment);
+
+        progressRef.current = next;
+
+        return next;
+      });
+    }, 30);
+
+    /*
+     * Hide the progress bar after completion.
+     */
+    hideTimeoutRef.current = setTimeout(() => {
       setProgress(100);
-      const timeout = setTimeout(() => {
+      progressRef.current = 100;
+
+      setTimeout(() => {
         setVisible(false);
         onComplete?.();
-      }, 400);
-      return () => clearTimeout(timeout);
-    }
+      }, 200);
+    }, 650);
+
+    return () => {
+      clearTimers();
+    };
   }, [isLoading, onComplete]);
 
-  if (!visible) return null;
+  // Don't render anything when hidden
+  if (!visible) {
+    return null;
+  }
+
+  const displayProgress = Math.min(
+    100,
+    Math.round(progress)
+  );
+
+  // Dynamic loading message
+  const loadingMessage =
+    displayProgress >= 100
+      ? 'Complete'
+      : displayProgress >= 95
+        ? 'Finishing...'
+        : displayProgress >= 80
+          ? 'Almost there...'
+          : displayProgress >= 50
+            ? 'Loading...'
+            : 'Starting...';
 
   return (
-    <div className={cn('fixed top-0 left-0 right-0 z-[100]', className)}>
-      {/* Progress bar */}
-      <div className="h-1 bg-neutral-200/50">
+    <div
+      className={cn(
+        'fixed inset-x-0 top-0 z-[100]',
+        className
+      )}
+    >
+      {/* ================================================= */}
+      {/* TOP PROGRESS BAR */}
+      {/* ================================================= */}
+
+      <div className="h-1 bg-neutral-200/60 backdrop-blur-sm">
         <div
-          className="h-full bg-gradient-to-r from-primary-500 via-primary-400 to-accent-500 transition-all duration-300 ease-out relative"
-          style={{ width: `${progress}%` }}
+          className={cn(
+            'relative h-full',
+            'bg-gradient-to-r from-primary-500 via-primary-400 to-accent-500',
+            'transition-[width] duration-100 ease-linear'
+          )}
+          style={{
+            width: `${progress}%`,
+          }}
         >
-          {/* Glow effect */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
+          {/* Glow */}
+          <div className="absolute inset-0 bg-white/30 blur-[2px]" />
+
+          {/* Moving Shine */}
+          <div
+            className={cn(
+              'absolute inset-y-0 right-0 w-24',
+              'bg-gradient-to-r from-transparent via-white/50 to-transparent',
+              'animate-shimmer'
+            )}
+          />
         </div>
       </div>
 
-      {/* Percentage badge */}
-      <div className="fixed top-4 right-4 flex items-center gap-2">
-        <div className={cn(
-          'bg-white/95 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg border border-neutral-200',
-          'flex items-center gap-3 transition-all duration-300',
-          progress >= 100 ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
-        )}>
-          {/* Animated spinner */}
-          <div className="relative w-5 h-5">
-            <svg className="w-5 h-5 animate-spin" viewBox="0 0 24 24" fill="none">
+      {/* ================================================= */}
+      {/* PERCENTAGE BADGE */}
+      {/* ================================================= */}
+
+      <div className="fixed right-4 top-4 sm:right-6 sm:top-5">
+        <div
+          className={cn(
+            'flex items-center gap-3',
+            'rounded-full',
+            'border border-neutral-200/80',
+            'bg-white/95',
+            'px-4 py-2.5',
+            'shadow-lg shadow-neutral-900/5',
+            'backdrop-blur-xl',
+            'transition-all duration-300',
+            displayProgress >= 100
+              ? 'scale-95 opacity-0'
+              : 'scale-100 opacity-100'
+          )}
+        >
+          {/* ================================================= */}
+          {/* CIRCULAR PROGRESS */}
+          {/* ================================================= */}
+
+          <div className="relative h-5 w-5 shrink-0">
+            <svg
+              className="h-5 w-5"
+              viewBox="0 0 24 24"
+              fill="none"
+            >
+              {/* Background Circle */}
               <circle
-                cx="12" cy="12" r="10"
+                cx="12"
+                cy="12"
+                r="9"
                 stroke="currentColor"
-                strokeWidth="3"
-                strokeLinecap="round"
+                strokeWidth="2.5"
                 className="text-neutral-200"
               />
+
+              {/* Progress Circle */}
               <circle
-                cx="12" cy="12" r="10"
+                cx="12"
+                cy="12"
+                r="9"
                 stroke="currentColor"
-                strokeWidth="3"
+                strokeWidth="2.5"
                 strokeLinecap="round"
-                strokeDasharray={`${progress * 0.628} 100`}
+                strokeDasharray={`${displayProgress * 0.565} 100`}
                 className="text-primary-500"
+                transform="rotate(-90 12 12)"
               />
             </svg>
           </div>
 
-          {/* Percentage text */}
-          <span className="text-sm font-semibold text-neutral-700 tabular-nums min-w-[3ch] text-right">
-            {progress}%
+          {/* ================================================= */}
+          {/* PERCENTAGE */}
+          {/* ================================================= */}
+
+          <span className="min-w-[3ch] text-right text-sm font-semibold tabular-nums text-neutral-700">
+            {displayProgress}%
           </span>
 
-          {/* Loading text */}
-          <span className="text-xs text-neutral-500 hidden sm:inline">Loading...</span>
+          {/* ================================================= */}
+          {/* STATUS */}
+          {/* ================================================= */}
+
+          <span className="hidden text-xs font-medium text-neutral-500 sm:inline">
+            {loadingMessage}
+          </span>
         </div>
       </div>
     </div>
