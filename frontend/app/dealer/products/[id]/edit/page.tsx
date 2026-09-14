@@ -13,6 +13,7 @@ import {
   Card,
   CardBody,
   CardFooter,
+  ImageUploadInput,
 } from '@/components/ui';
 import type { Category } from '@/types';
 
@@ -30,6 +31,7 @@ export default function EditProductPage() {
     stockQuantity: '',
     categoryId: '',
     sku: '',
+    imageUrl: '',
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -45,6 +47,10 @@ export default function EditProductPage() {
         const product = productRes.data;
 
         if (product) {
+          const primaryImg =
+            product.images && product.images.length > 0
+              ? product.images[0].imageUrl
+              : '';
           setFormData({
             name: product.name,
             description: product.description || '',
@@ -52,6 +58,7 @@ export default function EditProductPage() {
             stockQuantity: String(product.stockQuantity),
             categoryId: product.categoryId,
             sku: product.sku || '',
+            imageUrl: primaryImg,
           });
         }
 
@@ -107,6 +114,9 @@ export default function EditProductPage() {
         stockQuantity: Number(formData.stockQuantity),
         categoryId: formData.categoryId,
         sku: formData.sku || undefined,
+        images: formData.imageUrl.trim()
+          ? [{ imageUrl: formData.imageUrl.trim(), displayOrder: 0 }]
+          : [],
       });
 
       toast.success('Product updated successfully!');
@@ -400,6 +410,27 @@ export default function EditProductPage() {
                     "
                   />
 
+                </div>
+
+                {/* ============================================= */}
+                {/* PRODUCT IMAGE */}
+                {/* ============================================= */}
+
+                <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-5 space-y-3">
+                  <h3 className="text-sm font-semibold text-slate-800 flex items-center gap-2">
+                    <span>📷</span> Product Image Upload / URL
+                  </h3>
+                  <ImageUploadInput
+                    label="Main Product Image"
+                    value={formData.imageUrl}
+                    onChange={(val) =>
+                      setFormData((prev) => ({ ...prev, imageUrl: val }))
+                    }
+                    aspectRatio="square"
+                    fallbackIcon="📦"
+                    placeholder="Paste image URL or upload image file..."
+                    helperText="Upload a product image file or provide a direct image URL link."
+                  />
                 </div>
 
               </form>
