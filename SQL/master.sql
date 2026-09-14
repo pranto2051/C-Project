@@ -1,16 +1,15 @@
 -- ============================================================================
--- MULTI-VENDOR E-COMMERCE PLATFORM - IMPROVED DATABASE SQL
+-- MULTI-VENDOR E-COMMERCE PLATFORM - MASTER DATABASE SQL
 -- ============================================================================
--- PostgreSQL schema + demo data
+-- PostgreSQL schema + clean single-dealer & single-customer demo dataset
 --
--- IMPORTANT CHANGES:
--- 1. Admin, Dealer, and Customer are now completely separate tables.
--- 2. The old generic "users" table has been removed.
--- 3. Dealer account + shop information is stored in "dealers".
--- 4. Customer account + customer information is stored in "customers".
--- 5. Admin information is stored only in "admins".
--- 6. Existing 500 demo products are preserved and 50 additional products
---    are added, for a total of 550 products.
+-- INCLUDED CONFIGURATION:
+-- 1. Admin, Dealer, and Customer are stored in separate dedicated tables.
+-- 2. Exactly 1 Admin: admin@ecommerce.com / Admin@123
+-- 3. Exactly 1 Dealer: dealer1@test.com / Dealer@123 (Alex Tech)
+-- 4. Exactly 1 Customer: customer1@test.com / Customer@123 (John Buyer)
+-- 5. All 550 products & images are assigned to Dealer 1 (Alex Tech).
+-- 6. All carts, orders & order items belong to Customer 1 & Dealer 1.
 -- ============================================================================
 
 -- ============================================================================
@@ -37,8 +36,6 @@ DROP TABLE IF EXISTS admins CASCADE;
 
 -- ----------------------------------------------------------------------------
 -- Admins
--- Admin authentication/account data is completely independent from customers
--- and dealers.
 -- ----------------------------------------------------------------------------
 CREATE TABLE admins (
     "Id"            UUID PRIMARY KEY,
@@ -55,8 +52,6 @@ CREATE UNIQUE INDEX ix_admins_email ON admins ("Email");
 
 -- ----------------------------------------------------------------------------
 -- Dealers
--- Dealer login/account data and dealer/shop information live in one dealer
--- table. This table is independent from customers and admins.
 -- ----------------------------------------------------------------------------
 CREATE TABLE dealers (
     "Id"                UUID PRIMARY KEY,
@@ -79,7 +74,6 @@ CREATE UNIQUE INDEX ix_dealers_email ON dealers ("Email");
 
 -- ----------------------------------------------------------------------------
 -- Customers
--- All customer-specific information is stored here.
 -- ----------------------------------------------------------------------------
 CREATE TABLE customers (
     "Id"                UUID PRIMARY KEY,
@@ -329,10 +323,10 @@ VALUES
      'System Admin', '+1000000000', TRUE, NOW(), NOW());
 
 -- ============================================================================
--- 5. SEED DATA - DEALERS
+-- 5. SEED DATA - DEALERS (Single Dealer)
 -- ============================================================================
 
--- Password for all dealers: Dealer@123
+-- Password: Dealer@123
 -- BCrypt cost factor: 11
 
 INSERT INTO dealers
@@ -347,94 +341,13 @@ VALUES
      'AlexTechs Shop',
      'Leading electronics retailer with the latest gadgets',
      'Electronics', '456 Commerce Ave, Business District',
-     TRUE, TRUE, NOW(), NOW()),
-
-    ('c2000000-0000-0000-0000-000000000002',
-     'dealer2@test.com',
-     '$2a$11$Lx9F4rmuo3l6ujspZS4w4OLWOjfwrsgpzVB2vcXvrGwAYdqAO795q',
-     'Sarah Fashion', '+1000001002',
-     'SarahFashions Shop',
-     'Trendy fashion for men and women',
-     'Clothing', '789 Commerce Ave, Business District',
-     TRUE, TRUE, NOW(), NOW()),
-
-    ('c2000000-0000-0000-0000-000000000003',
-     'dealer3@test.com',
-     '$2a$11$Lx9F4rmuo3l6ujspZS4w4OLWOjfwrsgpzVB2vcXvrGwAYdqAO795q',
-     'Mike Home', '+1000001003',
-     'MikeHomes Shop',
-     'Everything for your home and garden',
-     'Home & Garden', '321 Commerce Ave, Business District',
-     TRUE, TRUE, NOW(), NOW()),
-
-    ('c2000000-0000-0000-0000-000000000004',
-     'dealer4@test.com',
-     '$2a$11$Lx9F4rmuo3l6ujspZS4w4OLWOjfwrsgpzVB2vcXvrGwAYdqAO795q',
-     'Emma Books', '+1000001004',
-     'EmmaBookss Shop',
-     'Bestselling books and educational materials',
-     'Books', '654 Commerce Ave, Business District',
-     TRUE, TRUE, NOW(), NOW()),
-
-    ('c2000000-0000-0000-0000-000000000005',
-     'dealer5@test.com',
-     '$2a$11$Lx9F4rmuo3l6ujspZS4w4OLWOjfwrsgpzVB2vcXvrGwAYdqAO795q',
-     'David Sports', '+1000001005',
-     'DavidSportss Shop',
-     'Premium sports equipment for professionals',
-     'Sports', '987 Commerce Ave, Business District',
-     TRUE, TRUE, NOW(), NOW()),
-
-    ('c2000000-0000-0000-0000-000000000006',
-     'dealer6@test.com',
-     '$2a$11$Lx9F4rmuo3l6ujspZS4w4OLWOjfwrsgpzVB2vcXvrGwAYdqAO795q',
-     'Lisa Toys', '+1000001006',
-     'LisaToyss Shop',
-     'Fun toys and games for the whole family',
-     'Toys', '147 Commerce Ave, Business District',
-     TRUE, TRUE, NOW(), NOW()),
-
-    ('c2000000-0000-0000-0000-000000000007',
-     'dealer7@test.com',
-     '$2a$11$Lx9F4rmuo3l6ujspZS4w4OLWOjfwrsgpzVB2vcXvrGwAYdqAO795q',
-     'James Auto', '+1000001007',
-     'JamesAutos Shop',
-     'Quality auto parts at competitive prices',
-     'Automotive', '258 Commerce Ave, Business District',
-     TRUE, TRUE, NOW(), NOW()),
-
-    ('c2000000-0000-0000-0000-000000000008',
-     'dealer8@test.com',
-     '$2a$11$Lx9F4rmuo3l6ujspZS4w4OLWOjfwrsgpzVB2vcXvrGwAYdqAO795q',
-     'Olivia Health', '+1000001008',
-     'OliviaHealths Shop',
-     'Your trusted health and wellness store',
-     'Health', '369 Commerce Ave, Business District',
-     TRUE, TRUE, NOW(), NOW()),
-
-    ('c2000000-0000-0000-0000-000000000009',
-     'dealer9@test.com',
-     '$2a$11$Lx9F4rmuo3l6ujspZS4w4OLWOjfwrsgpzVB2vcXvrGwAYdqAO795q',
-     'Noah Gadgets', '+1000001009',
-     'NoahGadgetss Shop',
-     'Cutting-edge gadgets and accessories',
-     'Electronics', '741 Commerce Ave, Business District',
-     FALSE, TRUE, NOW(), NOW()),
-
-    ('c2000000-0000-0000-0000-000000000010',
-     'dealer10@test.com',
-     '$2a$11$Lx9F4rmuo3l6ujspZS4w4OLWOjfwrsgpzVB2vcXvrGwAYdqAO795q',
-     'Ava Style', '+1000001010',
-     'AvaStyles Shop',
-     'Modern style for the fashion-forward',
-     'Clothing', '852 Commerce Ave, Business District',
-     FALSE, TRUE, NOW(), NOW());
+     TRUE, TRUE, NOW(), NOW());
 
 -- ============================================================================
--- 6. SEED DATA - CUSTOMERS
+-- 6. SEED DATA - CUSTOMERS (Single Customer)
 -- ============================================================================
 
--- Password for all customers: Customer@123
+-- Password: Customer@123
 -- BCrypt cost factor: 11
 
 INSERT INTO customers
@@ -445,68 +358,11 @@ VALUES
      'customer1@test.com',
      '$2a$11$IYBD96EyES3aYh5pEcMqkOAHFt.2boQuF4TnQrLgxB3hj7KI1K2te',
      'John Buyer', '+1000002001',
-     '123 Demo Street, Demo City, Country', TRUE, NOW(), NOW()),
-
-    ('c3000000-0000-0000-0000-000000000002',
-     'customer2@test.com',
-     '$2a$11$IYBD96EyES3aYh5pEcMqkOAHFt.2boQuF4TnQrLgxB3hj7KI1K2te',
-     'Jane Shopper', '+1000002002',
-     '456 Demo Street, Demo City, Country', TRUE, NOW(), NOW()),
-
-    ('c3000000-0000-0000-0000-000000000003',
-     'customer3@test.com',
-     '$2a$11$IYBD96EyES3aYh5pEcMqkOAHFt.2boQuF4TnQrLgxB3hj7KI1K2te',
-     'Bob Customer', '+1000002003',
-     '789 Demo Street, Demo City, Country', TRUE, NOW(), NOW()),
-
-    ('c3000000-0000-0000-0000-000000000004',
-     'customer4@test.com',
-     '$2a$11$IYBD96EyES3aYh5pEcMqkOAHFt.2boQuF4TnQrLgxB3hj7KI1K2te',
-     'Alice Consumer', '+1000002004',
-     '321 Demo Street, Demo City, Country', TRUE, NOW(), NOW()),
-
-    ('c3000000-0000-0000-0000-000000000005',
-     'customer5@test.com',
-     '$2a$11$IYBD96EyES3aYh5pEcMqkOAHFt.2boQuF4TnQrLgxB3hj7KI1K2te',
-     'Tom Price', '+1000002005',
-     '654 Demo Street, Demo City, Country', TRUE, NOW(), NOW()),
-
-    ('c3000000-0000-0000-0000-000000000006',
-     'customer6@test.com',
-     '$2a$11$IYBD96EyES3aYh5pEcMqkOAHFt.2boQuF4TnQrLgxB3hj7KI1K2te',
-     'Mary Saver', '+1000002006',
-     '987 Demo Street, Demo City, Country', TRUE, NOW(), NOW()),
-
-    ('c3000000-0000-0000-0000-000000000007',
-     'customer7@test.com',
-     '$2a$11$IYBD96EyES3aYh5pEcMqkOAHFt.2boQuF4TnQrLgxB3hj7KI1K2te',
-     'Chris Deal', '+1000002007',
-     '147 Demo Street, Demo City, Country', TRUE, NOW(), NOW()),
-
-    ('c3000000-0000-0000-0000-000000000008',
-     'customer8@test.com',
-     '$2a$11$IYBD96EyES3aYh5pEcMqkOAHFt.2boQuF4TnQrLgxB3hj7KI1K2te',
-     'Nina Bargain', '+1000002008',
-     '258 Demo Street, Demo City, Country', TRUE, NOW(), NOW()),
-
-    ('c3000000-0000-0000-0000-000000000009',
-     'customer9@test.com',
-     '$2a$11$IYBD96EyES3aYh5pEcMqkOAHFt.2boQuF4TnQrLgxB3hj7KI1K2te',
-     'Eric Value', '+1000002009',
-     '369 Demo Street, Demo City, Country', TRUE, NOW(), NOW()),
-
-    ('c3000000-0000-0000-0000-000000000010',
-     'customer10@test.com',
-     '$2a$11$IYBD96EyES3aYh5pEcMqkOAHFt.2boQuF4TnQrLgxB3hj7KI1K2te',
-     'Sara Smart', '+1000002010',
-     '741 Demo Street, Demo City, Country', TRUE, NOW(), NOW());
+     '123 Demo Street, Demo City, Country', TRUE, NOW(), NOW());
 
 -- ============================================================================
--- 7. SEED DATA - PRODUCTS
+-- 7. SEED DATA - PRODUCTS (500 Products assigned to Dealer 1)
 -- ============================================================================
--- Existing dataset: 50 products per dealer = 500 products.
--- The block below preserves that behavior.
--- Product statuses: Approved / Pending / Rejected.
 
 DO $$
 DECLARE
@@ -554,7 +410,7 @@ BEGIN
     FOR dealer IN SELECT "Id", "ShopName" FROM dealers LOOP
         dealer_prefix := UPPER(SUBSTRING(dealer."ShopName" FROM 1 FOR 4));
 
-        FOR j IN 0..49 LOOP
+        FOR j IN 0..499 LOOP
             prod_id := gen_random_uuid();
             cat_idx := (j % 8) + 1;
             status_idx := (j % 5) + 1;
@@ -609,10 +465,8 @@ BEGIN
 END $$;
 
 -- ============================================================================
--- 8. ADDITIONAL 50 PRODUCTS
+-- 8. ADDITIONAL 50 PRODUCTS (Assigned to Dealer 1)
 -- ============================================================================
--- Exactly 50 additional products: 5 new products for each of 10 dealers.
--- Total products after this block = 550.
 
 DO $$
 DECLARE
@@ -650,14 +504,10 @@ DECLARE
     prod_id UUID;
     dealer_prefix TEXT;
 BEGIN
-    FOR dealer IN
-        SELECT "Id", "ShopName"
-        FROM dealers
-        ORDER BY "Id"
-    LOOP
+    FOR dealer IN SELECT "Id", "ShopName" FROM dealers LOOP
         dealer_prefix := UPPER(SUBSTRING(dealer."ShopName" FROM 1 FOR 4));
 
-        FOR j IN 0..4 LOOP
+        FOR j IN 0..49 LOOP
             prod_id := gen_random_uuid();
             price := ROUND((15 + (random() * 285))::numeric, 2);
             stock := 20 + (random() * 180)::int;
@@ -669,15 +519,15 @@ BEGIN
             )
             VALUES (
                 prod_id,
-                dealer."ShopName" || ' - ' || extra_products[j + 1],
-                extra_descriptions[j + 1],
+                dealer."ShopName" || ' - ' || extra_products[(j % 5) + 1] || ' Extra #' || (j + 1),
+                extra_descriptions[(j % 5) + 1],
                 price,
                 stock,
-                'SKU-' || dealer_prefix || '-' || LPAD((51 + j)::text, 3, '0'),
-                statuses[j + 1],
+                'SKU-' || dealer_prefix || '-EX-' || LPAD((j + 1)::text, 3, '0'),
+                statuses[(j % 5) + 1],
                 NULL,
                 CASE
-                    WHEN statuses[j + 1] = 'Approved'
+                    WHEN statuses[(j % 5) + 1] = 'Approved'
                     THEN NOW() - (random() * interval '30 days')
                     ELSE NULL
                 END,
@@ -710,8 +560,7 @@ END $$;
 
 INSERT INTO carts ("Id", "CustomerId", "CreatedAt", "UpdatedAt")
 SELECT
-    ('d3000000-0000-0000-0000-' ||
-     LPAD(ROW_NUMBER() OVER (ORDER BY "Id")::text, 12, '0'))::uuid,
+    'd3000000-0000-0000-0000-000000000001'::uuid,
     "Id",
     NOW(),
     NOW()
@@ -720,13 +569,12 @@ FROM customers;
 -- ============================================================================
 -- 10. SEED DATA - ORDERS
 -- ============================================================================
--- 3-7 orders per customer.
 
 DO $$
 DECLARE
     cust RECORD;
     order_id UUID;
-    order_count INT;
+    order_count INT := 6;
     o INT;
     item_prod RECORD;
     order_status TEXT;
@@ -735,8 +583,6 @@ DECLARE
     item_qty INT;
 BEGIN
     FOR cust IN SELECT "Id", "ShippingAddress" FROM customers LOOP
-        order_count := 3 + (random() * 4)::int;
-
         FOR o IN 1..order_count LOOP
             order_id := gen_random_uuid();
 
@@ -748,7 +594,7 @@ BEGIN
                     'Shipped',
                     'Delivered',
                     'Cancelled'
-                ])[(random() * 5 + 1)::int];
+                ])[o];
 
             INSERT INTO orders (
                 "Id", "CustomerId", "Status",
@@ -762,9 +608,9 @@ BEGIN
                 0,
                 COALESCE(
                     cust."ShippingAddress",
-                    'Demo Address, Demo City, Country'
+                    '123 Demo Street, Demo City, Country'
                 ),
-                NOW(),
+                NOW() - (o * interval '1 day'),
                 NOW()
             );
 
@@ -835,34 +681,10 @@ UNION ALL
 SELECT 'Order Items', COUNT(*) FROM order_items
 ORDER BY table_name;
 
--- Expected:
--- Admins          = 1
--- Dealers         = 10
--- Customers       = 10
--- Categories      = 8
--- Products        = 550
--- Product Images  = 550
--- Carts           = 10
--- Orders          = approximately 30-70
--- Order Items     = depends on generated orders
-
 -- ============================================================================
--- DEMO CREDENTIALS
+-- MASTER DEMO CREDENTIALS
 -- ============================================================================
--- Admin:
---   admin@ecommerce.com / Admin@123
---
--- Dealers:
---   dealer1@test.com / Dealer@123
---   dealer2@test.com / Dealer@123
---   ...
---   dealer10@test.com / Dealer@123
---
--- Customers:
---   customer1@test.com / Customer@123
---   customer2@test.com / Customer@123
---   ...
---   customer10@test.com / Customer@123
+-- Admin:    admin@ecommerce.com / Admin@123
+-- Dealer:   dealer1@test.com    / Dealer@123 (Alex Tech)
+-- Customer: customer1@test.com  / Customer@123 (John Buyer)
 -- ============================================================================
-
--- DONE

@@ -16,4 +16,5 @@ public class DealerProfileResponse
     public string? UserEmail { get; set; }
     public string? UserPhone { get; set; }
     public bool UserIsActive { get; set; }
+    public int CustomerCount { get; set; }
 }

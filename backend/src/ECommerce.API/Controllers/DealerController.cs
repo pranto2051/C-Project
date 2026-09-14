@@ -87,6 +87,14 @@ public class DealerController : ControllerBase
         return Ok(new { items = orders, total = orders.Count, page, pageSize });
     }
 
+    [HttpPut("orders/{id}/status")]
+    public async Task<IActionResult> UpdateOrderStatus(Guid id, [FromBody] UpdateOrderStatusRequest request)
+    {
+        var userId = GetUserId();
+        var order = await _orderService.UpdateStatusAsync(id, request.Status, userId);
+        return Ok(order);
+    }
+
     [HttpGet("products/{id}")]
     public async Task<IActionResult> GetProduct(Guid id)
     {

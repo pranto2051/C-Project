@@ -65,12 +65,12 @@ export function ProductCard({ product }: ProductCardProps) {
           )}
         </div>
         <div className="p-4 flex flex-col flex-1">
-          <p className="text-xs text-neutral-500 mb-1">{product.category?.name || 'Uncategorized'}</p>
+          <p className="text-xs text-neutral-500 mb-1">{product.categoryName || product.category?.name || 'Uncategorized'}</p>
           <h3 className="font-semibold text-neutral-900 mb-2 truncate group-hover:text-primary-600 transition-colors">
             {product.name}
           </h3>
-          {product.dealer?.shopName && (
-            <p className="text-xs text-neutral-400 mb-2">by {product.dealer.shopName}</p>
+          {(product.dealerName || product.dealer?.shopName) && (
+            <p className="text-xs text-neutral-400 mb-2">by {product.dealerName || product.dealer?.shopName}</p>
           )}
           <div className="mt-auto">
             <div className="flex items-center justify-between">

@@ -112,6 +112,17 @@ Use the following credentials to test the different user roles in the applicatio
 
 
 
+
+
+
+
+
+
+
+Admin:    admin@ecommerce.com / Admin@123
+-- Dealer:   dealer1@test.com    / Dealer@123 (Alex Tech)
+-- Customer: customer1@test.com  / Customer@123 (John Buyer)
+
 > **Note:** Demo credentials are intended for development and testing only. Replace them with secure credentials before deploying to production.
 
 > 10 seeded dealers (Dealer@123) and 10 seeded customers (Customer@123) also available. See [Documents/06-DEMO-CREDENTIALS.md](./Documents/06-DEMO-CREDENTIALS.md) for full list.

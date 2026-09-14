@@ -27,6 +27,7 @@ export interface DealerProfile {
   userEmail?: string;
   userPhone?: string;
   userIsActive?: boolean;
+  customerCount?: number;
 }
 
 export interface Category {
@@ -46,7 +47,9 @@ export interface ProductImage {
 export interface Product {
   id: string;
   dealerId: string;
+  dealerName?: string;
   categoryId: string;
+  categoryName?: string;
   name: string;
   description?: string;
   price: number;
@@ -85,7 +88,10 @@ export interface OrderItem {
   id: string;
   orderId: string;
   productId: string;
+  productName?: string;
+  productImageUrl?: string;
   dealerId: string;
+  dealerName?: string;
   quantity: number;
   unitPriceAtPurchase: number;
   subtotal: number;
@@ -96,6 +102,7 @@ export interface OrderItem {
 export interface Order {
   id: string;
   customerId: string;
+  customerName?: string;
   status: OrderStatus;
   totalAmount: number;
   shippingAddress: string;

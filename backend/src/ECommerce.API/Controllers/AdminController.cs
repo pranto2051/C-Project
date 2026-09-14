@@ -54,6 +54,13 @@ public class AdminController : ControllerBase
         return Ok(dealer);
     }
 
+    [HttpGet("dealers/{id}/customers")]
+    public async Task<IActionResult> GetDealerCustomers(Guid id)
+    {
+        var customers = await _adminService.GetDealerCustomersAsync(id);
+        return Ok(new { items = customers, total = customers.Count });
+    }
+
     [HttpPost("dealers")]
     public async Task<IActionResult> CreateDealer([FromBody] AdminDealerRequest request)
     {
@@ -157,7 +164,7 @@ public class AdminController : ControllerBase
     }
 
     [HttpPost("clear-demo-data")]
-    public async Task<IActionResult> ClearDemoData()
+    public IActionResult ClearDemoData()
     {
         return Ok(new { message = "Demo data cleared. Run the SQL seed script to re-seed." });
     }

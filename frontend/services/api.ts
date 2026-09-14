@@ -84,6 +84,8 @@ export const dealerApi = {
   deleteProduct: (id: string) => api.delete(`/dealers/products/${id}`),
   getOrders: (params?: { page?: number; pageSize?: number }) =>
     api.get('/dealers/orders', { params }),
+  updateOrderStatus: (id: string, status: string) =>
+    api.put(`/dealers/orders/${id}/status`, { status }),
   getSales: () => api.get('/dealers/sales'),
 };
 
@@ -113,6 +115,7 @@ export const adminApi = {
   getDealers: (params?: { search?: string; category?: string; page?: number; pageSize?: number }) =>
     api.get('/admin/dealers', { params }),
   getDealer: (id: string) => api.get(`/admin/dealers/${id}`),
+  getDealerCustomers: (dealerId: string) => api.get(`/admin/dealers/${dealerId}/customers`),
   createDealer: (data: { shopName: string; shopDescription?: string; shopCategory: string; address: string; logoUrl?: string; isApproved: boolean; email: string; password: string; fullName: string; phone?: string }) =>
     api.post('/admin/dealers', data),
   updateDealer: (id: string, data: { shopName: string; shopDescription?: string; shopCategory: string; address: string; logoUrl?: string; isApproved: boolean; email: string; password: string; fullName: string; phone?: string }) =>

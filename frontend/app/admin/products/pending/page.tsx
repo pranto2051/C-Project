@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { adminApi } from '@/services/api';
 import { ProtectedRoute } from '@/features/auth/ProtectedRoute';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { Button, Spinner, EmptyState, Badge, Pagination, ConfirmDialog , LoadingProgress} from '@/components/ui';
+import { Button, Spinner, EmptyState, Badge, Pagination, ConfirmDialog, LoadingProgress } from '@/components/ui';
 import toast from 'react-hot-toast';
 import type { Product, PaginatedResponse } from '@/types';
 
@@ -62,105 +62,79 @@ function PendingProductsContent() {
     }
   };
 
-  
-
-
   return (
-
-
     <>
-
-
       <LoadingProgress isLoading={isLoading} />
 
-
       {isLoading ? (
-
-
         <div className="flex justify-center py-12">
-
-
           <Spinner size="lg" />
-
-
         </div>
-
-
       ) : (
-
-
         <div className="space-y-6">
-      <h2 className="text-xl font-semibold text-neutral-900">Pending Products</h2>
-      {products.length === 0 ? (
-        <EmptyState icon="✅" title="No pending products" description="All products have been reviewed." />
-      ) : (
-        <div className="bg-white rounded-lg border border-neutral-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-neutral-200">
-              <thead className="bg-neutral-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Dealer</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Price</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Status</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-neutral-500 uppercase">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-neutral-200">
-                {products.map((product) => (
-                  <tr key={product.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-neutral-900">{product.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-600">{product.dealer?.shopName || 'N/A'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-600">{product.price}</td>
-                    <td className="px-6 py-4 whitespace-nowrap"><Badge status={product.approvalStatus} /></td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                      <Button size="sm" variant="primary" onClick={() => handleApprove(product.id)} className="mr-2">Approve</Button>
-                      <Button size="sm" variant="danger" onClick={() => { setRejectId(product.id); setRejectionReason(''
-
-
-      )}
-
-
-    </>
-
-
-  );
-}}>Reject</Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          {totalPages > 1 && (
-            <div className="px-6 py-4 border-t border-neutral-200">
-              <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+          <h2 className="text-xl font-semibold text-neutral-900">Pending Products</h2>
+          {products.length === 0 ? (
+            <EmptyState icon="✅" title="No pending products" description="All products have been reviewed." />
+          ) : (
+            <div className="bg-white rounded-lg border border-neutral-200 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-neutral-200">
+                  <thead className="bg-neutral-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Name</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Dealer</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Price</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Status</th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-neutral-500 uppercase">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-neutral-200">
+                    {products.map((product) => (
+                      <tr key={product.id}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-neutral-900">{product.name}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-700 font-medium">{product.dealerName || product.dealer?.shopName || 'N/A'}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-600">${product.price}</td>
+                        <td className="px-6 py-4 whitespace-nowrap"><Badge status={product.approvalStatus} /></td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                          <Button size="sm" variant="primary" onClick={() => handleApprove(product.id)} className="mr-2">Approve</Button>
+                          <Button size="sm" variant="danger" onClick={() => { setRejectId(product.id); setRejectionReason(''); }}>Reject</Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {totalPages > 1 && (
+                <div className="px-6 py-4 border-t border-neutral-200">
+                  <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+                </div>
+              )}
             </div>
           )}
+
+          <ConfirmDialog
+            isOpen={!!rejectId}
+            onClose={() => setRejectId(null)}
+            onConfirm={handleReject}
+            title="Reject Product"
+            description={
+              <div>
+                <p className="mb-2">Please provide a reason for rejecting this product:</p>
+                <textarea
+                  className="w-full border border-neutral-300 rounded-md p-2 text-sm"
+                  rows={3}
+                  value={rejectionReason}
+                  onChange={(e) => setRejectionReason(e.target.value)}
+                  placeholder="Rejection reason..."
+                />
+              </div>
+            }
+            confirmText="Reject"
+            isLoading={isRejecting}
+          />
         </div>
       )}
-
-      <ConfirmDialog
-        isOpen={!!rejectId}
-        onClose={() => setRejectId(null)}
-        onConfirm={handleReject}
-        title="Reject Product"
-        description={
-          <div>
-            <p className="mb-2">Please provide a reason for rejecting this product:</p>
-            <textarea
-              className="w-full border border-neutral-300 rounded-md p-2 text-sm"
-              rows={3}
-              value={rejectionReason}
-              onChange={(e) => setRejectionReason(e.target.value)}
-              placeholder="Rejection reason..."
-            />
-          </div>
-        }
-        confirmText="Reject"
-        isLoading={isRejecting}
-      />
-    </div>
+    </>
   );
 }
 

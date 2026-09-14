@@ -59,9 +59,13 @@ public class OrderController : ControllerBase
 
     [HttpPut("{id}/status")]
     [Authorize(Roles = "Admin,Dealer")]
-    public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] string status)
+    public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] UpdateOrderStatusRequest request)
     {
-        var order = await _orderService.UpdateStatusAsync(id, status);
+        var userId = GetUserId();
+        var userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+        Guid? dealerId = userRole == "Dealer" ? userId : null;
+
+        var order = await _orderService.UpdateStatusAsync(id, request.Status, dealerId);
         return Ok(order);
     }
 }

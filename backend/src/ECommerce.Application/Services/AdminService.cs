@@ -121,6 +121,27 @@ public class AdminService : IAdminService
         query = query.OrderBy(d => d.ShopName);
 
         var dealers = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+        var dealerIds = dealers.Select(d => d.Id).ToList();
+
+        var dealerOrderItems = await _unitOfWork.OrderItems.GetQueryable()
+            .Where(i => dealerIds.Contains(i.DealerId))
+            .Select(i => new { i.DealerId, i.OrderId })
+            .Distinct()
+            .ToListAsync();
+
+        var orderIds = dealerOrderItems.Select(i => i.OrderId).Distinct().ToList();
+        var orders = await _unitOfWork.Orders.GetQueryable()
+            .Where(o => orderIds.Contains(o.Id))
+            .Select(o => new { o.Id, o.CustomerId })
+            .ToListAsync();
+
+        var orderToCustomerMap = orders.ToDictionary(o => o.Id, o => o.CustomerId);
+
+        var dealerCustomerCounts = dealerOrderItems
+            .Where(i => orderToCustomerMap.ContainsKey(i.OrderId))
+            .GroupBy(i => i.DealerId)
+            .ToDictionary(g => g.Key, g => g.Select(i => orderToCustomerMap[i.OrderId]).Distinct().Count());
+
         return dealers.Select(d => new DealerProfileResponse
         {
             Id = d.Id,
@@ -134,7 +155,8 @@ public class AdminService : IAdminService
             UserFullName = d.FullName,
             UserEmail = d.Email,
             UserPhone = d.Phone,
-            UserIsActive = d.IsActive
+            UserIsActive = d.IsActive,
+            CustomerCount = dealerCustomerCounts.GetValueOrDefault(d.Id, 0)
         }).ToList();
     }
 
@@ -273,5 +295,47 @@ public class AdminService : IAdminService
             TotalOrders = orders.Count,
             TotalRevenue = totalRevenue
         };
+    }
+
+    public async Task<List<UserDto>> GetDealerCustomersAsync(Guid dealerId)
+    {
+        var orderIds = await _unitOfWork.OrderItems.GetQueryable()
+            .Where(i => i.DealerId == dealerId)
+            .Select(i => i.OrderId)
+            .Distinct()
+            .ToListAsync();
+
+        var customerIds = await _unitOfWork.Orders.GetQueryable()
+            .Where(o => orderIds.Contains(o.Id))
+            .Select(o => o.CustomerId)
+            .Distinct()
+            .ToListAsync();
+
+        List<Domain.Entities.Customer> customers;
+        if (customerIds.Any())
+        {
+            customers = await _unitOfWork.Customers.GetQueryable()
+                .Where(c => customerIds.Contains(c.Id))
+                .OrderBy(c => c.FullName)
+                .ToListAsync();
+        }
+        else
+        {
+            // If no customers have bought yet, return all customers for admin management
+            customers = await _unitOfWork.Customers.GetQueryable()
+                .OrderBy(c => c.FullName)
+                .ToListAsync();
+        }
+
+        return customers.Select(c => new UserDto
+        {
+            Id = c.Id.ToString(),
+            Email = c.Email,
+            FullName = c.FullName,
+            Phone = c.Phone,
+            Role = "Customer",
+            IsActive = c.IsActive,
+            CreatedAt = c.CreatedAt
+        }).ToList();
     }
 }

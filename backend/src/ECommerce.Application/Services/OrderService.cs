@@ -201,10 +201,19 @@ public class OrderService : IOrderService
         };
     }
 
-    public async Task<OrderResponse> UpdateStatusAsync(Guid orderId, string status)
+    public async Task<OrderResponse> UpdateStatusAsync(Guid orderId, string status, Guid? dealerId = null)
     {
         var order = await LoadOrderWithIncludes(orderId)
             ?? throw new KeyNotFoundException("Order not found.");
+
+        if (dealerId.HasValue)
+        {
+            var isDealerOrder = order.Items.Any(i => i.DealerId == dealerId.Value);
+            if (!isDealerOrder)
+            {
+                throw new UnauthorizedAccessException("Dealer is not authorized to update this order.");
+            }
+        }
 
         if (!Enum.TryParse<OrderStatus>(status, true, out var newStatus))
             throw new ArgumentException("Invalid order status.");
@@ -213,7 +222,7 @@ public class OrderService : IOrderService
         {
             [OrderStatus.Pending] = new[] { OrderStatus.Confirmed, OrderStatus.Cancelled },
             [OrderStatus.Confirmed] = new[] { OrderStatus.Processing, OrderStatus.Cancelled },
-            [OrderStatus.Processing] = new[] { OrderStatus.Shipped },
+            [OrderStatus.Processing] = new[] { OrderStatus.Shipped, OrderStatus.Cancelled },
             [OrderStatus.Shipped] = new[] { OrderStatus.Delivered },
             [OrderStatus.Delivered] = Array.Empty<OrderStatus>(),
             [OrderStatus.Cancelled] = Array.Empty<OrderStatus>()

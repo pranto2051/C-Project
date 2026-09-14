@@ -14,5 +14,6 @@ public interface IAdminService
     Task<DealerProfileResponse?> UpdateDealerAsync(Guid dealerId, AdminDealerRequest request);
     Task<bool> DeleteDealerAsync(Guid dealerId);
     Task<bool> ApproveDealerAsync(Guid dealerId);
+    Task<List<UserDto>> GetDealerCustomersAsync(Guid dealerId);
     Task<StatsResponse> GetStatsAsync();
 }
