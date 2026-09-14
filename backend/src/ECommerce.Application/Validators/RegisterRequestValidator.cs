@@ -27,5 +27,11 @@ public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
             .NotEmpty().WithMessage("Role is required.")
             .Must(role => role == "Admin" || role == "Dealer" || role == "Customer")
             .WithMessage("Role must be Admin, Dealer, or Customer.");
+
+        RuleFor(x => x.ShopName)
+            .NotEmpty().WithMessage("Shop name is required when registering as a Dealer.")
+            .MaximumLength(256).WithMessage("Shop name cannot exceed 256 characters.")
+            .When(x => string.Equals(x.Role, "Dealer", System.StringComparison.OrdinalIgnoreCase));
     }
 }
+

@@ -5,7 +5,7 @@ import { authApi } from '@/services/api';
 import { useAuth } from '@/features/auth';
 import { ProtectedRoute } from '@/features/auth/ProtectedRoute';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { Button, Spinner, Input , LoadingProgress} from '@/components/ui';
+import { Button, Spinner, Input, ImageUploadInput, LoadingProgress } from '@/components/ui';
 import type { User } from '@/types';
 import toast from 'react-hot-toast';
 
@@ -18,6 +18,7 @@ function ProfileContent() {
     fullName: '',
     email: '',
     phone: '',
+    avatarUrl: '',
     currentPassword: '',
     newPassword: '',
     confirmPassword: '',
@@ -30,9 +31,10 @@ function ProfileContent() {
         const response = await authApi.me();
         setUser(response.data);
         setFormData({
-          fullName: response.data.fullName,
-          email: response.data.email,
+          fullName: response.data.fullName || '',
+          email: response.data.email || '',
           phone: response.data.phone || '',
+          avatarUrl: response.data.avatarUrl || '',
           currentPassword: '',
           newPassword: '',
           confirmPassword: '',
@@ -82,9 +84,10 @@ function ProfileContent() {
     setIsSaving(true);
     try {
       await authApi.updateProfile({
-        fullName: formData.fullName,
-        email: formData.email,
-        phone: formData.phone || undefined,
+        fullName: formData.fullName.trim(),
+        email: formData.email.trim(),
+        phone: formData.phone.trim() || undefined,
+        avatarUrl: formData.avatarUrl.trim() || undefined,
         newPassword: formData.newPassword || undefined,
         currentPassword: formData.newPassword ? formData.currentPassword : undefined,
       });
@@ -93,14 +96,14 @@ function ProfileContent() {
       await refreshUser();
 
       // Clear password fields
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         currentPassword: '',
         newPassword: '',
         confirmPassword: '',
       }));
 
-      toast.success('Profile updated successfully!');
+      toast.success('Admin profile updated successfully!');
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
       toast.error(error.response?.data?.message || 'Failed to update profile');
@@ -109,136 +112,152 @@ function ProfileContent() {
     }
   };
 
-  
-
-
   return (
-
-
     <>
-
-
       <LoadingProgress isLoading={isLoading} />
 
-
       {isLoading ? (
-
-
         <div className="flex justify-center py-12">
-
-
           <Spinner size="lg" />
-
-
         </div>
-
-
       ) : (
+        <div className="max-w-3xl space-y-6">
+          <div className="bg-white rounded-2xl border border-neutral-200 p-6 shadow-sm">
+            {/* Header Banner */}
+            <div className="flex items-center gap-5 mb-8 pb-6 border-b border-neutral-200">
+              <div className="relative w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center border-2 border-indigo-200 shadow-inner overflow-hidden shrink-0">
+                {formData.avatarUrl ? (
+                  <img
+                    src={formData.avatarUrl}
+                    alt={formData.fullName}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-3xl font-bold text-indigo-600">
+                    {formData.fullName?.charAt(0).toUpperCase() || 'A'}
+                  </span>
+                )}
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-neutral-900 font-heading">
+                  {user?.fullName}
+                </h2>
+                <p className="text-sm text-neutral-500">{user?.email}</p>
+                <span className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-800 mt-2">
+                  🛡️ Platform Administrator
+                </span>
+              </div>
+            </div>
 
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Profile Photo */}
+              <div className="pb-6 border-b border-neutral-200">
+                <h3 className="text-lg font-semibold text-neutral-900 mb-4">
+                  Profile Photo & Avatar
+                </h3>
+                <ImageUploadInput
+                  label="Admin Avatar Photo"
+                  value={formData.avatarUrl}
+                  onChange={(val) => setFormData({ ...formData, avatarUrl: val })}
+                  aspectRatio="circle"
+                  fallbackIcon="👤"
+                  placeholder="Paste profile image URL or upload image file..."
+                  helperText="Upload an image file from your computer or provide a direct image URL."
+                />
+              </div>
 
-        <div className="max-w-2xl">
-      <div className="bg-white rounded-xl border border-neutral-200 p-6">
-        <div className="flex items-center gap-4 mb-6 pb-6 border-b border-neutral-200">
-          <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center">
-            <span className="text-2xl font-bold text-primary-600">
-              {user?.fullName?.charAt(0).toUpperCase() || 'A'}
-            </span>
-          </div>
-          <div>
-            <h2 className="text-xl font-semibold text-neutral-900">{user?.fullName}</h2>
-            <p className="text-sm text-neutral-500">{user?.email}</p>
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 mt-1">
-              {user?.role}
-            </span>
+              {/* Personal Information */}
+              <div>
+                <h3 className="text-lg font-semibold text-neutral-900 mb-4">
+                  Personal Information
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Input
+                    label="Full Name *"
+                    value={formData.fullName}
+                    onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                    error={errors.fullName}
+                    required
+                  />
+                  <Input
+                    label="Email Address *"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    error={errors.email}
+                    required
+                  />
+                  <Input
+                    label="Phone Number"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    placeholder="+880 1XXX-XXXXXX"
+                  />
+                </div>
+              </div>
+
+              {/* Password Change */}
+              <div className="border-t border-neutral-200 pt-6">
+                <h3 className="text-lg font-semibold text-neutral-900 mb-1">Change Password</h3>
+                <p className="text-sm text-neutral-500 mb-4">
+                  Leave blank if you do not wish to change your password.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <Input
+                    label="Current Password"
+                    type="password"
+                    value={formData.currentPassword}
+                    onChange={(e) =>
+                      setFormData({ ...formData, currentPassword: e.target.value })
+                    }
+                    error={errors.currentPassword}
+                    placeholder="Enter current password"
+                  />
+                  <Input
+                    label="New Password"
+                    type="password"
+                    value={formData.newPassword}
+                    onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
+                    error={errors.newPassword}
+                    placeholder="Min 6 characters"
+                  />
+                  <Input
+                    label="Confirm New Password"
+                    type="password"
+                    value={formData.confirmPassword}
+                    onChange={(e) =>
+                      setFormData({ ...formData, confirmPassword: e.target.value })
+                    }
+                    error={errors.confirmPassword}
+                    placeholder="Re-enter new password"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-6 border-t border-neutral-200">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => window.location.reload()}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" isLoading={isSaving}>
+                  Save Admin Settings
+                </Button>
+              </div>
+            </form>
           </div>
         </div>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <h3 className="text-lg font-medium text-neutral-900 mb-4">Personal Information</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Input
-                label="Full Name"
-                value={formData.fullName}
-                onChange={e => setFormData({ ...formData, fullName: e.target.value })}
-                error={errors.fullName}
-                required
-              />
-              <Input
-                label="Email"
-                type="email"
-                value={formData.email}
-                onChange={e => setFormData({ ...formData, email: e.target.value })}
-                error={errors.email}
-                required
-              />
-              <Input
-                label="Phone"
-                value={formData.phone}
-                onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                placeholder="Optional"
-              />
-            </div>
-          </div>
-
-          <div className="border-t border-neutral-200 pt-6">
-            <h3 className="text-lg font-medium text-neutral-900 mb-4">Change Password</h3>
-            <p className="text-sm text-neutral-500 mb-4">Leave blank to keep current password</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Input
-                label="Current Password"
-                type="password"
-                value={formData.currentPassword}
-                onChange={e => setFormData({ ...formData, currentPassword: e.target.value })}
-                error={errors.currentPassword}
-                placeholder="Enter current password"
-              />
-              <Input
-                label="New Password"
-                type="password"
-                value={formData.newPassword}
-                onChange={e => setFormData({ ...formData, newPassword: e.target.value })}
-                error={errors.newPassword}
-                placeholder="Enter new password"
-              />
-              <Input
-                label="Confirm New Password"
-                type="password"
-                value={formData.confirmPassword}
-                onChange={e => setFormData({ ...formData, confirmPassword: e.target.value })}
-                error={errors.confirmPassword}
-                placeholder="Confirm new password"
-              />
-            </div>
-          </div>
-
-          <div className="flex justify-end gap-3 pt-4 border-t border-neutral-200">
-            <Button type="button" variant="secondary" onClick={() => window.location.reload()}>
-              Cancel
-            </Button>
-            <Button type="submit" isLoading={isSaving}>
-              Save Changes
-            </Button>
-          </div>
-        </form>
-      </div>
-    </div>
-  
-
-
       )}
-
-
     </>
-
-
   );
 }
 
 export default function ProfilePage() {
   return (
-    <ProtectedRoute allowedRoles={['Admin', 'Dealer', 'Customer']}>
-      <DashboardLayout allowedRoles={['Admin', 'Dealer', 'Customer']} title="My Profile">
+    <ProtectedRoute allowedRoles={['Admin']}>
+      <DashboardLayout allowedRoles={['Admin']} title="Admin Settings">
         <ProfileContent />
       </DashboardLayout>
     </ProtectedRoute>

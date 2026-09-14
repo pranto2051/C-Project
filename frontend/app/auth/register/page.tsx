@@ -18,6 +18,7 @@ export default function RegisterPage() {
     confirmPassword: '',
     phone: '',
     role: 'Customer' as UserRole,
+    shopName: '',
   });
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -34,6 +35,10 @@ export default function RegisterPage() {
       setError('Passwords do not match');
       return;
     }
+    if (formData.role === 'Dealer' && !formData.shopName.trim()) {
+      setError('Shop Name is required for Dealer registration');
+      return;
+    }
     setIsLoading(true);
     try {
       await register({
@@ -42,6 +47,7 @@ export default function RegisterPage() {
         fullName: formData.fullName,
         phone: formData.phone,
         role: formData.role,
+        shopName: formData.role === 'Dealer' ? formData.shopName.trim() : undefined,
       });
       router.push('/');
     } catch (err: unknown) {
@@ -311,6 +317,51 @@ export default function RegisterPage() {
                 </div>
               </div>
             </div>
+
+          {/* Shop Name - Mandatory for Dealer */}
+          {formData.role === 'Dealer' && (
+            <div className="space-y-2 md:col-span-2">
+              <label
+                htmlFor="shopName"
+                className="ml-1 text-sm font-semibold text-slate-700"
+              >
+                Shop Name <span className="text-red-500">*</span>
+              </label>
+
+              <div className="group relative">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+                  <svg
+                    className="h-5 w-5 text-slate-400 transition-colors group-focus-within:text-indigo-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.8}
+                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0V11m0 0h4M9 11h4m-4-4h4"
+                    />
+                  </svg>
+                </div>
+
+                <input
+                  id="shopName"
+                  type="text"
+                  value={formData.shopName}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      shopName: e.target.value,
+                    }))
+                  }
+                  placeholder="Enter your shop / business name"
+                  required
+                  className="w-full rounded-2xl border border-indigo-200 bg-indigo-50/30 py-3.5 pl-12 pr-4 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 hover:border-indigo-300 hover:bg-white focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10"
+                />
+              </div>
+            </div>
+          )}
 
             {/* Password */}
             <div className="space-y-2">

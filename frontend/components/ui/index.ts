@@ -14,3 +14,5 @@ export { ProductCardSkeleton } from './ProductCardSkeleton';
 export { ProductGridSkeleton } from './ProductGridSkeleton';
 export { ProductDetailSkeleton } from './ProductDetailSkeleton';
 export { LoadingProgress } from './LoadingProgress';
+export { ImageUploadInput } from './ImageUploadInput';
+

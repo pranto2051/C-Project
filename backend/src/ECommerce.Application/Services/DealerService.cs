@@ -31,6 +31,7 @@ public class DealerService : IDealerService
             UserFullName = dealer.FullName,
             UserEmail = dealer.Email,
             UserPhone = dealer.Phone,
+            AvatarUrl = dealer.AvatarUrl,
             UserIsActive = dealer.IsActive
         };
     }
@@ -45,6 +46,9 @@ public class DealerService : IDealerService
         dealer.ShopCategory = request.ShopCategory ?? dealer.ShopCategory;
         dealer.Address = request.Address ?? dealer.Address;
         dealer.LogoUrl = request.LogoUrl ?? dealer.LogoUrl;
+        if (request.AvatarUrl != null) dealer.AvatarUrl = request.AvatarUrl;
+        if (!string.IsNullOrWhiteSpace(request.FullName)) dealer.FullName = request.FullName;
+        if (request.Phone != null) dealer.Phone = request.Phone;
         dealer.UpdatedAt = DateTime.UtcNow;
 
         await _unitOfWork.Dealers.UpdateAsync(dealer);
@@ -63,6 +67,7 @@ public class DealerService : IDealerService
             UserFullName = dealer.FullName,
             UserEmail = dealer.Email,
             UserPhone = dealer.Phone,
+            AvatarUrl = dealer.AvatarUrl,
             UserIsActive = dealer.IsActive
         };
     }

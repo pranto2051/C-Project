@@ -15,6 +15,7 @@ public class DealerConfiguration : IEntityTypeConfiguration<Dealer>
         builder.Property(d => d.PasswordHash).IsRequired();
         builder.Property(d => d.FullName).HasMaxLength(256).IsRequired();
         builder.Property(d => d.Phone).HasMaxLength(32);
+        builder.Property(d => d.AvatarUrl);
         builder.Property(d => d.ShopName).HasMaxLength(256).IsRequired();
         builder.Property(d => d.ShopDescription);
         builder.Property(d => d.ShopCategory).HasMaxLength(128).IsRequired();

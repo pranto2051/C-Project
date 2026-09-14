@@ -9,6 +9,8 @@ export interface User {
   email: string;
   fullName: string;
   phone?: string;
+  avatarUrl?: string;
+  shippingAddress?: string;
   role: UserRole;
   isActive: boolean;
   createdAt: string;
@@ -21,11 +23,14 @@ export interface DealerProfile {
   shopCategory: string;
   address: string;
   logoUrl?: string;
+  avatarUrl?: string;
   isApproved: boolean;
   createdAt: string;
   userFullName?: string;
   userEmail?: string;
   userPhone?: string;
+  fullName?: string;
+  phone?: string;
   userIsActive?: boolean;
   customerCount?: number;
 }
@@ -150,7 +155,9 @@ export interface RegisterRequest {
   fullName: string;
   phone?: string;
   role: UserRole;
+  shopName?: string;
 }
+
 
 export interface CreateProductRequest {
   name: string;
@@ -178,6 +185,8 @@ export interface UpdateProfileRequest {
   fullName?: string;
   email?: string;
   phone?: string;
+  avatarUrl?: string;
+  shippingAddress?: string;
   newPassword?: string;
   currentPassword?: string;
 }

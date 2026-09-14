@@ -43,6 +43,7 @@ CREATE TABLE admins (
     "PasswordHash"  TEXT NOT NULL,
     "FullName"      VARCHAR(256) NOT NULL,
     "Phone"         VARCHAR(32),
+    "AvatarUrl"     TEXT,
     "IsActive"      BOOLEAN NOT NULL DEFAULT TRUE,
     "CreatedAt"     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     "UpdatedAt"     TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -51,7 +52,8 @@ CREATE TABLE admins (
 CREATE UNIQUE INDEX ix_admins_email ON admins ("Email");
 
 -- ----------------------------------------------------------------------------
--- Dealers
+-- Dealers & Shops Table
+-- Stores dealer accounts with mandatory ShopName and owner identity
 -- ----------------------------------------------------------------------------
 CREATE TABLE dealers (
     "Id"                UUID PRIMARY KEY,
@@ -59,6 +61,7 @@ CREATE TABLE dealers (
     "PasswordHash"      TEXT NOT NULL,
     "FullName"          VARCHAR(256) NOT NULL,
     "Phone"             VARCHAR(32),
+    "AvatarUrl"         TEXT,
     "ShopName"          VARCHAR(256) NOT NULL,
     "ShopDescription"   TEXT,
     "ShopCategory"      VARCHAR(128) NOT NULL,
@@ -81,6 +84,7 @@ CREATE TABLE customers (
     "PasswordHash"      TEXT NOT NULL,
     "FullName"          VARCHAR(256) NOT NULL,
     "Phone"             VARCHAR(32),
+    "AvatarUrl"         TEXT,
     "ShippingAddress"   TEXT,
     "IsActive"          BOOLEAN NOT NULL DEFAULT TRUE,
     "CreatedAt"         TIMESTAMPTZ NOT NULL DEFAULT NOW(),

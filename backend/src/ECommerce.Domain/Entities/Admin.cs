@@ -15,5 +15,7 @@ public class Admin : BaseEntity
     [MaxLength(32)]
     public string? Phone { get; set; }
 
+    public string? AvatarUrl { get; set; }
+
     public bool IsActive { get; set; } = true;
 }

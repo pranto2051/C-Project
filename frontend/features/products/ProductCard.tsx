@@ -70,7 +70,10 @@ export function ProductCard({ product }: ProductCardProps) {
             {product.name}
           </h3>
           {(product.dealerName || product.dealer?.shopName) && (
-            <p className="text-xs text-neutral-400 mb-2">by {product.dealerName || product.dealer?.shopName}</p>
+            <p className="text-xs font-medium text-indigo-600 mb-2 flex items-center gap-1">
+              <span>🏪</span>
+              <span>{product.dealerName || product.dealer?.shopName}</span>
+            </p>
           )}
           <div className="mt-auto">
             <div className="flex items-center justify-between">

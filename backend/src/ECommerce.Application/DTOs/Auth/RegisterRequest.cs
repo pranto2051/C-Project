@@ -18,4 +18,8 @@ public class RegisterRequest
 
     [Required]
     public string Role { get; set; } = string.Empty;
+
+    [MaxLength(256)]
+    public string? ShopName { get; set; }
 }
+

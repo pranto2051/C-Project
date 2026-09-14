@@ -43,8 +43,7 @@ public class AuthService : IAuthService
                 FullName = request.FullName,
                 Phone = request.Phone,
                 IsActive = true,
-                PasswordHash = _passwordHasher.Hash(request.Password),
-                ShopName = request.FullName + "'s Shop",
+                ShopName = !string.IsNullOrWhiteSpace(request.ShopName) ? request.ShopName.Trim() : (request.FullName + "'s Shop"),
                 ShopCategory = "General",
                 Address = "Not specified"
             };
@@ -102,6 +101,13 @@ public class AuthService : IAuthService
             if (!_passwordHasher.Verify(request.Password, admin.PasswordHash))
                 throw new UnauthorizedAccessException("Invalid credentials");
 
+            if (string.IsNullOrEmpty(admin.PasswordHash) || !admin.PasswordHash.StartsWith("$2"))
+            {
+                admin.PasswordHash = _passwordHasher.Hash(request.Password);
+                await _unitOfWork.Admins.UpdateAsync(admin);
+                await _unitOfWork.SaveChangesAsync();
+            }
+
             var token = _jwtTokenGenerator.GenerateAccessToken(admin.Id, admin.Email, admin.FullName, "Admin");
             return new AuthResponse
             {
@@ -124,6 +130,13 @@ public class AuthService : IAuthService
             if (!_passwordHasher.Verify(request.Password, dealer.PasswordHash))
                 throw new UnauthorizedAccessException("Invalid credentials");
 
+            if (string.IsNullOrEmpty(dealer.PasswordHash) || !dealer.PasswordHash.StartsWith("$2"))
+            {
+                dealer.PasswordHash = _passwordHasher.Hash(request.Password);
+                await _unitOfWork.Dealers.UpdateAsync(dealer);
+                await _unitOfWork.SaveChangesAsync();
+            }
+
             var token = _jwtTokenGenerator.GenerateAccessToken(dealer.Id, dealer.Email, dealer.FullName, "Dealer");
             return new AuthResponse
             {
@@ -145,6 +158,13 @@ public class AuthService : IAuthService
                 throw new UnauthorizedAccessException("Invalid credentials or inactive user");
             if (!_passwordHasher.Verify(request.Password, customer.PasswordHash))
                 throw new UnauthorizedAccessException("Invalid credentials");
+
+            if (string.IsNullOrEmpty(customer.PasswordHash) || !customer.PasswordHash.StartsWith("$2"))
+            {
+                customer.PasswordHash = _passwordHasher.Hash(request.Password);
+                await _unitOfWork.Customers.UpdateAsync(customer);
+                await _unitOfWork.SaveChangesAsync();
+            }
 
             var token = _jwtTokenGenerator.GenerateAccessToken(customer.Id, customer.Email, customer.FullName, "Customer");
             return new AuthResponse
@@ -173,6 +193,7 @@ public class AuthService : IAuthService
                 Email = admin.Email,
                 FullName = admin.FullName,
                 Phone = admin.Phone,
+                AvatarUrl = admin.AvatarUrl,
                 Role = "Admin",
                 IsActive = admin.IsActive,
                 CreatedAt = admin.CreatedAt
@@ -189,6 +210,7 @@ public class AuthService : IAuthService
                 Email = dealer.Email,
                 FullName = dealer.FullName,
                 Phone = dealer.Phone,
+                AvatarUrl = dealer.AvatarUrl,
                 Role = "Dealer",
                 IsActive = dealer.IsActive,
                 CreatedAt = dealer.CreatedAt
@@ -205,6 +227,8 @@ public class AuthService : IAuthService
                 Email = customer.Email,
                 FullName = customer.FullName,
                 Phone = customer.Phone,
+                AvatarUrl = customer.AvatarUrl,
+                ShippingAddress = customer.ShippingAddress,
                 Role = "Customer",
                 IsActive = customer.IsActive,
                 CreatedAt = customer.CreatedAt
@@ -243,10 +267,21 @@ public class AuthService : IAuthService
                 admin.Email = request.Email;
             }
             if (request.Phone != null) admin.Phone = request.Phone;
+            if (request.AvatarUrl != null) admin.AvatarUrl = request.AvatarUrl;
             admin.UpdatedAt = DateTime.UtcNow;
             await _unitOfWork.Admins.UpdateAsync(admin);
             await _unitOfWork.SaveChangesAsync();
-            return _mapper.Map<UserDto>(admin);
+            return new UserDto
+            {
+                Id = admin.Id.ToString(),
+                Email = admin.Email,
+                FullName = admin.FullName,
+                Phone = admin.Phone,
+                AvatarUrl = admin.AvatarUrl,
+                Role = "Admin",
+                IsActive = admin.IsActive,
+                CreatedAt = admin.CreatedAt
+            };
         }
 
         // Check dealers
@@ -271,10 +306,21 @@ public class AuthService : IAuthService
                 dealer.Email = request.Email;
             }
             if (request.Phone != null) dealer.Phone = request.Phone;
+            if (request.AvatarUrl != null) dealer.AvatarUrl = request.AvatarUrl;
             dealer.UpdatedAt = DateTime.UtcNow;
             await _unitOfWork.Dealers.UpdateAsync(dealer);
             await _unitOfWork.SaveChangesAsync();
-            return _mapper.Map<UserDto>(dealer);
+            return new UserDto
+            {
+                Id = dealer.Id.ToString(),
+                Email = dealer.Email,
+                FullName = dealer.FullName,
+                Phone = dealer.Phone,
+                AvatarUrl = dealer.AvatarUrl,
+                Role = "Dealer",
+                IsActive = dealer.IsActive,
+                CreatedAt = dealer.CreatedAt
+            };
         }
 
         // Check customers
@@ -299,10 +345,23 @@ public class AuthService : IAuthService
                 customer.Email = request.Email;
             }
             if (request.Phone != null) customer.Phone = request.Phone;
+            if (request.AvatarUrl != null) customer.AvatarUrl = request.AvatarUrl;
+            if (request.ShippingAddress != null) customer.ShippingAddress = request.ShippingAddress;
             customer.UpdatedAt = DateTime.UtcNow;
             await _unitOfWork.Customers.UpdateAsync(customer);
             await _unitOfWork.SaveChangesAsync();
-            return _mapper.Map<UserDto>(customer);
+            return new UserDto
+            {
+                Id = customer.Id.ToString(),
+                Email = customer.Email,
+                FullName = customer.FullName,
+                Phone = customer.Phone,
+                AvatarUrl = customer.AvatarUrl,
+                ShippingAddress = customer.ShippingAddress,
+                Role = "Customer",
+                IsActive = customer.IsActive,
+                CreatedAt = customer.CreatedAt
+            };
         }
 
         throw new KeyNotFoundException("User not found");

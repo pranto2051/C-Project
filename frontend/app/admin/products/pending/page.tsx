@@ -92,7 +92,12 @@ function PendingProductsContent() {
                     {products.map((product) => (
                       <tr key={product.id}>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-neutral-900">{product.name}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-700 font-medium">{product.dealerName || product.dealer?.shopName || 'N/A'}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-700">
+                          <p className="font-semibold text-neutral-900">🏬 {product.dealerName || product.dealer?.shopName || 'N/A'}</p>
+                          {product.dealer?.userFullName && (
+                            <p className="text-xs text-neutral-500">Owner: {product.dealer.userFullName}</p>
+                          )}
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-600">${product.price}</td>
                         <td className="px-6 py-4 whitespace-nowrap"><Badge status={product.approvalStatus} /></td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm">

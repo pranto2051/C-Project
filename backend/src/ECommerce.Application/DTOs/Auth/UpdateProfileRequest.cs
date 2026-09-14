@@ -13,6 +13,10 @@ public class UpdateProfileRequest
     [MaxLength(32)]
     public string? Phone { get; set; }
 
+    public string? AvatarUrl { get; set; }
+
+    public string? ShippingAddress { get; set; }
+
     [MinLength(6)]
     public string? NewPassword { get; set; }
 

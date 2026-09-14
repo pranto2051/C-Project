@@ -15,6 +15,8 @@ public class Dealer : BaseEntity
     [MaxLength(32)]
     public string? Phone { get; set; }
 
+    public string? AvatarUrl { get; set; }
+
     [MaxLength(256)]
     public string ShopName { get; set; } = string.Empty;
 

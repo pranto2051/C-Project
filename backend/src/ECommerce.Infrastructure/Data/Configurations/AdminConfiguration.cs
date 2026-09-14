@@ -15,6 +15,7 @@ public class AdminConfiguration : IEntityTypeConfiguration<Admin>
         builder.Property(a => a.PasswordHash).IsRequired();
         builder.Property(a => a.FullName).HasMaxLength(256).IsRequired();
         builder.Property(a => a.Phone).HasMaxLength(32);
+        builder.Property(a => a.AvatarUrl);
         builder.Property(a => a.IsActive).HasDefaultValue(true);
         builder.Property(a => a.CreatedAt).HasDefaultValueSql("now()").IsRequired();
         builder.Property(a => a.UpdatedAt).HasDefaultValueSql("now()").IsRequired();

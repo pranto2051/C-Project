@@ -96,10 +96,10 @@ function DealersContent() {
       address: dealer.address,
       logoUrl: dealer.logoUrl || '',
       isApproved: dealer.isApproved,
-      email: '',
+      email: dealer.userEmail || '',
       password: '',
-      fullName: '',
-      phone: ''
+      fullName: dealer.userFullName || '',
+      phone: dealer.userPhone || ''
     });
     setFormError('');
     setShowForm(true);
@@ -118,7 +118,10 @@ function DealersContent() {
     setFormError('');
     try {
       if (editId) {
-        await adminApi.updateDealer(editId, { ...formData, password: formData.password || 'placeholder' });
+        await adminApi.updateDealer(editId, {
+          ...formData,
+          password: formData.password ? formData.password : undefined
+        });
       } else {
         await adminApi.createDealer(formData);
       }
@@ -239,14 +242,10 @@ function DealersContent() {
           <Modal isOpen={showForm} onClose={() => setShowForm(false)} title={editId ? 'Edit Dealer' : 'Add New Dealer'}>
             <div className="space-y-4">
               {formError && <div className="bg-red-50 text-red-600 text-sm p-3 rounded-md">{formError}</div>}
-              {!editId && (
-                <>
-                  <Input label="Full Name" value={formData.fullName} onChange={e => setFormData({ ...formData, fullName: e.target.value })} required />
-                  <Input label="Email" type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} required />
-                  <Input label="Password" type="password" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} required />
-                  <Input label="Phone" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} />
-                </>
-              )}
+              <Input label="Owner Full Name *" value={formData.fullName} onChange={e => setFormData({ ...formData, fullName: e.target.value })} required />
+              <Input label="Owner Email *" type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} required />
+              <Input label={editId ? "New Password (optional)" : "Password *"} type="password" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} placeholder={editId ? "Leave blank to keep current password" : "Enter password"} required={!editId} />
+              <Input label="Phone" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} />
               <Input label="Shop Name" value={formData.shopName} onChange={e => setFormData({ ...formData, shopName: e.target.value })} required />
               <div>
                 <label className="block text-sm font-medium text-neutral-700 mb-1">Shop Category *</label>

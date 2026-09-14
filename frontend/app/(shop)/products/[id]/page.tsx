@@ -141,10 +141,19 @@ export default function ProductDetailPage() {
 
           <h1 className="text-3xl font-bold text-neutral-900 font-heading mb-2">{product.name}</h1>
 
-          {product.dealer?.shopName && (
-            <p className="text-sm text-neutral-500 mb-4">
-              Sold by <span className="text-primary-600 font-medium">{product.dealer.shopName}</span>
-            </p>
+          {(product.dealerName || product.dealer?.shopName) && (
+            <div className="flex items-center gap-2.5 mb-4 p-3.5 bg-indigo-50/70 rounded-xl border border-indigo-100">
+              <span className="text-2xl">🏪</span>
+              <div>
+                <p className="text-xs text-indigo-500 font-medium uppercase tracking-wider">Sold & Shipped by</p>
+                <p className="text-base font-bold text-indigo-900 flex items-center gap-2">
+                  <span>{product.dealerName || product.dealer?.shopName}</span>
+                  {product.dealer?.userFullName && (
+                    <span className="text-xs text-neutral-500 font-normal">({product.dealer.userFullName})</span>
+                  )}
+                </p>
+              </div>
+            </div>
           )}
 
           <div className="flex items-baseline gap-3 mb-6">

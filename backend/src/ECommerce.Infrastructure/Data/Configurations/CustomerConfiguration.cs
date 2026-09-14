@@ -15,6 +15,7 @@ public class CustomerConfiguration : IEntityTypeConfiguration<Customer>
         builder.Property(c => c.PasswordHash).IsRequired();
         builder.Property(c => c.FullName).HasMaxLength(256).IsRequired();
         builder.Property(c => c.Phone).HasMaxLength(32);
+        builder.Property(c => c.AvatarUrl);
         builder.Property(c => c.ShippingAddress);
         builder.Property(c => c.IsActive).HasDefaultValue(true);
         builder.Property(c => c.CreatedAt).HasDefaultValueSql("now()").IsRequired();

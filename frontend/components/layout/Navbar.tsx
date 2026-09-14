@@ -90,8 +90,12 @@ export function Navbar() {
               <>
                 <div className="relative group">
                   <button className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-neutral-600 hover:bg-neutral-50 transition-colors">
-                    <div className="w-7 h-7 bg-primary-100 rounded-full flex items-center justify-center text-primary-700 text-xs font-semibold">
-                      {user?.fullName?.charAt(0) || 'U'}
+                    <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 text-xs font-semibold overflow-hidden shrink-0 border border-indigo-200">
+                      {user?.avatarUrl ? (
+                        <img src={user.avatarUrl} alt={user.fullName} className="w-full h-full object-cover" />
+                      ) : (
+                        user?.fullName?.charAt(0).toUpperCase() || 'U'
+                      )}
                     </div>
                     <span className="hidden sm:block max-w-[120px] truncate">{user?.fullName}</span>
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -113,6 +117,7 @@ export function Navbar() {
                       {user?.role === 'Dealer' && (
                         <>
                           <Link href="/dealer/dashboard" className="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50">Dashboard</Link>
+                          <Link href="/dealer/profile" className="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50">Shop Settings & Profile</Link>
                           <Link href="/dealer/products" className="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50">My Products</Link>
                           <Link href="/dealer/orders" className="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50">Orders</Link>
                         </>
@@ -123,7 +128,7 @@ export function Navbar() {
                           <Link href="/admin/dealers" className="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50">Manage Dealers</Link>
                           <Link href="/admin/users" className="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50">Manage Users</Link>
                           <Link href="/admin/products/pending" className="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50">Pending Products</Link>
-                          <Link href="/admin/profile" className="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50">Edit Profile</Link>
+                          <Link href="/admin/profile" className="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50">Admin Settings</Link>
                         </>
                       )}
                       <div className="border-t border-neutral-100 mt-1 pt-1">

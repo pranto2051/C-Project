@@ -8,6 +8,7 @@ import type { UserRole } from '@/types';
 
 const dealerLinks = [
   { href: '/dealer/dashboard', label: 'Dashboard', icon: '📊' },
+  { href: '/dealer/profile', label: 'Shop Profile', icon: '🏪' },
   { href: '/dealer/products', label: 'My Products', icon: '📦' },
   { href: '/dealer/products/new', label: 'New Product', icon: '➕' },
   { href: '/dealer/sales', label: 'Sales', icon: '💰' },

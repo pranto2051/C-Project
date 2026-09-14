@@ -118,7 +118,7 @@ export const adminApi = {
   getDealerCustomers: (dealerId: string) => api.get(`/admin/dealers/${dealerId}/customers`),
   createDealer: (data: { shopName: string; shopDescription?: string; shopCategory: string; address: string; logoUrl?: string; isApproved: boolean; email: string; password: string; fullName: string; phone?: string }) =>
     api.post('/admin/dealers', data),
-  updateDealer: (id: string, data: { shopName: string; shopDescription?: string; shopCategory: string; address: string; logoUrl?: string; isApproved: boolean; email: string; password: string; fullName: string; phone?: string }) =>
+  updateDealer: (id: string, data: { shopName?: string; shopDescription?: string; shopCategory?: string; address?: string; logoUrl?: string; isApproved?: boolean; email?: string; password?: string; fullName?: string; phone?: string }) =>
     api.put(`/admin/dealers/${id}`, data),
   deleteDealer: (id: string) => api.delete(`/admin/dealers/${id}`),
   approveDealer: (id: string) => api.put(`/admin/dealers/${id}/approve`),

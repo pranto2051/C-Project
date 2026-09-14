@@ -223,12 +223,19 @@ public class AdminService : IAdminService
         var dealer = await _unitOfWork.Dealers.GetByIdAsync(dealerId);
         if (dealer == null) return null;
 
-        dealer.ShopName = request.ShopName;
+        if (!string.IsNullOrWhiteSpace(request.ShopName)) dealer.ShopName = request.ShopName;
         dealer.ShopDescription = request.ShopDescription;
-        dealer.ShopCategory = request.ShopCategory;
-        dealer.Address = request.Address;
+        if (!string.IsNullOrWhiteSpace(request.ShopCategory)) dealer.ShopCategory = request.ShopCategory;
+        if (!string.IsNullOrWhiteSpace(request.Address)) dealer.Address = request.Address;
         dealer.LogoUrl = request.LogoUrl;
         dealer.IsApproved = request.IsApproved;
+        if (!string.IsNullOrWhiteSpace(request.FullName)) dealer.FullName = request.FullName;
+        if (!string.IsNullOrWhiteSpace(request.Email)) dealer.Email = request.Email;
+        if (request.Phone != null) dealer.Phone = request.Phone;
+        if (!string.IsNullOrWhiteSpace(request.Password) && request.Password != "placeholder")
+        {
+            dealer.PasswordHash = _passwordHasher.Hash(request.Password);
+        }
         dealer.UpdatedAt = DateTime.UtcNow;
 
         await _unitOfWork.Dealers.UpdateAsync(dealer);
