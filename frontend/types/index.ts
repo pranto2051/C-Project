@@ -53,6 +53,8 @@ export interface Product {
   id: string;
   dealerId: string;
   dealerName?: string;
+  dealerOwnerName?: string;
+  dealerAddress?: string;
   categoryId: string;
   categoryName?: string;
   name: string;

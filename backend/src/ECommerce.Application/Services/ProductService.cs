@@ -296,9 +296,11 @@ public class ProductService : IProductService
             RejectionReason = p.RejectionReason,
             PublishedAt = p.PublishedAt,
             DealerId = p.DealerId,
-            DealerName = dealer.ShopName,
+            DealerName = dealer?.ShopName ?? string.Empty,
+            DealerOwnerName = dealer?.FullName,
+            DealerAddress = dealer?.Address,
             CategoryId = p.CategoryId,
-            CategoryName = category.Name,
+            CategoryName = category?.Name ?? string.Empty,
             Images = p.Images.Select(i => new ProductImageDto { ImageUrl = i.ImageUrl, DisplayOrder = i.DisplayOrder }).ToList(),
             CreatedAt = p.CreatedAt
         };
