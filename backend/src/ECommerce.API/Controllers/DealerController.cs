@@ -15,12 +15,14 @@ public class DealerController : ControllerBase
     private readonly IDealerService _dealerService;
     private readonly IProductService _productService;
     private readonly IOrderService _orderService;
+    private readonly IAdminService _adminService;
 
-    public DealerController(IDealerService dealerService, IProductService productService, IOrderService orderService)
+    public DealerController(IDealerService dealerService, IProductService productService, IOrderService orderService, IAdminService adminService)
     {
         _dealerService = dealerService;
         _productService = productService;
         _orderService = orderService;
+        _adminService = adminService;
     }
 
     private Guid GetUserId()
@@ -111,5 +113,13 @@ public class DealerController : ControllerBase
         var userId = GetUserId();
         var sales = await _orderService.GetDealerSalesAsync(userId);
         return Ok(sales);
+    }
+
+    [HttpGet("customers")]
+    public async Task<IActionResult> GetCustomers()
+    {
+        var userId = GetUserId();
+        var customers = await _adminService.GetDealerCustomersAsync(userId);
+        return Ok(new { items = customers, total = customers.Count });
     }
 }

@@ -328,10 +328,7 @@ public class AdminService : IAdminService
         }
         else
         {
-            // If no customers have bought yet, return all customers for admin management
-            customers = await _unitOfWork.Customers.GetQueryable()
-                .OrderBy(c => c.FullName)
-                .ToListAsync();
+            customers = new List<Domain.Entities.Customer>();
         }
 
         return customers.Select(c => new UserDto

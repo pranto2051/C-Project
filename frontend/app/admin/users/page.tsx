@@ -57,27 +57,9 @@ function CustomersContent() {
       } else if (resData && Array.isArray(resData.items)) {
         customersList = resData.items;
       }
-
-      // If list is empty, fallback to fetching registered customers
-      if (customersList.length === 0) {
-        const fallbackRes = await adminApi.getUsers({ role: 'Customer', page: 1, pageSize: 100 });
-        const fallbackData = fallbackRes.data;
-        if (Array.isArray(fallbackData)) {
-          customersList = fallbackData;
-        } else if (fallbackData && Array.isArray(fallbackData.items)) {
-          customersList = fallbackData.items;
-        }
-      }
       setDealerCustomers(customersList);
     } catch {
-      try {
-        const fallbackRes = await adminApi.getUsers({ role: 'Customer', page: 1, pageSize: 100 });
-        const fallbackData = fallbackRes.data;
-        const customersList = Array.isArray(fallbackData) ? fallbackData : (fallbackData?.items || []);
-        setDealerCustomers(customersList);
-      } catch {
-        setDealerCustomers([]);
-      }
+      setDealerCustomers([]);
     } finally {
       setIsLoadingCustomers(false);
     }
@@ -167,7 +149,7 @@ function CustomersContent() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
                           <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
-                            👥 {dealer.customerCount ?? 1} Customer{(dealer.customerCount ?? 1) !== 1 ? 's' : ''}
+                            👥 {dealer.customerCount ?? 0} Customer{(dealer.customerCount ?? 0) !== 1 ? 's' : ''}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
