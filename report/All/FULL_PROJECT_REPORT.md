@@ -52,9 +52,26 @@ The frontend is constructed using **Next.js 14 with the App Router**, React 18, 
 - [Chapter 4: Implementation](#chapter-4-implementation)
   - [4.1 Development Environment & Tooling](#41-development-environment--tooling)
   - [4.2 Database Implementation & Seeding Strategy](#42-database-implementation--seeding-strategy)
-  - [4.3 Backend Implementation (Clean Architecture Layers)](#43-backend-implementation-clean-architecture-layers)
-  - [4.4 Frontend Implementation (Next.js 14 App Router)](#44-frontend-implementation-nextjs-14-app-router)
-  - [4.5 Core Feature Workflows](#45-core-feature-workflows)
+  - [4.3 Backend Implementation (.NET 9.0 Clean Architecture, MVC & Routing Engine)](#43-backend-implementation-net-90-clean-architecture-mvc--routing-engine)
+    - [4.3.1 Domain Layer (`ECommerce.Domain`)](#431-domain-layer-ecommercedomain)
+    - [4.3.2 Infrastructure Layer (`ECommerce.Infrastructure`)](#432-infrastructure-layer-ecommerceinfrastructure)
+    - [4.3.3 Application Layer (`ECommerce.Application`)](#433-application-layer-ecommerceapplication)
+    - [4.3.4 Presentation Layer (`ECommerce.API`) & MVC Pattern in Web API](#434-presentation-layer-ecommerceapi--mvc-pattern-in-web-api)
+    - [4.3.5 Comprehensive Routing Management (Attribute Routing, Templates, Tokens & Model Binding)](#435-comprehensive-routing-management-attribute-routing-templates-tokens--model-binding)
+    - [4.3.6 HTTP Middleware Pipeline & Centralized Global Exception Handling](#436-http-middleware-pipeline--centralized-global-exception-handling)
+    - [4.3.7 Request Handlers: JWT Authentication, Role Authorization, CORS & FluentValidation](#437-request-handlers-jwt-authentication-role-authorization-cors--fluentvalidation)
+  - [4.4 Frontend Implementation & Backend Connection Architecture](#44-frontend-implementation--backend-connection-architecture)
+    - [4.4.1 Directory Layout & Next.js 14 App Router](#441-directory-layout--nextjs-14-app-router)
+    - [4.4.2 Axios Client Configuration & Centralized Base URL](#442-axios-client-configuration--centralized-base-url)
+    - [4.4.3 Request Interceptor: Automated Bearer Token Injection](#443-request-interceptor-automated-bearer-token-injection)
+    - [4.4.4 Response Interceptor: Silent Token Refresh & Resilient Session Recovery](#444-response-interceptor-silent-token-refresh--resilient-session-recovery)
+    - [4.4.5 Modular API Service Architecture](#445-modular-api-service-architecture)
+    - [4.4.6 End-to-End Request-Response Sequence Trace (User Click to Database Commit)](#446-end-to-end-request-response-sequence-trace-user-click-to-database-commit)
+  - [4.5 Critical Business Paths Analysis](#45-critical-business-paths-analysis)
+    - [4.5.1 Critical Path 1: Authentication & Token Lifecycle](#451-critical-path-1-authentication--token-lifecycle)
+    - [4.5.2 Critical Path 2: Atomic Checkout & Order Stock Transaction](#452-critical-path-2-atomic-checkout--order-stock-transaction)
+    - [4.5.3 Critical Path 3: Multi-tenant Dealer Product Lifecycle & Admin Approval Workflow](#453-critical-path-3-multi-tenant-dealer-product-lifecycle--admin-approval-workflow)
+    - [4.5.4 Critical Path 4: Zero-Trust Multi-Tenant Isolation & Role Boundaries](#454-critical-path-4-zero-trust-multi-tenant-isolation--role-boundaries)
 - [Chapter 5: Testing, Verification & Results](#chapter-5-testing-verification--results)
   - [5.1 Testing Methodology](#51-testing-methodology)
   - [5.2 API Verification with cURL](#52-api-verification-with-curl)
@@ -71,6 +88,8 @@ The frontend is constructed using **Next.js 14 with the App Router**, React 18, 
   - [Appendix B: Complete API Endpoint Reference](#appendix-b-complete-api-endpoint-reference)
   - [Appendix C: Master Demonstration Credentials](#appendix-c-master-demonstration-credentials)
   - [Appendix D: System Configuration & Scripts](#appendix-d-system-configuration--scripts)
+  - [Appendix E: Academic Defense & Teacher Viva Examination Guide (20+ Questions & Answers)](#appendix-e-academic-defense--teacher-viva-examination-guide-20-questions--answers)
+  - [Appendix F: Dedicated `.NET framework` Architectural Documentation Repository](#appendix-f-dedicated-net-framework-architectural-documentation-repository)
 
 ---
 
@@ -506,95 +525,451 @@ The database schema and seed data are authored in `SQL/master.sql`.
   - **550 Products & 550 Images:** 500 catalog items + 50 extra featured products assigned to Dealer 1 with high-resolution image seeds.
   - **6 Full-Lifecycle Orders:** Cover all status transitions (`Pending`, `Confirmed`, `Processing`, `Shipped`, `Delivered`, `Cancelled`).
 
-## 4.3 Backend Implementation (Clean Architecture Layers)
+## 4.3 Backend Implementation (.NET 9.0 Clean Architecture, MVC & Routing Engine)
+
+The backend engine is constructed using **Microsoft ASP.NET Core 9.0 (C# 13)** structured according to the **Clean Architecture (Onion Architecture)** pattern. The primary objective of this architecture is strict separation of concerns, decoupling enterprise business rules from frameworks, databases, and UI representations.
+
+```
++-----------------------------------------------------------------------------------+
+| PRESENTATION LAYER: ECommerce.API                                                 |
+|  Controllers (REST Endpoints), Routing Engine, Middleware Pipeline, Swagger      |
++-----------------------------------------+-----------------------------------------+
+                                          │ Depends on Application & Infrastructure
++-----------------------------------------▼-----------------------------------------+
+| APPLICATION LAYER: ECommerce.Application                                          |
+|  Business Services, DTOs, AutoMapper Profiles, FluentValidation Validators         |
++--------------------+------------------------------------+-------------------------+
+                     │ Depends on Domain                  │ Interface Abstractions
++--------------------▼---------------------+  +-----------▼-------------------------+
+| DOMAIN LAYER: ECommerce.Domain           |  | INFRASTRUCTURE: Infrastructure      |
+|  Entities, Enums, Domain Interfaces      |  |  EF Core 9 DbContext, Supabase Repo |
+|  (Zero External Framework Dependencies)  |  |  JwtTokenGenerator, PasswordHasher  |
++------------------------------------------+  +-------------------------------------+
+```
 
 ### 4.3.1 Domain Layer (`ECommerce.Domain`)
-Houses core business entities inheriting from `BaseEntity`:
-- `BaseEntity.cs`: Defines `Guid Id`, `DateTime CreatedAt`, `DateTime UpdatedAt`.
-- `Admin.cs`, `Dealer.cs`, `Customer.cs`: Dedicated identity models containing personal attributes and `AvatarUrl`.
-- `Product.cs` & `ProductImage.cs`: Catalog item with `ApprovalStatus` enum (`Pending`, `Approved`, `Rejected`) and foreign key associations.
-- `Order.cs` & `OrderItem.cs`: Financial records with `OrderStatus` enum (`Pending`, `Confirmed`, `Processing`, `Shipped`, `Delivered`, `Cancelled`).
-- Interfaces: `IRepository<T>`, `IUnitOfWork`, `IJwtTokenGenerator`, `IPasswordHasher`.
+The Domain layer constitutes the core of the enterprise. It has zero external dependencies on any ORM, web framework, or UI library:
+- **`BaseEntity.cs`:** Abstract base class declaring common audit fields: `Guid Id`, `DateTime CreatedAt`, and `DateTime UpdatedAt`.
+- **Identity Models:** `Admin.cs`, `Dealer.cs`, and `Customer.cs` encapsulate dedicated domain attributes (e.g., `ShopName`, `ShippingAddress`, `IsActive`, `AvatarUrl`).
+- **Catalog Models:** `Product.cs` maintains `ApprovalStatus` (`Pending`, `Approved`, `Rejected`), `RejectionReason`, `PublishedAt`, and `ProductImage` collections.
+- **Transactional Models:** `Order.cs` and `OrderItem.cs` record financial agreements, capturing snapshot prices (`UnitPriceAtPurchase`) to insulate historic orders from vendor price fluctuations.
+- **Core Abstractions:** `IRepository<T>`, `IUnitOfWork`, `IJwtTokenGenerator`, and `IPasswordHasher` declare contracts implemented by outer layers.
 
 ### 4.3.2 Infrastructure Layer (`ECommerce.Infrastructure`)
-Implements persistence and external services:
-- `AppDbContext.cs`: Manages 10 `DbSet<T>` collections.
-- `Configurations/`: 10 Fluent API configuration classes enforcing table names, column lengths, and foreign key rules.
-- `UnitOfWork.cs`: Exposes repositories and executes atomic commits via `SaveChangesAsync()`.
-- `JwtTokenGenerator.cs`: Encodes claims into signed HMAC-SHA256 tokens.
-- `PasswordHasher.cs`: Wraps `BCrypt.Net-Next` verify and hash routines.
+The Infrastructure layer provides concrete technical implementations for domain abstractions:
+- **`AppDbContext.cs`:** The Entity Framework Core 9.0 database context mapping domain entities to PostgreSQL tables. It configures connection resilience, query timeouts, and schema constraints:
+  ```csharp
+  builder.Services.AddDbContext<AppDbContext>(options =>
+      options.UseNpgsql(connectionString, npgsql =>
+      {
+          npgsql.CommandTimeout(120); // Extends timeout to 120 seconds for complex queries
+          npgsql.EnableRetryOnFailure(3, TimeSpan.FromSeconds(10), null); // Transient error recovery
+      })
+      .EnableSensitiveDataLogging(false)
+      .EnableDetailedErrors(false));
+  ```
+- **Connection Pooling & Cloud Resilience:** Utilizing `Npgsql.EntityFrameworkCore.PostgreSQL`, connection pooling reduces TCP socket churn against Supabase PgBouncer poolers.
+- **`UnitOfWork.cs` & Generic Repositories:** Enforces the Unit of Work pattern, ensuring that multiple repository operations across orders, inventory, and carts execute within a single atomic database transaction via `SaveChangesAsync()`.
+- **`PasswordHasher.cs`:** Cryptographically salts and hashes user credentials using BCrypt (Work Factor: 11), ensuring raw passwords are never persisted.
+- **`JwtTokenGenerator.cs`:** Constructs and cryptographically signs HMAC-SHA256 JSON Web Tokens with user claims (`NameIdentifier`, `Email`, `Role`).
 
 ### 4.3.3 Application Layer (`ECommerce.Application`)
-Orchestrates business logic and data mapping:
-- `AuthService.cs`: Implements multi-table login dispatching and dual-role registration.
-- `DealerService.cs`: Manages vendor profiles and shop settings.
-- `OrderService.cs`: Manages atomic checkout, stock decrements, sales analytics, and the Order Finite-State Machine.
-- `ProductService.cs`: Implements public product discovery and administrative moderation workflows.
-- `AdminService.cs`: Computes platform KPIs and manages vendor/customer accounts.
+The Application layer orchestrates business use cases and controls data movement:
+- **Application Services:** `AuthService`, `ProductService`, `OrderService`, `DealerService`, `CartService`, `AdminService`, and `CategoryService` coordinate business rules.
+- **Data Transfer Objects (DTOs):** Encapsulate API payloads (e.g., `LoginRequest`, `RegisterRequest`, `CreateProductRequest`, `OrderRequest`, `ProductFilter`), ensuring database models are never exposed directly to external clients.
+- **AutoMapper:** Configured via `MappingProfile.cs` to project domain entities into clean DTO representations efficiently.
+- **FluentValidation:** Validates incoming DTOs against business rules (e.g., string lengths, positive pricing, email formats) before controller action execution.
 
-### 4.3.4 Presentation Layer (`ECommerce.API`)
-Contains API controllers, middleware, and dependency injection registration:
-- Configures CORS for `http://localhost:3000`.
-- Binds Kestrel to listen on `http://localhost:5001`.
-- Configures Swagger UI for interactive OpenAPI documentation.
+### 4.3.4 Presentation Layer (`ECommerce.API`) & MVC Pattern in Web API
+In a modern decoupled web architecture, ASP.NET Core functions as a **Headless RESTful Web API**. The MVC pattern is applied as follows:
+- **Model (M):** Composed of Domain Entities and Application DTOs defining data contracts and validation rules.
+- **Controller (C):** Controllers inheriting from `ControllerBase` decorated with `[ApiController]`. Controllers receive HTTP verbs, bind parameters, delegate execution to application services, and return standardized HTTP status responses.
+- **View (V):** Rather than rendering server-side HTML/Razor views, the "View" is structured **JSON**. The client-side Next.js 14 frontend consumes this JSON to render dynamic React UI components.
+
+### 4.3.5 Comprehensive Routing Management (Attribute Routing, Templates, Tokens & Model Binding)
+The backend exclusively employs **Attribute Routing** across all 6 controllers to provide explicit, deterministic, and self-documenting REST URLs:
+
+1. **Token Replacement in Route Templates:**
+   Controllers declare route templates using token replacement tokens such as `[controller]`:
+   ```csharp
+   [ApiController]
+   [Route("api/[controller]")] // Resolves to /api/products
+   public class ProductsController : ControllerBase { ... }
+   ```
+2. **Explicit and Nested Routing:**
+   Endpoints define precise URL patterns and sub-resources:
+   ```csharp
+   [HttpPut("{id}/status")] // Resolves to PUT /api/orders/{id}/status
+   [Authorize(Roles = "Admin,Dealer")]
+   public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] UpdateOrderStatusRequest request)
+   ```
+3. **Route Parameters & Constraints:**
+   Dynamic segments in URL paths automatically bind to typed method parameters:
+   ```csharp
+   [HttpGet("{id}")] // Binds URL /api/products/4f2a7e12... to Guid id
+   public async Task<IActionResult> GetProduct(Guid id)
+   ```
+4. **Query String Binding (`[FromQuery]`):**
+   Complex filtering, pagination, and search queries are bound from HTTP GET query strings:
+   ```csharp
+   [HttpGet] // URL: /api/products?page=1&pageSize=10&search=Headphones&categoryId=...
+   public async Task<IActionResult> GetProducts([FromQuery] ProductFilter filter)
+   ```
+5. **Request Body Binding (`[FromBody]`):**
+   Incoming JSON payloads are deserialized and bound to validated DTOs:
+   ```csharp
+   [HttpPost("login")]
+   public async Task<IActionResult> Login([FromBody] LoginRequest request)
+   ```
+6. **Action Results & Standard HTTP Status Codes:**
+   Action methods return `IActionResult` mapped to standard HTTP semantics:
+   - `Ok(data)`: **200 OK** (Successful data retrieval or update)
+   - `CreatedAtAction(...)`: **201 Created** (Resource created with `Location` header)
+   - `BadRequest(error)`: **400 Bad Request** (Validation or business rule failure)
+   - `Unauthorized()`: **401 Unauthorized** (Unauthenticated or expired token)
+   - `Forbid()`: **403 Forbidden** (Authenticated user lacks required role)
+   - `NotFound()`: **404 Not Found** (Resource does not exist)
+
+### 4.3.6 HTTP Middleware Pipeline & Centralized Global Exception Handling
+In ASP.NET Core, HTTP requests traverse a sequential pipeline of middleware components. The pipeline in `Program.cs` is ordered as follows:
+
+```
+[ Incoming HTTP Request ]
+          │
+          ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 1. ExceptionHandlingMiddleware (Global Try-Catch Wrapper)   │ ◄──┐
+└────────────────────────┬────────────────────────────────────┘    │
+                         │                                         │
+                         ▼                                         │ Catches all
+┌─────────────────────────────────────────────────────────────┐    │ unhandled
+│ 2. Swagger & SwaggerUI (API Explorer Documentation)         │    │ exceptions
+└────────────────────────┬────────────────────────────────────┘    │
+                         │                                         │
+                         ▼                                         │
+┌─────────────────────────────────────────────────────────────┐    │
+│ 3. HttpsRedirection (HTTPS Protocol Enforcement)            │    │
+└────────────────────────┬────────────────────────────────────┘    │
+                         │                                         │
+                         ▼                                         │
+┌─────────────────────────────────────────────────────────────┐    │
+│ 4. UseCors ("AllowFrontend" - Port 3000 Whitelist)          │    │
+└────────────────────────┬────────────────────────────────────┘    │
+                         │                                         │
+                         ▼                                         │
+┌─────────────────────────────────────────────────────────────┐    │
+│ 5. UseAuthentication (JWT Bearer Token Signature Validation)│    │
+└────────────────────────┬────────────────────────────────────┘    │
+                         │                                         │
+                         ▼                                         │
+┌─────────────────────────────────────────────────────────────┐    │
+│ 6. UseAuthorization (RBAC Claim Verification)               │    │
+└────────────────────────┬────────────────────────────────────┘    │
+                         │                                         │
+                         ▼                                         │
+┌─────────────────────────────────────────────────────────────┐    │
+│ 7. Endpoint Routing & Controller Action Execution           │────┘
+└─────────────────────────────────────────────────────────────┘
+```
+
+#### Centralized Exception Handling Middleware (`ExceptionHandlingMiddleware.cs`)
+Rather than polluting individual controller methods with repetitive `try-catch` blocks, an enterprise-grade centralized middleware wraps the entire downstream execution:
+
+```csharp
+public class ExceptionHandlingMiddleware
+{
+    private readonly RequestDelegate _next;
+    private readonly ILogger<ExceptionHandlingMiddleware> _logger;
+
+    public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
+    {
+        _next = next;
+        _logger = logger;
+    }
+
+    public async Task InvokeAsync(HttpContext context)
+    {
+        try
+        {
+            await _next(context);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An unhandled exception occurred");
+            await HandleExceptionAsync(context, ex);
+        }
+    }
+
+    private static async Task HandleExceptionAsync(HttpContext context, Exception exception)
+    {
+        context.Response.ContentType = "application/json";
+        context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+
+        var message = "An unexpected error occurred.";
+        var errors = new Dictionary<string, string[]>();
+
+        switch (exception)
+        {
+            case KeyNotFoundException:
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound; // 404
+                message = exception.Message;
+                break;
+
+            case UnauthorizedAccessException:
+                context.Response.StatusCode = (int)HttpStatusCode.Unauthorized; // 401
+                message = exception.Message;
+                break;
+
+            case InvalidOperationException:
+                context.Response.StatusCode = (int)HttpStatusCode.BadRequest; // 400
+                message = exception.Message;
+                break;
+
+            case ArgumentException:
+                context.Response.StatusCode = (int)HttpStatusCode.BadRequest; // 400
+                message = exception.Message;
+                break;
+
+            default:
+                message = "An unexpected error occurred. Please try again later."; // 500
+                break;
+        }
+
+        var response = new { message, errors };
+        await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+    }
+}
+```
+
+### 4.3.7 Request Handlers: JWT Authentication, Role Authorization, CORS & FluentValidation
+
+1. **JWT Bearer Authentication Handler:**
+   Registered using `Microsoft.AspNetCore.Authentication.JwtBearer`:
+   ```csharp
+   builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+       .AddJwtBearer(options =>
+       {
+           options.RequireHttpsMetadata = false;
+           options.SaveToken = true;
+           options.TokenValidationParameters = new TokenValidationParameters
+           {
+               ValidateIssuerSigningKey = true,
+               IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtKey)),
+               ValidateIssuer = false,
+               ValidateAudience = false,
+               ValidateLifetime = true // Enforces token expiry strictly
+           };
+       });
+   ```
+2. **Role-Based Authorization (RBAC) Handler:**
+   Enforced via `[Authorize(Roles = "...")]` attributes on controller classes or individual actions:
+   - `[Authorize(Roles = "Customer")]`: Applied to cart mutation and checkout endpoints.
+   - `[Authorize(Roles = "Dealer")]`: Applied to vendor product drafting, inventory updates, and order status transitions.
+   - `[Authorize(Roles = "Admin")]`: Applied to moderation queues, user bans, and category taxonomy management.
+   - `[Authorize(Roles = "Admin,Dealer")]`: Applied to shared operational endpoints.
+3. **CORS Handler Policy (`AllowFrontend`):**
+   Permits cross-origin AJAX/Fetch communication between Next.js (port 3000) and Kestrel (port 5001):
+   ```csharp
+   builder.Services.AddCors(options =>
+   {
+       options.AddPolicy("AllowFrontend", policy =>
+       {
+           policy.WithOrigins(allowedOrigins)
+                 .AllowAnyMethod()
+                 .AllowAnyHeader()
+                 .AllowCredentials();
+       });
+   });
+   ```
+4. **Input Validation Handler:**
+   `FluentValidation.DependencyInjectionExtensions` scans the Application assembly and validates payloads before they reach service methods, preventing corrupted or malformed data states.
 
 ---
 
-## 4.4 Frontend Implementation (Next.js 14 App Router)
+## 4.4 Frontend Implementation & Backend Connection Architecture
 
-### 4.4.1 Directory Layout
+The frontend is constructed using **Next.js 14 with the App Router**, React 18, TypeScript, and Tailwind CSS. The client communicates with the .NET backend as a decoupled single-page application (SPA).
+
+### 4.4.1 Directory Layout & Next.js 14 App Router
 ```
 frontend/
 ├── app/
-│   ├── (shop)/             # Storefront routes (Home, Products, Cart, Checkout, Orders)
-│   ├── admin/              # Administrator dashboard, dealers, moderation, categories
-│   ├── dealer/             # Vendor dashboard, product creator, sales, orders, profile
-│   ├── auth/               # Unified modern login and registration pages
-│   ├── globals.css         # Tailwind directives and custom animation classes
+│   ├── (shop)/             # Customer storefront (Home, Products, Cart, Checkout, Orders)
+│   ├── admin/              # Administrator dashboard, moderation queue, user management
+│   ├── dealer/             # Vendor dashboard, product creator/editor, sales, orders
+│   ├── auth/               # Unified login and registration interfaces
+│   ├── globals.css         # Tailwind styles and custom keyframe animations
 │   └── layout.tsx          # Root HTML layout with AuthProvider & Toast notifications
 ├── components/
 │   ├── layout/             # Navbar, Footer, Sidebar, DashboardLayout, ShopLayout
-│   └── ui/                 # LoadingProgress, ImageUploadInput, Modal, Button, Card, etc.
+│   └── ui/                 # LoadingProgress, ImageUploadInput, Modal, Button, Card
 ├── context/
-│   └── AuthContext.tsx     # Client-side React context for JWT session persistence
+│   └── AuthContext.tsx     # React Context managing client-side authentication state
 └── services/
-    └── api.ts              # Axios instance with automated Bearer token injection
+    └── api.ts              # Centralized Axios client with automatic Bearer interceptors
 ```
 
-### 4.4.2 Authentication Flow & Client State
-- `AuthContext.tsx` loads the JWT token from browser `localStorage` on initial mount.
-- Dispatches a call to `/api/auth/me` to validate session freshness and rehydrate the user profile.
-- Axios request interceptors automatically append `Authorization: Bearer <token>` to all outgoing HTTP requests.
-- Axios response interceptors catch `401 Unauthorized` responses, purge local session state, and redirect the browser to `/auth/login`.
+### 4.4.2 Axios Client Configuration & Centralized Base URL
+All outbound HTTP communication is centralized in `frontend/services/api.ts`:
+```typescript
+import axios, { AxiosError, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
+const API_TIMEOUT = Number(process.env.NEXT_PUBLIC_API_TIMEOUT) || 30000;
+
+export const api = axios.create({
+  baseURL: API_URL,
+  timeout: API_TIMEOUT,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+```
+
+### 4.4.3 Request Interceptor: Automated Bearer Token Injection
+Every outgoing HTTP request is automatically inspected by an Axios Request Interceptor. If an `accessToken` exists in `localStorage`, it is injected into the HTTP `Authorization` header:
+```typescript
+api.interceptors.request.use(
+  (config: InternalAxiosRequestConfig) => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('accessToken');
+      if (token && config.headers) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    }
+    return config;
+  },
+  (error: AxiosError) => Promise.reject(error)
+);
+```
+
+### 4.4.4 Response Interceptor: Silent Token Refresh & Resilient Session Recovery
+To prevent disruptive session terminations when short-lived access tokens expire, a specialized Axios Response Interceptor catches `401 Unauthorized` errors and performs a silent token refresh:
+```typescript
+api.interceptors.response.use(
+  (response: AxiosResponse) => response,
+  async (error: AxiosError) => {
+    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+
+    // Catch 401 Unauthorized on initial request
+    if (error.response?.status === 401 && !originalRequest._retry && typeof window !== 'undefined') {
+      originalRequest._retry = true; // Prevents infinite retry loops
+      try {
+        const refreshToken = localStorage.getItem('refreshToken');
+        if (refreshToken) {
+          const response = await axios.post(`${API_URL}/auth/refresh`, { refreshToken });
+          const { token } = response.data;
+
+          // Store renewed access token
+          localStorage.setItem('accessToken', token);
+
+          // Re-inject token into original request and re-execute
+          if (originalRequest.headers) {
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+          }
+          return api(originalRequest);
+        }
+      } catch {
+        // Refresh token expired or invalidated: purge session and redirect
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        window.location.href = '/auth/login';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+```
+
+### 4.4.5 Modular API Service Architecture
+Endpoints are categorized into domain-specific client modules:
+- `authApi`: `login()`, `register()`, `me()`, `updateProfile()`
+- `dealerApi`: `getProfile()`, `getProducts()`, `createProduct()`, `updateProduct()`, `getOrders()`, `getSales()`
+- `publicApi`: `getProducts()`, `getProduct()`, `getCategories()`, `getDealerPublicProfile()`
+- `customerApi`: `getCart()`, `addToCart()`, `updateCartItem()`, `createOrder()`, `getOrders()`
+- `adminApi`: `getUsers()`, `getDealers()`, `approveDealer()`, `getPendingProducts()`, `approveProduct()`, `rejectProduct()`, `getStats()`
+
+### 4.4.6 End-to-End Request-Response Sequence Trace (User Click to Database Commit)
+The following sequence diagram traces the complete execution lifecycle when a customer places an order:
+
+```
+[User Browser (Next.js 14)]              [Kestrel Web API (.NET 9)]           [Supabase PostgreSQL]
+           │                                          │                                 │
+1. Clicks "Place Order"                               │                                 │
+   Calls customerApi.createOrder()                     │                                 │
+           │                                          │                                 │
+2. Axios Request Interceptor                          │                                 │
+   Injects Authorization: Bearer <JWT>                │                                 │
+   Dispatches POST /api/orders ──────────────────────>│                                 │
+                                                      │                                 │
+                                              3. Middleware Pipeline:                   │
+                                                 - ExceptionHandlingMiddleware wraps ctx│
+                                                 - CORS checks origin: http://localhost:3000
+                                                 - JWT Handler validates signature & claims
+                                                 - Authorization verifies Role == "Customer"
+                                                      │                                 │
+                                              4. OrderController.CreateOrder()          │
+                                                 Delegates to OrderService.CreateAsync()│
+                                                      │                                 │
+                                              5. Business Logic:                        │
+                                                 - Queries Customer & Cart ────────────>│
+                                                 - Validates stock & approval status    │
+                                                 - Decrements stock in-memory           │
+                                                 - Freezes price in OrderItems          │
+                                                 - Appends new Order record             │
+                                                 - Clears CartItems                     │
+                                                      │                                 │
+                                              6. Unit of Work Commit:                   │
+                                                 _unitOfWork.SaveChangesAsync() ───────>│ (Atomic Transaction)
+                                                 Commit acknowledged <──────────────────│
+                                                      │                                 │
+                                              7. Returns 201 Created (OrderResponse)    │
+7. Receives JSON payload <────────────────────────────│                                 │
+   Updates UI state & redirects to /orders/{id}
+```
 
 ---
 
-## 4.5 Core Feature Workflows
+## 4.5 Critical Business Paths Analysis
 
-### 4.5.1 Dealer Product Approval Workflow (Core Project Feature)
-1. **Creation:** Dealer navigates to `/dealer/products/new`. Fills out product details, selects a category, sets price and inventory, and uploads images using `ImageUploadInput`.
-2. **Submission:** Product is submitted via `POST /api/dealers/products`. Backend sets `ApprovalStatus = ApprovalStatus.Pending`, `PublishedAt = null`, and assigns the calling dealer's ID.
-3. **Isolation:** The product is returned in `/dealer/products` (under the "Pending" tab), but is strictly excluded from public queries (`GET /api/products`).
-4. **Moderation Queue:** The platform Administrator visits `/admin/products`. The listing appears in the **Grouped-by-Dealer** pending queue.
-5. **Approval / Rejection:**
-   - **Approve:** Admin clicks "Approve". Backend executes `PUT /api/admin/products/{id}/approve`, updating `ApprovalStatus = 'Approved'` and `PublishedAt = DateTime.UtcNow`. The product is now live on the public storefront.
-   - **Reject:** Admin clicks "Reject" and inputs a feedback reason. Backend executes `PUT /api/admin/products/{id}/reject`. `ApprovalStatus` becomes `'Rejected'` and `RejectionReason` is persisted. The dealer can view the rejection reason, edit the listing, and resubmit.
+A **Critical Path** represents an essential execution sequence where failure would result in business disruption, security breaches, or data inconsistency. Four critical paths were designed, audited, and hardened in this system:
 
-### 4.5.2 Atomic Checkout & Order State Machine
-1. Customer adds items to cart (`POST /api/cart/items`).
-2. At `/checkout`, customer reviews items and submits delivery address (`POST /api/orders`).
-3. `OrderService.CreateAsync` executes an atomic transaction:
-   - Validates inventory stock for each product.
-   - Creates an `Order` with `Status = OrderStatus.Pending`.
-   - Creates individual `OrderItems` linking `ProductId`, `DealerId`, `Quantity`, and price snapshot.
-   - Decrements `Product.StockQuantity`.
-   - Clears customer's shopping cart.
-4. FSM Status Updates (`PUT /api/dealers/orders/{id}/status`):
-   - `Pending` -> `Confirmed` (Dealer confirms inventory)
-   - `Confirmed` -> `Processing` (Dealer packages goods)
-   - `Processing` -> `Shipped` (Dispatched with tracking)
-   - `Shipped` -> `Delivered` (Customer received goods)
-   - Invalid status leaps (e.g. `Pending` directly to `Delivered`) are rejected by the FSM validator.
+### 4.5.1 Critical Path 1: Authentication & Token Lifecycle
+1. **Registration:** Dual-purpose registration dispatches account creation to `customers` or `dealers` tables after hashing passwords with BCrypt.
+2. **Login & Credential Verification:** The user submits credentials to `POST /api/auth/login`. `AuthService` verifies identity against `admins`, `dealers`, or `customers` tables.
+3. **Token Issuance:** Generates a stateless JWT access token (60-minute expiry) containing `NameIdentifier`, `Email`, and `Role` claims, accompanied by a cryptographically secure refresh token stored in the database.
+4. **Session Maintenance:** The Axios response interceptor catches 401 status codes and automatically invokes `POST /api/auth/refresh` without user friction.
+5. **Revocation:** Logout purges client tokens from `localStorage` and invalidates refresh tokens on the server.
+
+### 4.5.2 Critical Path 2: Atomic Checkout & Order Stock Transaction
+The checkout pipeline is guarded against race conditions, price manipulation, and stock overselling:
+1. **Customer Identity Binding:** The authenticated customer GUID is extracted directly from the verified JWT claim (`ClaimTypes.NameIdentifier`), preventing spoofed user IDs.
+2. **Cart & Item Recovery:** Cart items are fetched via `_unitOfWork.Carts.GetQueryable().Include(c => c.Items)`.
+3. **Inventory & Approval Validation:** For each item in the cart:
+   - Verifies product exists and has `ApprovalStatus == ApprovalStatus.Approved`.
+   - Checks stock: `if (product.StockQuantity < cartItem.Quantity) throw new InvalidOperationException(...)`.
+   - Decrements inventory: `product.StockQuantity -= cartItem.Quantity`.
+   - **Snapshot Pricing:** Assigns `UnitPriceAtPurchase = product.Price` on the `OrderItem`. This freezes the transaction price, ensuring historical invoice accuracy even if the merchant later updates catalog prices.
+4. **Atomic Commit via Unit of Work:** The order creation, stock deduction, and cart clearing are committed within a single database transaction via `await _unitOfWork.SaveChangesAsync()`. If any step fails, EF Core rolls back the entire operation, preserving database integrity (ACID compliance).
+
+### 4.5.3 Critical Path 3: Multi-tenant Dealer Product Lifecycle & Admin Approval Workflow
+Guarantees marketplace catalog quality by preventing unverified product listings from appearing on public storefronts:
+1. **Product Drafting:** The dealer fills out the product creation form (`POST /api/dealers/products`).
+2. **Quarantine State:** The backend automatically sets `ApprovalStatus = ApprovalStatus.Pending` and `PublishedAt = null`.
+3. **Public Catalog Exclusion:** Public endpoints (`GET /api/products`) strictly filter by `ApprovalStatus == ApprovalStatus.Approved`. The unapproved product is completely invisible to customers and search engines.
+4. **Admin Moderation Queue:** Platform administrators review pending submissions at `/admin/products/pending`.
+5. **Decision Branching:**
+   - **Approval:** Admin issues `PUT /api/admin/products/{id}/approve`. Status transitions to `Approved`, `PublishedAt` is stamped with the current timestamp, and the product goes live immediately.
+   - **Rejection:** Admin issues `PUT /api/admin/products/{id}/reject` with a mandatory explanation note. Status transitions to `Rejected`. The dealer receives structured feedback in their vendor dashboard and can modify and resubmit the item.
+
+### 4.5.4 Critical Path 4: Zero-Trust Multi-Tenant Isolation & Role Boundaries
+In a multi-vendor marketplace, cross-tenant data leakage is a critical vulnerability. Our system enforces zero-trust data boundaries:
+1. **Tenant Filtering:** Dealer queries (products, orders, revenue) always filter by the calling dealer's ID extracted from the cryptographically verified JWT token:
+   ```csharp
+   var userId = GetUserId(); // From JWT Claim
+   var products = await _productService.GetDealerProductsAsync(userId, filter);
+   ```
+2. **Cross-Tenant Mutation Defense:** When a dealer attempts to modify or delete a product or order status, the service verifies that the resource's `DealerId` strictly equals the authenticated `userId`. Any mismatch immediately throws an `UnauthorizedAccessException`, which is mapped to a `401 Unauthorized` response by the global exception middleware.
 
 ---
 
@@ -943,36 +1318,233 @@ CREATE TABLE order_items (
 #!/bin/bash
 echo "Starting Multi-Vendor E-Commerce Platform..."
 
-# 1. Start ASP.NET Core Web API
-cd backend/src/Ecommerce.API
-dotnet run --launch-profile http &
-BACKEND_PID=$!
-
-# 2. Start Next.js Frontend
-cd ../../../frontend
-npm run dev &
-FRONTEND_PID=$!
-
-echo "Backend running on http://localhost:5001"
-echo "Frontend running on http://localhost:3000"
-
-wait $BACKEND_PID $FRONTEND_PID
 ```
 
-### Backend Database Connection String (`appsettings.json`)
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Host=aws-0-ap-south-1.pooler.supabase.com;Port=6543;Database=postgres;Username=postgres.pqkgfmbnvvrsntoqhhoo;Password=L8hgSMS$zD-6.2w;SSL Mode=Require;Trust Server Certificate=true"
-  },
-  "JwtSettings": {
-    "Secret": "SUPER_SECRET_KEY_MUST_BE_LONG_ENOUGH_1234567890",
-    "Issuer": "ECommerceAPI",
-    "Audience": "ECommerceApp",
-    "ExpiryMinutes": 60
-  }
-}
+---
+
+## Appendix E: Academic Defense & Teacher Viva Examination Guide (20+ Questions & Answers)
+
+This section serves as a technical viva and academic defense guide, addressing key theoretical, architectural, and implementation questions commonly posed by university evaluators and project examination committees.
+
+---
+
+### Q1: Why did you choose ASP.NET Core (.NET 9.0) over Node.js (Express) or Python (Django/FastAPI)?
+**Model Answer:**
+1. **Asynchronous Throughput & Kestrel Performance:** ASP.NET Core consistently ranks among the top performers in TechEmpower benchmarks. Kestrel utilizes non-blocking, asynchronous socket I/O, allowing our marketplace to handle high concurrent user traffic with minimal CPU and memory overhead.
+2. **Compile-Time Type Safety (C# 13):** Unlike dynamically typed Node.js/JavaScript, C#'s strong type system eliminates an entire category of runtime type mismatches, null dereferences, and payload corruption during financial calculations.
+3. **Built-In Enterprise Architectural Primitives:** ASP.NET Core provides enterprise-grade primitives out of the box—native Dependency Injection (IoC), cryptographic data protection, built-in JWT authentication handlers, and middleware pipelines—without requiring brittle third-party packages.
+
+---
+
+### Q2: How is Clean Architecture implemented in your solution? Why not use standard 3-Tier architecture?
+**Model Answer:**
+In traditional 3-tier architecture, the Business Logic Layer often directly depends on the Database Layer. In our **Clean Architecture** implementation (`backend/src`):
+- The **Domain Layer (`ECommerce.Domain`)** is at the absolute center. It has **zero dependencies** on external libraries, frameworks, or databases.
+- The **Application Layer (`ECommerce.Application`)** depends only on Domain. It defines use cases, DTOs, and interface abstractions (`IUnitOfWork`, `IOrderService`).
+- The **Infrastructure Layer (`ECommerce.Infrastructure`)** and **API Layer (`ECommerce.API`)** reside at the outer perimeter, implementing persistence and HTTP concerns.
+- **Key Advantage:** Business rules are immune to external technology changes. If we migrate from PostgreSQL to SQL Server or from REST to gRPC, the Domain and Application business logic remain 100% untouched.
+
+---
+
+### Q3: What is Dependency Injection (DI)? Which service lifetimes did you use and why?
+**Model Answer:**
+Dependency Injection is an Inversion of Control (IoC) pattern where dependencies are supplied to a class constructor rather than being instantiated internally using `new`. 
+In ASP.NET Core, services have three lifetimes:
+- `Transient`: Instantiated on every request.
+- `Singleton`: Single instance for the application's entire lifetime.
+- `Scoped`: Instantiated once per incoming HTTP request and disposed of when the request terminates.
+- **Our Project Decision:** We registered all database repositories, `IUnitOfWork`, and business services as **`Scoped`** (`builder.Services.AddScoped<IOrderService, OrderService>()`). This guarantees that all services invoked within a single HTTP request share the exact same `AppDbContext` transaction boundary, preventing concurrency conflicts while freeing memory promptly upon request completion.
+
+---
+
+### Q4: How does the MVC pattern apply to your Web API? Where is the "View"?
+**Model Answer:**
+Our backend operates as a **Headless RESTful Web API**:
+- **Model:** Domain Entities (`Product`, `Order`) and Data Transfer Objects (`LoginRequest`, `OrderRequest`) representing business data and validation schemas.
+- **Controller:** Classes inheriting from `ControllerBase` (`ProductsController`, `OrderController`) that receive HTTP verbs, bind incoming parameters, invoke application services, and return status codes.
+- **View:** The "View" is not an HTML/Razor file rendered by the server; it is **structured JSON**. Our Next.js 14 frontend acts as the Presentation View layer, consuming JSON payloads and rendering interactive React components in the browser.
+
+---
+
+### Q5: What is Attribute Routing? How does it differ from Conventional Routing?
+**Model Answer:**
+- **Conventional Routing:** Uses centralized route templates in `Program.cs` (e.g., `{controller=Home}/{action=Index}/{id?}`), which is brittle for complex APIs.
+- **Attribute Routing:** Routes are declared directly above controllers and actions using C# attributes (e.g., `[Route("api/[controller]")]`, `[HttpGet("{id}")]`).
+- **Advantages in Our Project:** Enables explicit, REST-compliant URL hierarchies (e.g., `/api/dealers/orders/{id}/status`), eliminates routing collisions, and supports automatic OpenAPI/Swagger schema discovery.
+
+---
+
+### Q6: How does Model Binding extract data from Route Parameters, Query Strings, and Request Bodies?
+**Model Answer:**
+ASP.NET Core's model binder inspects HTTP requests and automatically maps data to C# types:
+1. **Route Parameters:** Extracted from URL segments: `[HttpGet("{id}")] public async Task<IActionResult> GetProduct(Guid id)`
+2. **Query Strings:** Extracted from URL parameters using `[FromQuery]`: `[HttpGet] public async Task<IActionResult> GetProducts([FromQuery] ProductFilter filter)` (e.g., `?search=shoes&page=1&pageSize=10`)
+3. **Request Bodies:** Deserialized from incoming JSON payloads using `[FromBody]`: `[HttpPost("login")] public async Task<IActionResult> Login([FromBody] LoginRequest request)`
+
+---
+
+### Q7: What is Middleware? In what exact order does your HTTP pipeline execute?
+**Model Answer:**
+Middleware components are modular delegates assembled into an application pipeline to handle HTTP requests and responses. In `Program.cs`, order is critical:
+1. `ExceptionHandlingMiddleware` (Catches all downstream exceptions)
+2. `Swagger / SwaggerUI` (Interactive documentation)
+3. `HttpsRedirection` (Forces HTTPS encryption)
+4. `UseCors("AllowFrontend")` (Whitelists Next.js port 3000)
+5. `UseAuthentication` (Validates JWT Bearer token signature and expiry)
+6. `UseAuthorization` (Enforces role-based permissions: Admin/Dealer/Customer)
+7. `MapControllers` (Dispatches request to controller action)
+
+---
+
+### Q8: Why did you implement a Centralized Global Exception Middleware instead of try-catch blocks in every controller?
+**Model Answer:**
+Writing `try-catch` blocks in every controller action leads to code duplication, boilerplate clutter, and the risk that an unhandled exception will leak internal stack traces to clients.
+- Our `ExceptionHandlingMiddleware` wraps `await _next(context)` in a single `try-catch`.
+- It maps domain exceptions to standard HTTP status codes:
+  - `KeyNotFoundException` -> **404 Not Found**
+  - `UnauthorizedAccessException` -> **401 Unauthorized**
+  - `InvalidOperationException` / `ArgumentException` -> **400 Bad Request**
+  - Unhandled `Exception` -> **500 Internal Server Error** (logged securely via `ILogger`).
+- Clients receive a clean, uniform JSON response: `{ "message": "...", "errors": {} }`.
+
+---
+
+### Q9: How does JWT Authentication work? What claims are encoded in the token?
+**Model Answer:**
+1. Upon successful credential verification, `JwtTokenGenerator` constructs a signed JWT using HMAC-SHA256 and a 256-bit secret key.
+2. The payload contains standard claims:
+   - `ClaimTypes.NameIdentifier`: The user's unique GUID.
+   - `ClaimTypes.Email`: The user's verified email address.
+   - `ClaimTypes.Role`: The user's authorization role (`Admin`, `Dealer`, or `Customer`).
+   - `exp`: Unix timestamp indicating token expiration (60 minutes).
+3. Because the token is digitally signed, the backend verifies client identity and role membership statelessly without performing a database query on every API call.
+
+---
+
+### Q10: How do you enforce Role-Based Access Control (RBAC)?
+**Model Answer:**
+We use ASP.NET Core's declarative authorization attributes:
+- `[Authorize]`: Requires any valid authenticated token.
+- `[Authorize(Roles = "Customer")]`: Restricts cart mutations and checkout to buyers.
+- `[Authorize(Roles = "Dealer")]`: Restricts product creation and shop settings to merchants.
+- `[Authorize(Roles = "Admin")]`: Restricts dealer approvals, category deletions, and product moderation to platform administrators.
+- If an authenticated user attempts to access an endpoint outside their role, ASP.NET Core returns **403 Forbidden**.
+
+---
+
+### Q11: What is CORS and how did you configure it for Next.js?
+**Model Answer:**
+CORS (Cross-Origin Resource Sharing) is a browser security mechanism that restricts scripts on one origin (e.g., `http://localhost:3000`) from making AJAX calls to another origin (e.g., `http://localhost:5001`).
+In `Program.cs`, we registered the `AllowFrontend` policy:
+```csharp
+policy.WithOrigins("http://localhost:3000")
+      .AllowAnyMethod()
+      .AllowAnyHeader()
+      .AllowCredentials();
 ```
+This permits Next.js to dispatch GET, POST, PUT, and DELETE requests containing JWT Bearer authorization headers.
+
+---
+
+### Q12: How does Next.js connect to the .NET backend?
+**Model Answer:**
+All network communication is handled via a centralized **Axios** client in `frontend/services/api.ts`. The client reads `process.env.NEXT_PUBLIC_API_URL` (pointing to `http://localhost:5001/api`), sets standardized timeout thresholds (30s), and exports modular API modules (`authApi`, `dealerApi`, `customerApi`, `adminApi`).
+
+---
+
+### Q13: What are Axios Interceptors and why are they used?
+**Model Answer:**
+Axios Interceptors intercept HTTP requests before they are sent and HTTP responses before they are processed:
+- **Request Interceptor:** Automatically retrieves `accessToken` from browser `localStorage` and appends `Authorization: Bearer <token>` to outgoing requests.
+- **Response Interceptor:** Intercepts incoming responses. If a `401 Unauthorized` status code is detected, it triggers the silent token refresh workflow.
+
+---
+
+### Q14: How does the Silent Token Refresh mechanism work?
+**Model Answer:**
+When an access token expires:
+1. The backend returns a `401 Unauthorized` response.
+2. The Axios response interceptor catches the 401 and checks if `originalRequest._retry` is unset.
+3. It sets `_retry = true` to prevent infinite loops.
+4. It reads the persistent `refreshToken` from `localStorage` and dispatches `POST /api/auth/refresh`.
+5. The backend validates the refresh token and returns a fresh access token.
+6. The interceptor stores the new token, updates the original request's `Authorization` header, and retries the failed request.
+7. The user experiences zero interruption or unexpected redirects.
+
+---
+
+### Q15: How does the checkout transaction prevent inventory overselling and race conditions?
+**Model Answer:**
+In `OrderService.CreateAsync`:
+1. The service iterates through the customer's cart items and queries the database for current product stock.
+2. It evaluates: `if (product.StockQuantity < cartItem.Quantity) throw new InvalidOperationException(...)`.
+3. If stock is sufficient, it decrements the inventory (`product.StockQuantity -= cartItem.Quantity`).
+4. It records a price snapshot: `UnitPriceAtPurchase = product.Price`.
+5. Finally, `await _unitOfWork.SaveChangesAsync()` executes an atomic transaction. If another concurrent customer purchased the remaining inventory, EF Core's concurrency check aborts the commit and rolls back the order creation.
+
+---
+
+### Q16: What is the Unit of Work pattern? Why is it useful with EF Core?
+**Model Answer:**
+The Unit of Work pattern maintains a list of database transactions and coordinates changes across multiple repositories. 
+- While each repository handles entity-level queries (`Orders.AddAsync`, `Products.UpdateAsync`), `_unitOfWork.SaveChangesAsync()` ensures that all pending inserts, updates, and deletes across all repositories are committed together in a single database transaction.
+- If any operation fails, the entire transaction is rolled back, guaranteeing ACID compliance.
+
+---
+
+### Q17: What connection resilience strategies are configured for Supabase PostgreSQL?
+**Model Answer:**
+Cloud databases can experience transient network blips. In `Program.cs`, we configured EF Core's Npgsql provider with transient retry policies:
+```csharp
+npgsql.EnableRetryOnFailure(
+    maxRetryCount: 3, 
+    maxRetryDelay: TimeSpan.FromSeconds(10), 
+    errorCodesToAdd: null);
+```
+If a query encounters a temporary connection loss, EF Core automatically retries the operation up to 3 times before throwing an exception. We also extended `CommandTimeout` to 120 seconds.
+
+---
+
+### Q18: Why is the Dealer Product Approval Workflow critical to multi-vendor platforms?
+**Model Answer:**
+In open, unmoderated marketplaces, bad actors can flood the platform with counterfeit, deceptive, or prohibited items, damaging buyer trust.
+- In our platform, vendor-created products are assigned `ApprovalStatus.Pending` and `PublishedAt = null`.
+- Public storefront queries (`GET /api/products`) enforce `ApprovalStatus == ApprovalStatus.Approved`.
+- Platform administrators review items in a dedicated moderation queue (`/admin/products/pending`). Products go live only after formal administrator approval.
+
+---
+
+### Q19: Can a dealer access or manipulate another dealer's orders or products?
+**Model Answer:**
+No. We enforce **Zero-Trust Multi-Tenant Isolation**:
+- Every dealer action extracts the authenticated dealer's GUID directly from the cryptographically verified JWT token (`ClaimTypes.NameIdentifier`).
+- Database queries enforce tenant filtering (`where p.DealerId == currentDealerId`).
+- If a vendor attempts to mutate a resource owned by another dealer (e.g., `PUT /api/dealers/orders/{id}/status`), the service layer verifies ownership and throws an `UnauthorizedAccessException`, which is intercepted and rejected with a `401/403` status.
+
+---
+
+### Q20: What is the most challenging engineering aspect of this project?
+**Model Answer:**
+The most challenging aspect was orchestrating **seamless full-stack state coordination across role boundaries and network resilience**:
+1. Coordinating multi-tenant data isolation in PostgreSQL while allowing administrators centralized oversight.
+2. Implementing the silent token refresh pipeline in Axios so that token expiration never disrupts an in-progress checkout or vendor form submission.
+3. Guaranteeing atomic order placement with inventory decrements, cart clearance, and immutable price snapshots within a single ACID transaction.
+
+---
+
+## Appendix F: Dedicated `.NET framework` Architectural Documentation Repository
+
+For extended deep-dive architectural analyses, code walkthroughs, and specialized implementation details, consult the dedicated `.NET framework` documentation repository located in the workspace:
+
+| Document Path | Title & Focus Area |
+| :--- | :--- |
+| [`report/.NET framework/00-INDEX-AND-EXECUTIVE-SUMMARY.md`](file:///Users/md.prantoislam/Desktop/C-Project/report/.NET%20framework/00-INDEX-AND-EXECUTIVE-SUMMARY.md) | Architectural index, executive summary, and tech stack specification. |
+| [`report/.NET framework/01-DOTNET-FRAMEWORK-AND-CLEAN-ARCHITECTURE.md`](file:///Users/md.prantoislam/Desktop/C-Project/report/.NET%20framework/01-DOTNET-FRAMEWORK-AND-CLEAN-ARCHITECTURE.md) | .NET 9.0 runtime, Clean Architecture layers, DI lifetimes, Kestrel, and EF Core 9. |
+| [`report/.NET framework/02-MVC-AND-ROUTING-MANAGEMENT.md`](file:///Users/md.prantoislam/Desktop/C-Project/report/.NET%20framework/02-MVC-AND-ROUTING-MANAGEMENT.md) | MVC in Web API, Attribute Routing, parameter/body binding, and 32+ endpoint route map. |
+| [`report/.NET framework/03-EXCEPTION-AND-REQUEST-HANDLING.md`](file:///Users/md.prantoislam/Desktop/C-Project/report/.NET%20framework/03-EXCEPTION-AND-REQUEST-HANDLING.md) | Middleware pipeline, Global Exception Middleware, JWT auth, RBAC, and CORS. |
+| [`report/.NET framework/04-FRONTEND-BACKEND-CONNECTION-AND-API-CALLS.md`](file:///Users/md.prantoislam/Desktop/C-Project/report/.NET%20framework/04-FRONTEND-BACKEND-CONNECTION-AND-API-CALLS.md) | Next.js 14 connection, Axios interceptors, silent token refresh, and data sequence diagrams. |
+| [`report/.NET framework/05-CRITICAL-PATHS-ANALYSIS.md`](file:///Users/md.prantoislam/Desktop/C-Project/report/.NET%20framework/05-CRITICAL-PATHS-ANALYSIS.md) | In-depth analysis of the 4 critical business paths (Auth, Orders, Approval, Isolation). |
+| [`report/.NET framework/06-TEACHER-VIVA-QUESTIONS-AND-ANSWERS.md`](file:///Users/md.prantoislam/Desktop/C-Project/report/.NET%20framework/06-TEACHER-VIVA-QUESTIONS-AND-ANSWERS.md) | 20+ Teacher Viva Questions and Model Answers formatted in Bengali for oral defense. |
 
 ---
 *End of Report.*
