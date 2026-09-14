@@ -1,107 +1,94 @@
-SEED DATA SUMMARY
-==================
+MASTER SEED DATA SUMMARY & STRATEGY
+=====================================
 
-Total Records: ~800+ across 10 tables
+The database is seeded using the master migration script: SQL/master.sql
+Host: Supabase PostgreSQL (AWS ap-south-1)
+Seed Version: 3.0 (Clean Master Demo Configuration)
+
+Design Philosophy of the Master Dataset:
+Rather than generating confusing, fragmented records across multiple mock vendors, the master configuration assigns 550 realistic products and all order cycles to one primary verified dealer ('Alex Tech') and one primary authenticated customer ('John Buyer'). This provides a reliable, reproducible showcase environment for live demonstrations, automated testing, and evaluation.
 
 ===============================================================================
-TABLE-BY-TABLE BREAKDOWN
+RECORD COUNTS & CREDENTIALS
 ===============================================================================
 
-1. ADMINS
-   Count: 1
-   Data:
-   - admin@ecommerce.com / Admin@123 (System Admin)
+1. ADMIN ACCOUNTS
+-----------------
+Total: 1 Record
+- Email: admin@ecommerce.com
+- Password: Admin@123 (BCrypt hash: $2a$11$S2ZoaWf3hknWcI/Og0uzg.vHxucE3fJcbHU91qFAH/p.tYRX4heWy)
+- Full Name: System Admin
+- Phone: +1000000000
+- Role: Admin
+- Status: IsActive = TRUE
+- ID: b1000000-0000-0000-0000-000000000001
 
-2. DEALERS
-   Count: 10 (8 approved, 2 pending approval)
-   Password for all: Dealer@123
+2. DEALER ACCOUNTS
+------------------
+Total: 1 Primary Verified Dealer (+ supports dynamic registration via /auth/register)
+- Email: dealer1@test.com
+- Password: Dealer@123 (BCrypt hash: $2a$11$Lx9F4rmuo3l6ujspZS4w4OLWOjfwrsgpzVB2vcXvrGwAYdqAO795q)
+- Full Name: Alex Tech
+- Shop Name: AlexTechs Shop
+- Category: Electronics
+- Phone: +1000001001
+- Address: 456 Commerce Ave, Business District
+- Status: IsApproved = TRUE, IsActive = TRUE
+- ID: c2000000-0000-0000-0000-000000000001
 
-   | #  | Email               | Shop Name          | Category      | Approved |
-   |----|---------------------|--------------------|---------------|----------|
-   | 1  | dealer1@test.com   | AlexTechs Shop     | Electronics   | Yes      |
-   | 2  | dealer2@test.com   | SarahFashions Shop | Clothing      | Yes      |
-   | 3  | dealer3@test.com   | MikeHomes Shop     | Home & Garden | Yes      |
-   | 4  | dealer4@test.com   | EmmaBookss Shop    | Books         | Yes      |
-   | 5  | dealer5@test.com   | DavidSportss Shop  | Sports        | Yes      |
-   | 6  | dealer6@test.com   | LisaToyss Shop     | Toys          | Yes      |
-   | 7  | dealer7@test.com   | JamesAutos Shop    | Automotive    | Yes      |
-   | 8  | dealer8@test.com   | OliviaHealths Shop | Health        | Yes      |
-   | 9  | dealer9@test.com   | NoahGadgetss Shop  | Electronics   | No       |
-   | 10 | dealer10@test.com  | AvaStyles Shop     | Clothing      | No       |
-
-3. CUSTOMERS
-   Count: 10
-   Password for all: Customer@123
-
-   | #  | Email                |
-   |----|----------------------|
-   | 1  | customer1@test.com   |
-   | 2  | customer2@test.com   |
-   | 3  | customer3@test.com   |
-   | 4  | customer4@test.com   |
-   | 5  | customer5@test.com   |
-   | 6  | customer6@test.com   |
-   | 7  | customer7@test.com   |
-   | 8  | customer8@test.com   |
-   | 9  | customer9@test.com   |
-   | 10 | customer10@test.com  |
+3. CUSTOMER ACCOUNTS
+--------------------
+Total: 1 Primary Active Customer (+ supports dynamic registration via /auth/register)
+- Email: customer1@test.com
+- Password: Customer@123 (BCrypt hash: $2a$11$IYBD96EyES3aYh5pEcMqkOAHFt.2boQuF4TnQrLgxB3hj7KI1K2te)
+- Full Name: John Buyer
+- Phone: +1000002001
+- Shipping Address: 123 Demo Street, Demo City, Country
+- Status: IsActive = TRUE
+- ID: c3000000-0000-0000-0000-000000000001
 
 4. CATEGORIES
-   Count: 8
+-------------
+Total: 8 Core Categories
+| # | Name           | Description                          | ID                                   |
+|---|----------------|--------------------------------------|--------------------------------------|
+| 1 | Electronics    | Electronic devices and accessories   | a1000000-0000-0000-0000-000000000001 |
+| 2 | Clothing       | Fashion and apparel                  | a1000000-0000-0000-0000-000000000002 |
+| 3 | Home & Garden  | Home improvement and garden supplies | a1000000-0000-0000-0000-000000000003 |
+| 4 | Books          | Books and educational materials      | a1000000-0000-0000-0000-000000000004 |
+| 5 | Sports         | Sports equipment and accessories     | a1000000-0000-0000-0000-000000000005 |
+| 6 | Toys           | Toys and games for all ages          | a1000000-0000-0000-0000-000000000006 |
+| 7 | Automotive     | Car parts and accessories            | a1000000-0000-0000-0000-000000000007 |
+| 8 | Health         | Health and wellness products         | a1000000-0000-0000-0000-000000000008 |
 
-   | #  | Name            | Description                              |
-   |----|-----------------|------------------------------------------|
-   | 1  | Electronics     | Electronic devices and accessories       |
-   | 2  | Clothing        | Fashion and apparel                      |
-   | 3  | Home & Garden   | Home improvement and garden supplies     |
-   | 4  | Books           | Books and educational materials          |
-   | 5  | Sports          | Sports equipment and accessories         |
-   | 6  | Toys            | Toys and games for all ages              |
-   | 7  | Automotive      | Car parts and accessories                |
-   | 8  | Health          | Health and wellness products             |
+5. PRODUCTS & IMAGES
+--------------------
+Total Products: 550
+Total Images: 550 (1:1 primary image per product with Picsum seed CDN)
+- Distribution:
+  - 500 Base Catalog Products: Spanning all 8 categories.
+    - Approval Statuses: ~60% Approved, ~20% Pending approval, ~20% Rejected.
+    - Prices: $5.00 to $500.00.
+    - SKUs: SKU-ALEX-001 through SKU-ALEX-500.
+  - 50 Extra Feature Products: Spanning fast-moving consumer items (chargers, lamps, audio).
+    - Statuses: 80% Approved, 20% Pending.
+    - SKUs: SKU-ALEX-EX-001 through SKU-ALEX-EX-050.
 
-5. PRODUCTS
-   Count: 550 (50 per dealer)
-   Status Distribution:
-   - Approved: ~340 products (visible on storefront)
-   - Pending: ~110 products (awaiting admin approval)
-   - Rejected: ~100 products (rejected by admin)
+6. SHOPPING CARTS & CART ITEMS
+------------------------------
+- Active Cart ID: d3000000-0000-0000-0000-000000000001 assigned to Customer 1.
+- Provides immediate cart readiness for testing item additions and checkout transitions.
 
-6. PRODUCT_IMAGES
-   Count: 550 (one per product)
-   Note: Using placeholder image URLs
-
-7. CARTS
-   Count: 10 (one per customer, created on first add-to-cart)
-   Note: Created dynamically when customer adds first item
-
-8. CART_ITEMS
-   Count: Variable (depends on customer activity)
-   Note: Created when customers add items to cart
-
-9. ORDERS
-   Count: 57
-   Note: Distributed across multiple customers
-
-10. ORDER_ITEMS
-    Count: ~170 (average 3 items per order)
-    Note: Each order has 1-5 items on average
-
-===============================================================================
-DATA DISTRIBUTION
-===============================================================================
-
-Products per Category:
-- Electronics: ~100 products (2 dealers × 50)
-- Clothing: ~100 products (2 dealers × 50)
-- Home & Garden: ~50 products (1 dealer × 50)
-- Books: ~50 products (1 dealer × 50)
-- Sports: ~50 products (1 dealer × 50)
-- Toys: ~50 products (1 dealer × 50)
-- Automotive: ~50 products (1 dealer × 50)
-- Health: ~50 products (1 dealer × 50)
-
-Order Distribution:
-- 57 total orders across 10 customers
-- Average order value varies by product prices
-- All orders have order_items (no empty orders)
+7. ORDERS & ORDER ITEMS
+-----------------------
+Total Orders: 6
+Total Order Items: ~12 to 18 line items
+Each order contains between 1 and 3 randomized approved products from Dealer 1.
+Lifecycle Status Coverage:
+- Order #1: Pending (Newly submitted by Customer 1)
+- Order #2: Confirmed (Acknowledged order)
+- Order #3: Processing (Dealer preparing inventory)
+- Order #4: Shipped (In-transit to customer)
+- Order #5: Delivered (Fulfilled transaction)
+- Order #6: Cancelled (Voided order example)
+Total Amounts: Dynamically calculated via SQL subtotal summation ("UnitPriceAtPurchase" * "Quantity").

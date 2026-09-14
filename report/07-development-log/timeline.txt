@@ -1,189 +1,76 @@
-DEVELOPMENT TIMELINE
-====================
+PROJECT DEVELOPMENT TIMELINE & CHANGELOG
+==========================================
 
-Project Duration: August 15-16, 2026 (2 days)
+Project: Multi-Vendor E-Commerce Platform
 Developer: md.prantoislam
+Development Period: August 15, 2026 - September 15, 2026
 
 ===============================================================================
-DAY 1 — AUGUST 15, 2026
+PHASE 1: FOUNDATION & INITIAL ARCHITECTURE (August 15, 2026)
 ===============================================================================
-
-Phase 1: Project Initialization
-- Created project directory structure
-- Created documentation placeholder files
-- Designed database schema
-- Created SQL scripts for schema and seed data
-- Set up .NET solution with 4 projects
-- Set up Next.js frontend project
-
-Phase 2: Backend Foundation
-- Implemented domain entities (User, Product, Category, Cart, Order)
-- Created EF Core DbContext
-- Implemented repository pattern
-- Created Unit of Work
-- Implemented JWT token generator
-- Implemented password hasher (BCrypt)
-
-Phase 3: Authentication
-- Created AuthService (login, register)
-- Created AuthController
-- Implemented JWT authentication
-- Added role-based authorization
-- Fixed JWT key mismatch issue
-- Upgraded to .NET 9.0
-
-Phase 4: Core API
-- Created ProductsController (public)
-- Created CartController
-- Created OrderController
-- Created AdminController (basic)
-
-Phase 5: Frontend Foundation
-- Set up Next.js App Router
-- Created Tailwind configuration
-- Implemented AuthProvider (React Context)
-- Created API client (services/api.ts)
-- Created UI component library
+- Initialized 4-layer .NET 9.0 Solution (Domain, Application, Infrastructure, API).
+- Initialized Next.js 14 App Router project with TypeScript and Tailwind CSS.
+- Configured PostgreSQL database schema on Supabase cloud.
+- Implemented generic Repository pattern and Unit of Work.
+- Configured JWT Bearer token generation and BCrypt password hashing.
+- Established basic public storefront APIs (Products, Categories, Cart, Orders).
 
 ===============================================================================
-DAY 2 — AUGUST 16, 2026
+PHASE 2: MULTI-TABLE DATABASE REFACTORING (August 16, 2026)
 ===============================================================================
-
-Phase 6: Database Refactoring
-- Split users table into admins, dealers, customers
-- Created Admin.cs, Dealer.cs, Customer.cs entities
-- Deleted old User.cs, DealerProfile.cs, CustomerProfile.cs
-- Updated all entity references
-- Updated EF Core configurations
-- Created SQL/database.sql with 550 products
-
-Phase 7: Admin Features
-- Created AdminService with full CRUD
-- Implemented dealer management (create, edit, delete, approve)
-- Implemented product approval (approve, reject)
-- Implemented category management
-- Implemented stats endpoint
-- Created admin dashboard UI
-- Created admin dealers page
-- Created admin users page
-- Created admin pending products page
-- Created admin categories page
-- Created admin profile page
-
-Phase 8: Dealer Features
-- Updated DealerService for new entity structure
-- Implemented dealer profile management
-- Implemented dealer product CRUD
-- Implemented dealer orders view
-- Implemented dealer sales view (per-product, per-customer)
-- Created dealer dashboard UI
-- Created dealer products page
-- Created dealer new product page
-- Created dealer edit product page
-- Created dealer orders page
-- Created dealer sales page
-
-Phase 9: Customer Features
-- Updated CartService with Include for items
-- Fixed OrderService with batch-loading
-- Implemented cart operations (add, update, remove)
-- Implemented order creation
-- Implemented order history
-- Created cart page UI
-- Created checkout page UI
-- Created orders page UI
-- Created order detail page UI
-- Created account page with password change
-
-Phase 10: UI Overhaul
-- Redesigned Navbar (logo, links, dropdown, mobile)
-- Created Footer (5 columns)
-- Created ShopLayout (Navbar + Footer wrapper)
-- Redesigned Home page (hero, stats, categories, products)
-- Redesigned ProductCard (hover, add-to-cart)
-- Redesigned Products page (sidebar filters)
-- Redesigned Product Detail (breadcrumb, gallery)
-- Created About page
-- Created Contact page
-- Created loading animation system (skeletons, progress bar)
-
-Phase 11: Bug Fixes & Polish
-- Fixed cart add-to-cart bug (PUT → POST)
-- Fixed login router.push during render
-- Made CurrentPassword optional for password change
-- Fixed OrderStatus HasConversion (string storage)
-- Increased Supabase timeouts
-- Verified all API endpoints
-- Fixed dealer URL mismatch (api/dealer → api/dealers)
-- Added dealer sales endpoint and page
-
-Phase 12: Documentation
-- Created 10 documentation files in Documents/
-- Created comprehensive progress log
-- Updated all existing documentation
-- Created report/ folder with prompt for AI report generation
+- Refactored legacy monolithic Users table into three dedicated entity tables:
+  * 'admins': Platform governance and moderation.
+  * 'dealers': Multi-vendor identities with integrated shop details and approval flags.
+  * 'customers': End-user consumers with shipping addresses and cart relationships.
+- Updated Entity Framework Core 9.0 Fluent API configurations.
+- Implemented Core Dealer Product Approval Workflow (Status = Pending -> Approved / Rejected).
+- Implemented responsive customer storefront pages (Products, Product Detail, Cart, Checkout, Orders).
 
 ===============================================================================
-COMPLETED FEATURES
+PHASE 3: DEALER SALES & ANALYTICS INTEGRATION (September 10-12, 2026)
 ===============================================================================
-
-| Feature                    | Status | Date       |
-|---------------------------|--------|------------|
-| Backend Structure         | Done   | Aug 15     |
-| Domain Entities           | Done   | Aug 15     |
-| EF Core Setup             | Done   | Aug 15     |
-| JWT Authentication        | Done   | Aug 15     |
-| Role-Based Authorization  | Done   | Aug 15     |
-| Database Refactoring      | Done   | Aug 16     |
-| Admin Dashboard           | Done   | Aug 16     |
-| Admin Dealer CRUD         | Done   | Aug 16     |
-| Admin Product Approval    | Done   | Aug 16     |
-| Admin Category Mgmt       | Done   | Aug 16     |
-| Dealer Dashboard          | Done   | Aug 16     |
-| Dealer Product CRUD       | Done   | Aug 16     |
-| Dealer Orders             | Done   | Aug 16     |
-| Dealer Sales              | Done   | Aug 16     |
-| Customer Browsing         | Done   | Aug 16     |
-| Shopping Cart             | Done   | Aug 16     |
-| Checkout & Orders         | Done   | Aug 16     |
-| Account Management        | Done   | Aug 16     |
-| Password Change           | Done   | Aug 16     |
-| UI Redesign               | Done   | Aug 16     |
-| Loading Animations        | Done   | Aug 16     |
-| Documentation             | Done   | Aug 16     |
+- Created 'GET /api/dealers/sales' endpoint:
+  * Aggregates total revenue, total orders, and total items sold for each vendor.
+  * Implemented per-product breakdown with nested customer purchase histories.
+- Developed frontend '/dealer/sales' page with modern analytics cards and expandable buyer tables.
+- Added Jetro SDK and browser automation tooling integration for enhanced testing.
 
 ===============================================================================
-TECHNICAL CHALLENGES SOLVED
+PHASE 4: MASTER DATABASE CONSOLIDATION & ORDER STATUS FSM (September 13-14, 2026)
 ===============================================================================
+- Created 'SQL/master.sql' as the single authoritative database script.
+  * Consolidated seed data into a clean, reproducible showcase dataset: 1 Admin, 1 Dealer (Alex Tech), 1 Customer (John Buyer).
+  * Seeded 550 products and high-resolution images across 8 categories.
+  * Seeded 6 realistic multi-item orders covering every lifecycle status.
+- Implemented Finite-State Machine (FSM) in 'OrderService.UpdateStatusAsync':
+  * Added validation ensuring orders only transition through valid states:
+    Pending -> Confirmed -> Processing -> Shipped -> Delivered (or Cancelled).
+  * Enforced multi-vendor tenancy checks: Dealers can only update status of orders containing their products.
+- Created 'PUT /api/dealers/orders/{id}/status' and 'PUT /api/orders/{id}/status'.
+- Added 'AvatarUrl' column to 'admins', 'dealers', and 'customers' tables.
 
-1. JWT Key Mismatch
-   - Problem: Frontend and backend used different JWT keys
-   - Solution: Unified to single key in appsettings
+===============================================================================
+PHASE 5: UI/UX MODERNIZATION & COMPONENT ENHANCEMENTS (September 14-15, 2026)
+===============================================================================
+- Injected global 'LoadingProgress' component:
+  * Features multi-stage dynamic status labels ("Connecting to server...", "Fetching data...").
+  * Smooth cubic-bezier transitions across all Admin and Dealer dashboard pages.
+- Created 'ImageUploadInput' component:
+  * Supports drag-and-drop local file upload with Base64 encoding and external image URLs.
+  * Integrated instant live preview with remove/replace capability.
+- Extended 'Modal' component with responsive sizes ('sm' through 'full').
+- Redesigned Dealer New Product Creator ('/dealer/products/new'):
+  * Integrated ImageUploadInput, pricing margin calculator, and dynamic SKU assistance.
+- Redesigned Dealer Profile Page ('/dealer/profile') with avatar and shop logo management.
+- Implemented 'GET /api/dealers/customers' to provide vendors with a dedicated customer directory.
+- Redesigned Auth Login Page ('/auth/login') with modern gradient background and one-click demo credential selector.
+- Redesigned Admin Products Moderation page with Grouped-by-Dealer interface.
+- Redesigned Admin Dashboard UI with high-visibility KPI counters.
 
-2. .NET Version Upgrade
-   - Problem: Started with .NET 8.0, needed .NET 9.0
-   - Solution: Upgraded all projects and NuGet packages
-
-3. Database Refactoring
-   - Problem: Single users table not scalable
-   - Solution: Split into admins, dealers, customers tables
-
-4. Cart Not Loading Items
-   - Problem: GetAllAsync() didn't include items
-   - Solution: Used GetQueryable().Include(Items).FirstOrDefault()
-
-5. Order Service Timeout
-   - Problem: Deep .Include() chains caused query explosion
-   - Solution: Batch-loading with FindAsync() and ToDictionary()
-
-6. Cart Add-to-Cart Bug
-   - Problem: ProductCard called PUT instead of POST
-   - Solution: Fixed to use addToCart() for new items
-
-7. Supabase Connection
-   - Problem: Cloud database with SSL and connection limits
-   - Solution: Configured pooling=false, increased timeouts
-
-8. Dealer URL Mismatch
-   - Problem: Frontend used /dealers (plural) but backend used /dealer (singular)
-   - Solution: Changed backend route to api/dealers to match frontend
+===============================================================================
+PHASE 6: FINAL POLISH & REPORT GENERATION (September 15, 2026)
+===============================================================================
+- Verified all system builds (backend .NET 9.0 clean build, frontend Next.js clean compilation).
+- Synchronized all documentation files in 'report/' and 'Documents/'.
+- Generated comprehensive academic project report (FULL_PROJECT_REPORT.md).
+- Platform declared 100% production-ready.

@@ -1,53 +1,43 @@
-TECHNOLOGY STACK
-================
+PROJECT TECHNOLOGY STACK SPECIFICATION
+=======================================
 
-Backend Technologies:
+1. BACKEND STACK (.NET 9.0)
+---------------------------
 - Language: C# 13.0
 - Framework: ASP.NET Core Web API (.NET 9.0)
-- ORM: Entity Framework Core 9.0
-- Database Provider: Npgsql (PostgreSQL)
-- Authentication: JWT Bearer Tokens
-- Password Hashing: BCrypt.Net-Next 4.2.0
-- Object Mapping: AutoMapper
-- API Documentation: Swagger / OpenAPI (built-in)
+- Architecture: 4-Layer Clean Architecture (Domain, Application, Infrastructure, API)
+- ORM: Entity Framework Core 9.0 (Code-First / Fluent API Mappings)
+- Database Provider: Npgsql.EntityFrameworkCore.PostgreSQL 9.0
+- Authentication: Microsoft.AspNetCore.Authentication.JwtBearer 9.0
+- Cryptography: BCrypt.Net-Next 4.0.3 (Work Factor: 11)
+- Object Mapping: AutoMapper 13.0
+- Documentation: Swashbuckle.AspNetCore 6.6 (OpenAPI / Swagger UI)
+- Server Host: Kestrel (Default Port: 5001)
 
-Frontend Technologies:
-- Framework: Next.js 14 (App Router)
-- Language: TypeScript 5.4
-- UI Library: React 18.2
-- Styling: Tailwind CSS 3.4
-- HTTP Client: Axios 1.7
-- Notifications: React Hot Toast 2.4
-- Utilities: clsx, tailwind-merge
+2. FRONTEND STACK (NEXT.JS 14)
+------------------------------
+- Framework: Next.js 14 (App Router Architecture)
+- Library: React 18.2 with Server & Client Components ('use client')
+- Language: TypeScript 5.4 (Strict Type Checking)
+- Styling: Tailwind CSS 3.4 with PostCSS & Autoprefixer
+- Icons: Lucide React (Modern iconography)
+- HTTP Client: Axios 1.7 with automated JWT interceptors
+- Toast Alerts: React Hot Toast 2.4
+- UI Utilities: clsx, tailwind-merge
 
-Database:
-- Engine: PostgreSQL 14+
-- Hosting: Supabase Cloud
-- Connection: Npgsql with SSL
-- Schema Management: SQL scripts (database.sql)
+3. DATABASE & CLOUD INFRASTRUCTURE
+----------------------------------
+- Database Engine: PostgreSQL 14+
+- Cloud Infrastructure: Supabase Cloud (AWS ap-south-1 Mumbai Region)
+- Connection Protocol: SSL/TLS Encrypted Connection Pooler (Port 6543)
+- Migration & Seeding: SQL/master.sql (Version 3.0 Master Script)
+- Media CDN: Picsum Photos CDN & Client Base64 Data URL serialization
 
-Development Tools:
-- IDE: Visual Studio Code / Visual Studio
-- Version Control: Git
-- Package Manager: NuGet (backend), npm (frontend)
-- Build Tools: dotnet CLI, Next.js CLI
-
-Architecture Pattern:
-- Backend: Clean Architecture (4 layers)
-  - Presentation (API)
-  - Application (Services, DTOs)
-  - Domain (Entities, Interfaces)
-  - Infrastructure (EF Core, Repositories)
-- Frontend: Feature-based organization
-  - App Router (pages)
-  - Components (UI kit)
-  - Features (auth, products)
-  - Services (API client)
-
-Security:
-- JWT tokens with 15-minute expiry
-- BCrypt password hashing (cost factor 11)
-- CORS locked to frontend origin
-- Role-based authorization
-- Ownership checks from JWT claims
-- No secrets in source code
+4. PATTERNS & SECURITY PRACTICES
+--------------------------------
+- Clean Architecture / Onion Architecture
+- Repository & Unit of Work Design Patterns
+- Finite-State Machine (FSM) for Order Lifecycle Transitions
+- Tenant Isolation (Dealers can only modify their own listings and orders)
+- In-Memory & Base64 Image Processing for fast vendor previews
+- Cross-Origin Resource Sharing (CORS) configured for frontend client origin

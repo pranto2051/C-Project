@@ -1,134 +1,67 @@
-AUTHENTICATION SYSTEM
-=====================
+AUTHENTICATION & SECURITY SYSTEM SPECIFICATION
+================================================
 
-Implementation: JWT Bearer + BCrypt
+Framework: ASP.NET Core JWT Bearer Authentication (.NET 9.0)
+Password Hashing: BCrypt.Net-Next (Cost Factor 11)
+Identity Paradigm: Multi-Table Role Segregation (Admins, Dealers, Customers)
 
 ===============================================================================
-JWT CONFIGURATION
+1. JWT CONFIGURATION & CLAIMS
 ===============================================================================
 
-Secret Key: SUPER_SECRET_KEY_MUST_BE_LONG_ENOUGH_1234567890
 Issuer: ECommerceAPI
 Audience: ECommerceApp
-Access Token Expiry: 15 minutes
-Refresh Token Expiry: 7 days (not persisted)
+Token Secret: SUPER_SECRET_KEY_MUST_BE_LONG_ENOUGH_1234567890
+Signature Algorithm: HMAC-SHA256
+Access Token Expiry: 60 minutes (sliding session)
 
-Token Contents (Claims):
-- NameIdentifier: User ID (GUID)
-- Email: User email
-- Name: User full name
-- Role: "Admin" / "Dealer" / "Customer"
-
-===============================================================================
-AUTHENTICATION FLOW
-===============================================================================
-
-1. Login Flow:
-   Client → POST /api/auth/login { email, password }
-   Server → Validate credentials (BCrypt hash comparison)
-   Server → Generate JWT with user claims
-   Server → Return { token, refreshToken, userData }
-   Client → Store token in localStorage
-
-2. Authenticated Request:
-   Client → Add header: Authorization: Bearer {token}
-   Server → Validate JWT signature and expiry
-   Server → Extract claims (userId, role)
-   Server → Check [Authorize] attribute
-
-3. Token Refresh:
-   Client → On 401 response, try refresh
-   Client → POST /api/auth/refresh { refreshToken }
-   Server → Currently returns 401 (not implemented)
-   Client → Redirect to login
+Claims Injected into Token:
+- ClaimTypes.NameIdentifier: Guid (Unique user ID)
+- ClaimTypes.Email: String (User email)
+- ClaimTypes.Name: String (Full display name)
+- ClaimTypes.Role: String ("Admin" | "Dealer" | "Customer")
 
 ===============================================================================
-PASSWORD HASHING
+2. MULTI-TABLE AUTHENTICATION RESOLUTION
 ===============================================================================
 
-Library: BCrypt.Net-Next 4.2.0
-Cost Factor: 11
+Because user identities are divided into dedicated database tables:
+1. When a login request (POST /api/auth/login) arrives:
+   - Step 1: AuthService checks 'admins' table by email. If found, verifies BCrypt hash and issues JWT with Role = "Admin".
+   - Step 2: If not an admin, checks 'dealers' table. If found, verifies BCrypt hash, checks IsActive and IsApproved, and issues JWT with Role = "Dealer", injecting shopName and avatarUrl.
+   - Step 3: If not a dealer, checks 'customers' table. If found, verifies BCrypt hash, checks IsActive, and issues JWT with Role = "Customer".
+   - Step 4: If not found in any table or if hash comparison fails, returns 401 Unauthorized ("Invalid credentials").
 
-Example Hash:
-$2a$11$S2ZoaWf3hknWcI/Og0uzg.vHxucE3fJcbHU91qFAH/p.tYRX4heWy
-
-Verification:
-_passwordHasher.Verify(plainText, hashedPassword) → bool
-
-Hashing:
-_passwordHasher.Hash(plainText) → string
-
-===============================================================================
-ROLE-BASED AUTHORIZATION
-===============================================================================
-
-Controller Level:
-[Authorize(Roles = "Admin")]    → Only admins
-[Authorize(Roles = "Dealer")]   → Only dealers
-[Authorize(Roles = "Customer")] → Only customers
-
-Claim-Based:
-var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-// Use userId for ownership checks
+2. Dual Registration Logic (POST /api/auth/register):
+   - Customer Registration:
+     - Requires: email, password, fullName, phone.
+     - Validates email uniqueness across all tables.
+     - Hashes password via BCrypt.
+     - Initializes Customer entity with empty Cart.
+     - Returns active JWT token immediately.
+   - Dealer Registration:
+     - Requires: email, password, fullName, phone, shopName, shopDescription, shopCategory, address.
+     - Validates email uniqueness across all tables.
+     - Hashes password via BCrypt.
+     - Creates Dealer entity with IsApproved = false (pending Admin moderation).
+     - Provides clear feedback that the shop requires admin approval before listings go live.
 
 ===============================================================================
-JWT TOKEN GENERATOR
+3. CLIENT-SIDE AUTH LIFECYCLE (Next.js 14)
 ===============================================================================
 
-File: backend/src/ECommerce.Infrastructure/Services/JwtTokenGenerator.cs
+1. State Management:
+   - Managed via React Context in 'frontend/context/AuthContext.tsx'.
+   - Persists JWT token and user profile in browser localStorage.
+   - Auto-initializes on page load by calling 'GET /api/auth/me'.
 
-Methods:
-- GenerateAccessToken(userId, email, fullName, role) → string
-- GenerateRefreshToken() → string (random base64)
+2. Protected Route Middleware:
+   - Next.js Client-Side Route Guards intercept unauthorized navigation:
+     - '/admin/*' requires role == 'Admin'.
+     - '/dealer/*' requires role == 'Dealer'.
+     - '/checkout', '/account', '/orders' require role == 'Customer'.
+   - Redirects unauthenticated visitors to '/auth/login?redirect={path}'.
 
-Implementation:
-- Uses HMAC-SHA512 for signing
-- Adds claims for userId, email, name, role
-- Sets expiry from configuration
-
-===============================================================================
-PASSWORD HASHER
-===============================================================================
-
-File: backend/src/ECommerce.Infrastructure/Services/PasswordHasher.cs
-
-Methods:
-- Hash(password) → string (BCrypt hash)
-- Verify(password, hash) → bool
-
-===============================================================================
-AUTH SERVICE
-===============================================================================
-
-File: backend/src/ECommerce.Application/Services/AuthService.cs
-
-Methods:
-- RegisterAsync(request) → AuthResponse
-- LoginAsync(request) → AuthResponse
-- GetMeAsync(userId) → UserDto
-- UpdateProfileAsync(userId, request) → UserDto
-
-Login Logic:
-1. Check admins table → if found, verify password → return Admin token
-2. Check dealers table → if found, verify password → return Dealer token
-3. Check customers table → if found, verify password → return Customer token
-4. If none found → throw UnauthorizedAccessException
-
-Register Logic:
-1. Check email uniqueness across all 3 tables
-2. Create Dealer or Customer record based on role
-3. Hash password with BCrypt
-4. Generate JWT
-5. Return AuthResponse
-
-===============================================================================
-SECURITY NOTES
-===============================================================================
-
-- JWT secret key is in appsettings.Development.json (not in source control)
-- BCrypt cost factor 11 provides good security vs performance
-- Tokens expire after 15 minutes (short-lived)
-- CORS locked to frontend origin only
-- No refresh token persistence (demo limitation)
-- Ownership checks prevent unauthorized access
-- SQL injection prevented by EF Core parameterized queries
+3. Axios / Fetch Interceptor:
+   - Automatically attaches 'Authorization: Bearer <token>' on all outgoing API requests.
+   - Intercepts 401 responses, triggers session cleanup, and redirects to login.

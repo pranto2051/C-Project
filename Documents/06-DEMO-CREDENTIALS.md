@@ -1,72 +1,46 @@
-# 06 — Demo Credentials
+# 06 — Master Demo Credentials
 
-> **WARNING:** These are DEVELOPMENT ONLY credentials. Change before any real deployment.
-
----
-
-## Quick Login (all roles)
-
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | admin@ecommerce.com | Admin@123 |
-| Dealer | dealer1@test.com | Dealer@123 |
-| Customer | customer1@test.com | Customer@123 |
+> **WARNING:** These are DEVELOPMENT ONLY credentials. Change before any production deployment.
+> **Database Script:** `SQL/master.sql` (Version 3.0)
 
 ---
 
-## All Seeded Dealer Accounts (8 approved, 2 pending)
+## Master Login Credentials
 
-| Email | Password | Shop Name | Category | Approved |
-|-------|----------|-----------|----------|----------|
-| dealer1@test.com | Dealer@123 | AlexTechs Shop | Electronics | Yes |
-| dealer2@test.com | Dealer@123 | SarahFashions Shop | Clothing | Yes |
-| dealer3@test.com | Dealer@123 | MikeHomes Shop | Home & Garden | Yes |
-| dealer4@test.com | Dealer@123 | EmmaBookss Shop | Books | Yes |
-| dealer5@test.com | Dealer@123 | DavidSportss Shop | Sports | Yes |
-| dealer6@test.com | Dealer@123 | LisaToyss Shop | Toys | Yes |
-| dealer7@test.com | Dealer@123 | JamesAutos Shop | Automotive | Yes |
-| dealer8@test.com | Dealer@123 | OliviaHealths Shop | Health | Yes |
-| dealer9@test.com | Dealer@123 | NoahGadgetss Shop | Electronics | No |
-| dealer10@test.com | Dealer@123 | AvaStyles Shop | Clothing | No |
+| Role | Email | Password | Identity / Shop Name | Status |
+|------|-------|----------|----------------------|--------|
+| **Admin** | `admin@ecommerce.com` | `Admin@123` | System Admin | Active |
+| **Dealer** | `dealer1@test.com` | `Dealer@123` | Alex Tech (`AlexTechs Shop`) | Approved & Active |
+| **Customer** | `customer1@test.com` | `Customer@123` | John Buyer | Active |
 
 ---
 
-## All Seeded Customer Accounts
-
-| Email | Password |
-|-------|----------|
-| customer1@test.com | Customer@123 |
-| customer2@test.com | Customer@123 |
-| customer3@test.com | Customer@123 |
-| customer4@test.com | Customer@123 |
-| customer5@test.com | Customer@123 |
-| customer6@test.com | Customer@123 |
-| customer7@test.com | Customer@123 |
-| customer8@test.com | Customer@123 |
-| customer9@test.com | Customer@123 |
-| customer10@test.com | Customer@123 |
+## Dynamic Self-Registration Support
+In addition to the master demo accounts above, new accounts can be created at any time via `/auth/register`:
+- **New Customers:** Can register directly and start shopping immediately.
+- **New Dealers:** Can submit shop details (Shop Name, Description, Category, Address) and will start with `IsApproved = false` awaiting Admin moderation from `/admin/dealers`.
 
 ---
 
-## Password Pattern
-- Admin: `Admin@123`
-- Dealers: `Dealer@123` (all 10 dealer accounts share the same password)
-- Customers: `Customer@123` (all 10 customer accounts share the same password)
-
-All passwords are BCrypt-hashed with cost factor 11.
+## Password Security
+All passwords in the database are hashed with **BCrypt** (Work Factor / Cost: 11):
+- Admin hash: `$2a$11$S2ZoaWf3hknWcI/Og0uzg.vHxucE3fJcbHU91qFAH/p.tYRX4heWy`
+- Dealer hash: `$2a$11$Lx9F4rmuo3l6ujspZS4w4OLWOjfwrsgpzVB2vcXvrGwAYdqAO795q`
+- Customer hash: `$2a$11$IYBD96EyES3aYh5pEcMqkOAHFt.2boQuF4TnQrLgxB3hj7KI1K2te`
 
 ---
 
-## Database Tables
+## Master Database Records Summary (`SQL/master.sql`)
 
 | Table | Records | Description |
 |-------|---------|-------------|
-| admins | 1 | Admin accounts |
-| dealers | 10 | Dealer accounts + shop info |
-| customers | 10 | Customer accounts |
-| categories | 8 | Product categories |
-| products | 550 | Product listings |
-| product_images | 550 | One image per product |
-| carts | 10 | One cart per customer |
-| orders | 57 | Sample orders |
-| order_items | ~170 | Items within orders |
+| `admins` | 1 | Master platform administrator |
+| `dealers` | 1 | Master verified electronics vendor (Alex Tech) |
+| `customers` | 1 | Master active retail customer (John Buyer) |
+| `categories` | 8 | Core product classifications |
+| `products` | 550 | 500 catalog items + 50 extra featured products |
+| `product_images` | 550 | High-resolution Picsum CDN seed images (1:1 mapping) |
+| `carts` | 1 | Active shopping cart for Customer 1 |
+| `cart_items` | Active | Cart line items ready for checkout |
+| `orders` | 6 | Realistic orders spanning Pending, Confirmed, Processing, Shipped, Delivered, Cancelled |
+| `order_items` | 12–18 | Multi-item vendor fulfillment order items |
